@@ -59,6 +59,8 @@
 #import "../Safety/KMCampaignManager.h"
 #import "../Safety/KMAuditLog.h"
 #import "../Safety/KMSafetySelfTest.h"
+#import "../Bluetooth/KMBluetoothPermissionProvider.h"
+#import "../Bluetooth/KMBluetoothSelfTest.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
 #import "../WaveDrivers/WaveDriverKismet.h"
@@ -805,9 +807,13 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         // transmit-capable adapter is loaded (the built-in card can't inject).
         KMHardwareProbe *probe = [[KMHardwareProbe alloc] init];
         [probe runProbe];
+        // S3.1: also inject the REAL Bluetooth-permission provider so bleScan /
+        // bleGattEnumeration resolve against the live CBManager.authorization
+        // (available when authorized, else permissionMissing/macOSBlocked).
         _capabilityEngine = [[KMCapabilityEngine alloc] initWithProbe:probe
                                 scopeProvider:[KMCampaignManager sharedManager].scopeProvider
-                              adapterProvider:[[KMWaveDriverAdapterPresenceProvider alloc] init]];
+                              adapterProvider:[[KMWaveDriverAdapterPresenceProvider alloc] init]
+                            bluetoothProvider:[[KMBluetoothPermissionProvider alloc] init]];
     }
     return _capabilityEngine;
 }
@@ -826,7 +832,8 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         // scope provider so the offensive gate reflects adapter + scope.
         KMCapabilityEngine *engine = [[KMCapabilityEngine alloc] initWithProbe:probe
                                 scopeProvider:[KMCampaignManager sharedManager].scopeProvider
-                              adapterProvider:[[KMWaveDriverAdapterPresenceProvider alloc] init]];
+                              adapterProvider:[[KMWaveDriverAdapterPresenceProvider alloc] init]
+                            bluetoothProvider:[[KMBluetoothPermissionProvider alloc] init]];
         dispatch_async(dispatch_get_main_queue(), ^{
             self->_capabilityEngine = engine;
             KMCapability *scan = [engine availabilityForCapability:KMFeatureScan];
@@ -1124,6 +1131,17 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // throwaway audit dir. See Sources/Capabilities/KMActiveGateSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_ACTIVEGATE_SELFTEST"] isEqualToString:@"1"]) {
         [KMActiveGateSelfTest runSelfTestLogging];
+    }
+
+    // S3.1 - BLE inventory self-test. Runs ONLY when KISMAC_BLE_SELFTEST=1 is
+    // set. Verifies the headlessly-testable surface: scanner init, CBManager.
+    // authorization read+mapping, capability-engine bleScan/bleGatt gating
+    // (mocked authorizations + this machine's live auth), and model redaction.
+    // A brief LIVE advertisement scan runs only if BLE is authorized + radio on;
+    // actual advertisements + GATT require a signed build + a human grant. See
+    // Sources/Bluetooth/KMBluetoothSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_BLE_SELFTEST"] isEqualToString:@"1"]) {
+        [KMBluetoothSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

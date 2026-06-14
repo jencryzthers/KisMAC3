@@ -45,6 +45,12 @@
 		CA90030E0000000000000001 /* KMActiveGateSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90030F0000000000000001 /* KMActiveGateSelfTest.m */; };
 		CA9003070000000000000001 /* mock_kismet_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CA9003080000000000000001 /* mock_kismet_server.py */; };
 		CA9003090000000000000001 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA90030A0000000000000001 /* Network.framework */; };
+		CA9008010000000000000001 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA9008020000000000000001 /* CoreBluetooth.framework */; };
+		CA9008110000000000000001 /* KMBluetoothDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9008120000000000000001 /* KMBluetoothDevice.m */; };
+		CA9008130000000000000001 /* KMGATTProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9008140000000000000001 /* KMGATTProfile.m */; };
+		CA9008150000000000000001 /* KMBluetoothScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9008160000000000000001 /* KMBluetoothScanner.m */; };
+		CA9008170000000000000001 /* KMBluetoothPermissionProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9008180000000000000001 /* KMBluetoothPermissionProvider.m */; };
+		CA9008190000000000000001 /* KMBluetoothSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90081A0000000000000001 /* KMBluetoothSelfTest.m */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
 		CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001250000000000000001 /* proto_wpa3_sae.pcap */; };
@@ -262,6 +268,17 @@
 		CA9003100000000000000001 /* KMActiveGateSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMActiveGateSelfTest.h; sourceTree = "<group>"; };
 		CA9003080000000000000001 /* mock_kismet_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = mock_kismet_server.py; path = Tests/Fixtures/mock_kismet_server.py; sourceTree = "<group>"; };
 		CA90030A0000000000000001 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		CA9008020000000000000001 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		CA9008120000000000000001 /* KMBluetoothDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMBluetoothDevice.m; sourceTree = "<group>"; };
+		CA9008210000000000000001 /* KMBluetoothDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMBluetoothDevice.h; sourceTree = "<group>"; };
+		CA9008140000000000000001 /* KMGATTProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMGATTProfile.m; sourceTree = "<group>"; };
+		CA9008220000000000000001 /* KMGATTProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMGATTProfile.h; sourceTree = "<group>"; };
+		CA9008160000000000000001 /* KMBluetoothScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMBluetoothScanner.m; sourceTree = "<group>"; };
+		CA9008230000000000000001 /* KMBluetoothScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMBluetoothScanner.h; sourceTree = "<group>"; };
+		CA9008180000000000000001 /* KMBluetoothPermissionProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMBluetoothPermissionProvider.m; sourceTree = "<group>"; };
+		CA9008240000000000000001 /* KMBluetoothPermissionProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMBluetoothPermissionProvider.h; sourceTree = "<group>"; };
+		CA90081A0000000000000001 /* KMBluetoothSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMBluetoothSelfTest.m; sourceTree = "<group>"; };
+		CA9008250000000000000001 /* KMBluetoothSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMBluetoothSelfTest.h; sourceTree = "<group>"; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001250000000000000001 /* proto_wpa3_sae.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa3_sae.pcap; path = Tests/Fixtures/proto_wpa3_sae.pcap; sourceTree = SOURCE_ROOT; };
@@ -539,6 +556,7 @@
 				6CF938C410A7DFDF00B32F94 /* CoreWLAN.framework in Frameworks */,
 				6C32713412CFC4070033A649 /* CoreLocation.framework in Frameworks */,
 				CA9003090000000000000001 /* Network.framework in Frameworks */,
+				CA9008010000000000000001 /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -647,6 +665,24 @@
 			);
 			name = Capabilities;
 			path = Sources/Capabilities;
+			sourceTree = "<group>";
+		};
+		CA9008000000000000000001 /* Bluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				CA9008210000000000000001 /* KMBluetoothDevice.h */,
+				CA9008120000000000000001 /* KMBluetoothDevice.m */,
+				CA9008220000000000000001 /* KMGATTProfile.h */,
+				CA9008140000000000000001 /* KMGATTProfile.m */,
+				CA9008230000000000000001 /* KMBluetoothScanner.h */,
+				CA9008160000000000000001 /* KMBluetoothScanner.m */,
+				CA9008240000000000000001 /* KMBluetoothPermissionProvider.h */,
+				CA9008180000000000000001 /* KMBluetoothPermissionProvider.m */,
+				CA9008250000000000000001 /* KMBluetoothSelfTest.h */,
+				CA90081A0000000000000001 /* KMBluetoothSelfTest.m */,
+			);
+			name = Bluetooth;
+			path = Sources/Bluetooth;
 			sourceTree = "<group>";
 		};
 		003533A406A5DD8500AB4577 /* Controller */ = {
@@ -901,6 +937,7 @@
 			isa = PBXGroup;
 			children = (
 				CA9000060000000000000001 /* Capabilities */,
+				CA9008000000000000000001 /* Bluetooth */,
 				CA9004000000000000000001 /* Campaigns */,
 				CA9005000000000000000001 /* Safety */,
 				A57E64371607BC9700BE1BCA /* Crypto */,
@@ -932,6 +969,7 @@
 				00F57BD206A881210035AE2F /* AppleScriptKit.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				CA90030A0000000000000001 /* Network.framework */,
+				CA9008020000000000000001 /* CoreBluetooth.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -1391,6 +1429,11 @@
 				CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */,
 				CA90030B0000000000000001 /* KMWaveDriverAdapterPresenceProvider.m in Sources */,
 				CA90030E0000000000000001 /* KMActiveGateSelfTest.m in Sources */,
+				CA9008110000000000000001 /* KMBluetoothDevice.m in Sources */,
+				CA9008130000000000000001 /* KMGATTProfile.m in Sources */,
+				CA9008150000000000000001 /* KMBluetoothScanner.m in Sources */,
+				CA9008170000000000000001 /* KMBluetoothPermissionProvider.m in Sources */,
+				CA9008190000000000000001 /* KMBluetoothSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,

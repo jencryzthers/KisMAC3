@@ -30,6 +30,13 @@
 - (BOOL)hasInjectionCapableAdapter { return NO; }   // fail closed: built-in can't
 @end
 
+#pragma mark - Bluetooth-permission provider stub (S3.1)
+
+@implementation KMNoBluetoothPermissionProvider
+- (BOOL)isBluetoothAuthorized { return NO; }  // fail closed: not authorized
+- (BOOL)isBluetoothRestricted { return NO; }
+@end
+
 #pragma mark - Protocol parser registry
 
 @interface KMProtocolParserRegistry ()
@@ -78,6 +85,7 @@
 @property (nonatomic, strong) id<KMActiveScopeProviding> scopeProvider;
 @property (nonatomic, strong) KMProtocolParserRegistry *parserRegistry;
 @property (nonatomic, strong) id<KMAdapterPresenceProviding> adapterProvider;
+@property (nonatomic, strong) id<KMBluetoothPermissionProviding> bluetoothProvider;
 @end
 
 @implementation KMCapabilityEngine
@@ -87,7 +95,8 @@
 - (instancetype)initWithHardwareCapabilities:(NSArray<KMHardwareCapability *> *)hardware
                                scopeProvider:(id<KMActiveScopeProviding>)scopeProvider
                              parserRegistry:(KMProtocolParserRegistry *)parserRegistry
-                            adapterProvider:(id<KMAdapterPresenceProviding>)adapterProvider {
+                            adapterProvider:(id<KMAdapterPresenceProviding>)adapterProvider
+                          bluetoothProvider:(id<KMBluetoothPermissionProviding>)bluetoothProvider {
     if ((self = [super init])) {
         NSMutableDictionary *byKey = [NSMutableDictionary dictionary];
         for (KMHardwareCapability *cap in hardware) {
@@ -100,8 +109,23 @@
         // built-in card can't inject); a real provider is injected at the build
         // site (ScanController) backed by WaveDriverUSB +allowsInjection.
         _adapterProvider = adapterProvider ?: [[KMNoAdapterPresenceProvider alloc] init];
+        // S3.1: fail-closed default reports NOT bluetooth-authorized; a real
+        // provider (backed by +[KMBluetoothScanner currentAuthorizationState]) is
+        // injected at the build site so bleScan/bleGatt are honestly permission-gated.
+        _bluetoothProvider = bluetoothProvider ?: [[KMNoBluetoothPermissionProvider alloc] init];
     }
     return self;
+}
+
+- (instancetype)initWithHardwareCapabilities:(NSArray<KMHardwareCapability *> *)hardware
+                               scopeProvider:(id<KMActiveScopeProviding>)scopeProvider
+                             parserRegistry:(KMProtocolParserRegistry *)parserRegistry
+                            adapterProvider:(id<KMAdapterPresenceProviding>)adapterProvider {
+    return [self initWithHardwareCapabilities:hardware
+                                scopeProvider:scopeProvider
+                              parserRegistry:parserRegistry
+                             adapterProvider:adapterProvider
+                           bluetoothProvider:nil];
 }
 
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe {
@@ -126,6 +150,17 @@
                                 scopeProvider:scopeProvider
                               parserRegistry:nil
                              adapterProvider:adapterProvider];
+}
+
+- (instancetype)initWithProbe:(KMHardwareProbe *)probe
+                scopeProvider:(id<KMActiveScopeProviding>)scopeProvider
+              adapterProvider:(id<KMAdapterPresenceProviding>)adapterProvider
+            bluetoothProvider:(id<KMBluetoothPermissionProviding>)bluetoothProvider {
+    return [self initWithHardwareCapabilities:probe.capabilities
+                                scopeProvider:scopeProvider
+                              parserRegistry:nil
+                             adapterProvider:adapterProvider
+                           bluetoothProvider:bluetoothProvider];
 }
 
 - (instancetype)initWithLiveProbe {
@@ -174,6 +209,14 @@
 
 - (BOOL)hasInjectionCapableAdapter {
     return [self.adapterProvider hasInjectionCapableAdapter];
+}
+
+- (BOOL)bluetoothAuthorized {
+    return [self.bluetoothProvider isBluetoothAuthorized];
+}
+
+- (BOOL)bluetoothRestricted {
+    return [self.bluetoothProvider isBluetoothRestricted];
 }
 
 #pragma mark Public API
@@ -322,12 +365,36 @@
             explanation:@"Map plotting works against available position data."];
     }
 
-    // -------- MacBook-native surfaces: not yet implemented (S3.x) --------
+    // -------- BLE scan / GATT enumeration (S3.1 -- IMPLEMENTED) --------
+    // The CoreBluetooth surface (KMBluetoothScanner + KMBluetoothDevice +
+    // KMGATTProfile) IS implemented. Availability is now PURELY
+    // permission-gated against the injected Bluetooth-permission provider
+    // (backed by +[KMBluetoothScanner currentAuthorizationState] at the build
+    // site; a fail-closed default reports not-authorized in tests):
+    //   authorized   => available
+    //   restricted   => macOSBlocked (policy/MDM; not the user's to grant)
+    //   denied/notDet => permissionMissing (user can grant in System Settings)
+    // bleGattEnumeration tracks bleScan: GATT is the same authorization plus a
+    // user-selected connectable device chosen at runtime (the engine can't know
+    // a device is connectable ahead of time, so it gates identically and the
+    // scanner reports per-connect failures honestly).
     if ([featureKey isEqualToString:KMFeatureBLEScan] ||
         [featureKey isEqualToString:KMFeatureBLEGattEnumeration]) {
+        BOOL isGatt = [featureKey isEqualToString:KMFeatureBLEGattEnumeration];
+        if ([self bluetoothRestricted]) {
+            return [KMCapability unavailableCapabilityWithKey:featureKey
+                reason:KMCapabilityReasonMacOSBlocked
+                explanation:@"Bluetooth is restricted by device management / parental controls; BLE recon is unavailable."];
+        }
+        if ([self bluetoothAuthorized]) {
+            return [KMCapability availableCapabilityWithKey:featureKey
+                explanation:isGatt
+                    ? @"Bluetooth authorized; GATT enumeration runs on a user-selected device (no auto-connect)."
+                    : @"Bluetooth authorized; passive BLE advertisement scanning is available."];
+        }
         return [KMCapability unavailableCapabilityWithKey:featureKey
             reason:KMCapabilityReasonPermissionMissing
-            explanation:@"Bluetooth surface not yet implemented (S3.x) and no Bluetooth authorization wired."];
+            explanation:@"Bluetooth access is not authorized. Grant it in System Settings > Privacy & Security > Bluetooth (a scan will prompt if it has never been requested)."];
     }
     if ([featureKey isEqualToString:KMFeatureLANDiscovery] ||
         [featureKey isEqualToString:KMFeatureBonjourInventory] ||

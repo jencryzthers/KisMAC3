@@ -72,6 +72,26 @@ NS_ASSUME_NONNULL_BEGIN
 @interface KMNoAdapterPresenceProvider : NSObject <KMAdapterPresenceProviding>
 @end
 
+#pragma mark - Bluetooth-permission provider (S3.1)
+
+/// Reports whether CoreBluetooth is authorized so the engine can decide bleScan
+/// / bleGattEnumeration honestly. Mirrors the S4.2 adapter-presence injection so
+/// the engine stays hardware/permission-independent + testable: a real provider
+/// (backed by +[KMBluetoothScanner currentAuthorizationState]) is injected at
+/// the build site, and the self-test injects a mock. The CoreBluetooth surface
+/// IS implemented (S3.1); availability is purely permission-gated.
+@protocol KMBluetoothPermissionProviding <NSObject>
+/// YES iff CoreBluetooth authorization is "authorized" right now.
+- (BOOL)isBluetoothAuthorized;
+/// YES iff authorization is "restricted" (policy/MDM) -- distinct remediation.
+- (BOOL)isBluetoothRestricted;
+@end
+
+/// Fail-closed default: reports NOT authorized (permissionMissing). Used when no
+/// real provider is injected (unit tests / pre-permission engines).
+@interface KMNoBluetoothPermissionProvider : NSObject <KMBluetoothPermissionProviding>
+@end
+
 #pragma mark - Protocol parser registry
 
 /// Registry of which protocol decoders exist today. The modern decoders are
@@ -91,13 +111,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Designated initializer. Takes INJECTED inputs so it is fully testable
 /// without this machine's hardware. Pass nil for scopeProvider/parserRegistry/
-/// adapterProvider to get the fail-closed defaults (no scope / current-parity
-/// parsers / NO injection-capable adapter).
+/// adapterProvider/bluetoothProvider to get the fail-closed defaults (no scope /
+/// current-parity parsers / NO injection-capable adapter / NOT bluetooth-authorized).
 - (instancetype)initWithHardwareCapabilities:(NSArray<KMHardwareCapability *> *)hardware
                                scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider
                              parserRegistry:(nullable KMProtocolParserRegistry *)parserRegistry
                             adapterProvider:(nullable id<KMAdapterPresenceProviding>)adapterProvider
+                          bluetoothProvider:(nullable id<KMBluetoothPermissionProviding>)bluetoothProvider
     NS_DESIGNATED_INITIALIZER;
+
+/// Back-compat overload (no Bluetooth provider -> fail-closed BLE permission).
+- (instancetype)initWithHardwareCapabilities:(NSArray<KMHardwareCapability *> *)hardware
+                               scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider
+                             parserRegistry:(nullable KMProtocolParserRegistry *)parserRegistry
+                            adapterProvider:(nullable id<KMAdapterPresenceProviding>)adapterProvider;
 
 /// Convenience: build from an already-run hardware probe.
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe;
@@ -116,6 +143,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe
                 scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider
               adapterProvider:(nullable id<KMAdapterPresenceProviding>)adapterProvider;
+
+/// Convenience (S3.1): build from a probe with INJECTED scope + adapter-presence
+/// + Bluetooth-permission providers. The Bluetooth provider drives bleScan /
+/// bleGattEnumeration (available iff authorized, else permissionMissing). Pass
+/// nil for any to get the fail-closed default.
+- (instancetype)initWithProbe:(KMHardwareProbe *)probe
+                scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider
+              adapterProvider:(nullable id<KMAdapterPresenceProviding>)adapterProvider
+            bluetoothProvider:(nullable id<KMBluetoothPermissionProviding>)bluetoothProvider;
 
 /// Convenience: run a real probe synchronously and build from it.
 /// NOTE: touches real hardware -- never use this in unit tests.
