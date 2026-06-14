@@ -30,3 +30,9 @@ __pycache__/
 
 # Release pipeline build artifacts (scripts/release.sh writes here by default)
 dist/
+
+# Local-only agent/Claude tooling — kept on-machine, never committed to the repo
+.claude/
+CLAUDE.md
+AGENTS.md
+docs/subagent-orchestration.md

@@ -6,8 +6,6 @@ the now-observable result of a clean Debug build of the legacy KisMAC2 project o
 current Xcode. **No source fixes were made** beyond the S0.6 Python de-indent — fixes
 to C/Objective-C happen in slices S0.2–S0.5.
 
-Produced by `legacy-objc-porting-agent` on branch `setup/subagent-orchestration`.
-
 > **Status: this is the post-S0.6 re-run.** The original S0.1 build aborted in the
 > very first build phase (`Update vendors.db`) on a Python `IndentationError`, masking
 > all compiler output. **S0.6** (commit on this branch) fixed that script. With the
@@ -76,9 +74,9 @@ Error Domain=kCLErrorDomain Code=1 "(null)"
 **Limitation — no pixel capture.** This CLI context lacks **Screen Recording**
 permission (`screencapture` → `could not create image from display`) and **Accessibility**
 permission (System Events → `not allowed assistive access`), and no `Quartz` Python
-module is available, so the window could not be screenshotted or introspected by the
-agent. Visual confirmation of the main window's appearance is therefore **deferred to
-the human operator** (the window was left open for that). To enable agent-driven GUI
+module is available, so the window could not be screenshotted or introspected
+automatically. Visual confirmation of the main window's appearance is therefore **deferred to
+the human operator** (the window was left open for that). To enable automated GUI
 capture later, grant Screen Recording (+ Accessibility) to the terminal app.
 
 **Milestone-4 Definition-of-Done impact:** "Launches outside Xcode" is **partially
@@ -386,7 +384,7 @@ Per-symbol counts from the original pass still hold (`glVertex2f` ×17, `glTexCo
 - **S0.6** — ✅ done (this branch). `Update vendors.db` passes; build reaches and clears
   the compile + link phases.
 - **S0.1** — ✅ re-run complete; compile baseline is **green**, not red. Acceptance met:
-  reproducible result documented (`xcode-build-validator` can re-run the command above).
+  reproducible result documented (the command above can be re-run to verify).
 - **S0.2 / S0.3 / S0.4** — scope is intact but **re-characterized from "fix compile
   errors" to "remove dead code / migrate deprecated APIs without regressing the green
   build."** None of their items are build-blockers today.

@@ -90,7 +90,6 @@ Toolchain validated: Xcode 26.5 / macOS 27 / Apple Silicon.
 
 ## Documentation
 
-- `AGENTS.md` — engineering source of truth (conventions, build, safety non-negotiables).
 - `docs/modernization-plan.md` — the milestone roadmap.
 - `docs/original-feature-parity.md` — every legacy feature with its modern disposition.
 - `docs/task-slices.md` — the executable work plan + status.
