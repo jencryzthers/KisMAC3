@@ -48,6 +48,7 @@
 #import "ImportController.h"
 #import "GrowlController.h"
 #import "../Capabilities/KMHardwareProbe.h"
+#import "../Capabilities/KMCapabilityEngine.h"
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
 #import "WavePluginMidi.h"
@@ -812,6 +813,13 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // mode / switches channels / injects). Persists a per-model+OS report and
     // logs a summary. See Sources/Capabilities/KMHardwareProbe.
     [KMHardwareProbe runProbeAsynchronouslyWithCompletion:nil];
+
+    // S1.3 - Capability engine self-test. Runs ONLY when KISMAC_CAP_SELFTEST=1
+    // is set in the environment. Verifies the engine against mocked inputs
+    // (hardware-independent) and logs PASS/FAIL. See KMCapabilityEngine.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_CAP_SELFTEST"] isEqualToString:@"1"]) {
+        [KMCapabilityEngine runSelfTestLogging];
+    }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];
     mang = [NSFileManager defaultManager];

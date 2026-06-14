@@ -24,6 +24,8 @@
 
 /* Begin PBXBuildFile section */
 		CA9000040000000000000001 /* KMHardwareCapability.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9000020000000000000001 /* KMHardwareCapability.m */; };
+		CA9000070000000000000001 /* KMCapability.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9000090000000000000001 /* KMCapability.m */; };
+		CA9000080000000000000001 /* KMCapabilityEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90000B0000000000000001 /* KMCapabilityEngine.m */; };
 		CA9000050000000000000001 /* KMHardwareProbe.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9000030000000000000001 /* KMHardwareProbe.m */; };
 		002E7DFC06A86C6F00C9D931 /* ImportController.m in Sources */ = {isa = PBXBuildFile; fileRef = 002E7DF806A86C6F00C9D931 /* ImportController.m */; };
 		0035337A06A5DD5700AB4577 /* example.dump in Resources */ = {isa = PBXBuildFile; fileRef = 0035332E06A5DD5700AB4577 /* example.dump */; };
@@ -193,6 +195,10 @@
 		CA9000020000000000000001 /* KMHardwareCapability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareCapability.m; sourceTree = "<group>"; };
 		CA9000010000000000000001 /* KMHardwareProbe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareProbe.h; sourceTree = "<group>"; };
 		CA9000030000000000000001 /* KMHardwareProbe.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareProbe.m; sourceTree = "<group>"; };
+		CA9000080000000000000002 /* KMCapability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCapability.h; sourceTree = "<group>"; };
+		CA9000090000000000000001 /* KMCapability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCapability.m; sourceTree = "<group>"; };
+		CA90000A0000000000000001 /* KMCapabilityEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCapabilityEngine.h; sourceTree = "<group>"; };
+		CA90000B0000000000000001 /* KMCapabilityEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCapabilityEngine.m; sourceTree = "<group>"; };
 		002E7DF706A86C6F00C9D931 /* ImportController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ImportController.h; path = Sources/WindowControllers/ImportController.h; sourceTree = SOURCE_ROOT; };
 		002E7DF806A86C6F00C9D931 /* ImportController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = ImportController.m; path = Sources/WindowControllers/ImportController.m; sourceTree = SOURCE_ROOT; };
 		0035332E06A5DD5700AB4577 /* example.dump */ = {isa = PBXFileReference; lastKnownFileType = file; path = example.dump; sourceTree = "<group>"; };
@@ -516,6 +522,10 @@
 				CA9000020000000000000001 /* KMHardwareCapability.m */,
 				CA9000010000000000000001 /* KMHardwareProbe.h */,
 				CA9000030000000000000001 /* KMHardwareProbe.m */,
+				CA9000080000000000000002 /* KMCapability.h */,
+				CA9000090000000000000001 /* KMCapability.m */,
+				CA90000A0000000000000001 /* KMCapabilityEngine.h */,
+				CA90000B0000000000000001 /* KMCapabilityEngine.m */,
 			);
 			name = Capabilities;
 			path = Sources/Capabilities;
@@ -1212,6 +1222,8 @@
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				CA9000040000000000000001 /* KMHardwareCapability.m in Sources */,
 				CA9000050000000000000001 /* KMHardwareProbe.m in Sources */,
+				CA9000070000000000000001 /* KMCapability.m in Sources */,
+				CA9000080000000000000001 /* KMCapabilityEngine.m in Sources */,
 				0035342C06A5DD8500AB4577 /* InfoController.mm in Sources */,
 				0035342E06A5DD8500AB4577 /* ScanController.m in Sources */,
 				A581FC2C177B36AC00C05CE9 /* FCS.m in Sources */,
