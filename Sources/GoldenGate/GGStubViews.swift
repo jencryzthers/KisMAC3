@@ -5,32 +5,12 @@
 //  Placeholder content views. The shell routes between them and they will be
 //  replaced with the full implementations in later stages:
 //    - Networks / Details         → Stage 2 (now in GGNetworksView/GGDetailsView)
-//    - Map                        → Stage 2
-//    - Graph                      → Stage 3
+//    - Map                        → Stage 3 (now in GGMapView)
+//    - Graph                      → Stage 3 (now in GGGraphView)
 //    - Preferences                → Stage 4
 //
 
 import SwiftUI
-
-@available(macOS 12.0, *)
-struct GGGraphView: View {
-    @ObservedObject var state: GGAppState
-    var body: some View {
-        GGStubView(title: "Graph",
-                   stage: "Unit: \(state.graphUnit) · window: \(state.graphWindow) · live chart coming in stage 3",
-                   symbol: "chart.line.uptrend.xyaxis")
-    }
-}
-
-@available(macOS 12.0, *)
-struct GGMapView: View {
-    @ObservedObject var state: GGAppState
-    var body: some View {
-        GGStubView(title: "Map",
-                   stage: "GPS \(state.gps.label) · radar map coming in stage 2",
-                   symbol: "map")
-    }
-}
 
 @available(macOS 12.0, *)
 struct GGPreferencesWindow: View {

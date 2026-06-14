@@ -36,14 +36,40 @@ Scan capsule, and a bottom status bar. Dark appearance only.
   `GGFormat` (num / bytes / relTime). The two Stage-1 stubs were removed from
   `GGStubViews.swift`.
 
+**Stage 3 — Graph + Map views: DONE.**
+
+- `GGGraphView` — rolling multi-series line chart drawn with SwiftUI `Canvas`:
+  grid + baseline + mono axis labels (left = 0..100×unit-mul, bottom = `-Ns`/`now`),
+  one consistently-colored line per network (top-5 by signal, `GGGraphPalette`),
+  a filled area + glow under each line + a leading-edge dot, and a wrapping
+  legend (custom `GGFlowLayout`) of swatch + SSID above. A per-network rolling
+  sample buffer (`[Int: [Double]]`, keyed by network id) is seeded from
+  `avgSignal` and advanced by a `Timer` gated on `state.isScanning` at the same
+  1.1s cadence as the model tick; each advance does a clamped random-walk blended
+  toward the network's baseline signal and trims to the selected window's sample
+  count (15s/30s/60s/5min → ~14/27/55/273 samples). Static when idle. Unit
+  Bytes/Packets only scales the axis labels (the seed model has no per-second
+  byte/packet series), matching the design.
+- `GGMapView` — radar map `ZStack`: dark radial bg, a faint 60px blue grid
+  (`Canvas`), three blurred green-tinted landmass blobs, AP markers projected
+  from lat/lng around the GPS center (`SCALE = 16000` px/deg), signal-colored via
+  `GGTheme.signalColor` with a radius scaled by signal and a white outline when
+  selected; while scanning each marker gets a pulsing expanding ring
+  (`GGMarkerRing`, 2.4s) and a rotating conic `AngularGradient` sweep (4s linear)
+  plays over faint concentric rings. A glowing GPS dot sits at center. A glass
+  HUD bottom-left (`.ultraThinMaterial`, mono Position/Elevation/Time with the
+  clock advancing 1s/tick while scanning), a 3-col glass zoom/pan cluster
+  bottom-right driving `zoom`/`pan` state, and a top-left legend. Tapping a
+  marker sets `selectedID` + switches to `.details` (same routing as Networks).
+- Both reuse `GGTheme` tokens + `signalColor`, `GGAppState` (graphUnit /
+  graphWindow / isScanning / networks / gps), and the dark-glass aesthetic. The
+  two stubs were removed from `GGStubViews.swift`.
+
 **Pending:**
 
-- Stage 2 (remaining) — Map radar.
-- Stage 3 — live Graph (bytes / packets over a rolling window).
 - Stage 4 — Preferences (General · Scanning · Filter · Driver · GPS · Sounds · Traffic).
 
-Graph / Map and Preferences remain stubs that already read live state
-(graph unit/window, GPS) so the shell is fully wired.
+Preferences remains a stub; the shell is otherwise fully wired.
 
 ## Files (`Sources/GoldenGate/`)
 
@@ -55,7 +81,9 @@ Graph / Map and Preferences remain stubs that already read live state
 | `GGRootView.swift` | The window content: glass toolbar, contextual trailing controls, content router, status bar, prefs overlay. |
 | `GGNetworksView.swift` | Networks table: sticky header, striping, hover, selection, fresh-row flash, search filtering; tap selects + routes to Details. |
 | `GGDetailsView.swift` | Details split: inspector (header + property groups + comment box) and clients panel (table or empty-state); `GGCommentEditor` NSTextView wrapper + UTC `fullTime` formatter. |
-| `GGStubViews.swift` | Stub Graph/Map + Preferences content (Networks/Details moved out in Stage 2). |
+| `GGGraphView.swift` | Live rolling multi-series `Canvas` chart: grid/baseline/mono axis labels, per-network color line + area + leading dot, wrapping legend (`GGFlowLayout`); `[Int:[Double]]` rolling buffer advanced by a scanning-gated `Timer`, trimmed to the window. |
+| `GGMapView.swift` | Radar map `ZStack`: radial bg, grid, landmass blobs, lat/lng-projected signal-colored markers (pulsing ring + conic sweep while scanning), GPS dot, glass HUD/zoom/legend; tap marker → Details. |
+| `GGStubViews.swift` | Stub Preferences content (Networks/Details moved out Stage 2; Graph/Map moved out Stage 3). |
 | `GGWindowController.swift` | `@objc(KGGoldenGateWindowController)` AppKit hosting controller. |
 
 ## How to open
