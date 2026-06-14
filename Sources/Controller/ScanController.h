@@ -2,7 +2,7 @@
  
  File:			ScanController.h
  Program:		KisMAC
- Author:		Michael Ro§berg
+ Author:		Michael Roï¿½berg
  mick@binaervarianz.de
  Changes:       Vitalii Parovishnyk(1012-2015)
  
@@ -27,6 +27,7 @@
  */
 
 
+#import <Cocoa/Cocoa.h>
 #import <IOKit/IOKitLib.h>
 
 typedef NS_ENUM(NSInteger, __availableTabs)
