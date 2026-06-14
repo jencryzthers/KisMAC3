@@ -1,0 +1,125 @@
+name: build
+
+# CI for KisMac3 (S8.x / Milestone 14). This pipeline is intentionally
+# UNSIGNED and SECRET-FREE so it runs on any GitHub-hosted macOS runner (and
+# forks) without provisioning. It does a clean, signing-disabled Debug build
+# and runs the headless KISMAC_*_SELFTEST smoke checks.
+#
+# Where signing would plug in (NOT done here on purpose): a separate,
+# protected release workflow would add GitHub repository secrets
+# (e.g. DEVELOPMENT_TEAM, the base64-encoded Developer ID .p12 + password
+# imported via `security import` into a temporary Keychain, and the App Store
+# Connect API key ASC_API_KEY_ID / ASC_API_ISSUER_ID / ASC_API_KEY_PATH),
+# then call scripts/release.sh. Keeping secrets out of THIS workflow is
+# deliberate — see docs/release.md.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-smoke:
+    name: Unsigned Debug build + self-test smoke
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      WORKSPACE: KisMac2.xcworkspace
+      SCHEME: KisMac2
+      CONFIGURATION: Debug
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      # Defensive: ensure submodules are present even if the action above is
+      # ever changed (BIGeneric/BIGL/GBStorage/polarssl are required to build).
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          xcodebuild -workspace "$WORKSPACE" -list
+
+      - name: Lint release scripts (shellcheck)
+        run: |
+          brew list shellcheck >/dev/null 2>&1 || brew install shellcheck
+          shellcheck -x scripts/*.sh
+
+      - name: Clean Debug build (signing disabled)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration "$CONFIGURATION" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            clean build \
+            | tee /tmp/kismac_ci_build.log
+          tail -3 /tmp/kismac_ci_build.log | grep -q "BUILD SUCCEEDED"
+
+      - name: Locate built app
+        id: app
+        run: |
+          set -euo pipefail
+          DERIVED=$(xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" \
+            -configuration "$CONFIGURATION" -showBuildSettings 2>/dev/null \
+            | awk -F' = ' '/ BUILT_PRODUCTS_DIR =/{print $2; exit}')
+          echo "bin=$DERIVED/$SCHEME.app/Contents/MacOS/$SCHEME" >> "$GITHUB_OUTPUT"
+
+      # Headless self-test smoke. The app runs the KISMAC_*_SELFTEST suites in
+      # -applicationDidFinishLaunching and logs PASS/FAIL via stdout. We launch
+      # it with the passive/CPU-only suites enabled, give it time to run, then
+      # terminate it and fail the job if any suite reports a failure. Only the
+      # suites that are deterministic without a human TCC grant / live radio are
+      # enabled here (cap/proto/crypto/pcap-import/safety/active-gate + the
+      # read-only inventories). BLE/LAN need a grant or live network on a signed
+      # build, so they are not gated as CI failures.
+      - name: Run headless self-tests (smoke)
+        run: |
+          set -uo pipefail
+          BIN='${{ steps.app.outputs.bin }}'
+          test -x "$BIN" || { echo "app binary not found: $BIN"; exit 1; }
+          export KISMAC_CAP_SELFTEST=1
+          export KISMAC_PROTO_SELFTEST=1
+          export KISMAC_CRYPTO_SELFTEST=1
+          export KISMAC_PCAP_IMPORT_SELFTEST=1
+          export KISMAC_SAFETY_SELFTEST=1
+          export KISMAC_ACTIVEGATE_SELFTEST=1
+          export KISMAC_USBINV_SELFTEST=1
+          export KISMAC_IFACE_SELFTEST=1
+          LOG=/tmp/kismac_selftest.log
+          "$BIN" >"$LOG" 2>&1 &
+          APP_PID=$!
+          # Give the launch-time self-tests time to complete, then stop the app.
+          sleep 25
+          kill "$APP_PID" 2>/dev/null || true
+          wait "$APP_PID" 2>/dev/null || true
+          echo "===== self-test log ====="
+          cat "$LOG"
+          echo "========================="
+          if grep -Eiq "FAIL|FAILED|assertion|✗" "$LOG"; then
+            echo "::error::A self-test reported a failure."
+            exit 1
+          fi
+          echo "Self-test smoke passed (no failures detected)."
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-logs
+          path: |
+            /tmp/kismac_ci_build.log
+            /tmp/kismac_selftest.log
+          if-no-files-found: ignore

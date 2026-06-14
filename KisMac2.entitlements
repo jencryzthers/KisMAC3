@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  KisMac3 hardened-runtime entitlements (Developer ID, S8.x / Milestone 14).
+
+	  This app is NOT sandboxed. Do NOT add com.apple.security.app-sandbox here:
+	  KisMac needs raw libpcap/BPF, IOKit, CoreWLAN, CoreBluetooth and the
+	  Apple80211 private framework, none of which work under the App Sandbox.
+	  These keys configure the *hardened runtime* only (ENABLE_HARDENED_RUNTIME),
+	  which is the Notarization requirement, and are deliberately minimal.
+
+	  Each entry below is present because the app genuinely needs it; anything
+	  not listed is intentionally denied. See docs/release.md for the rationale
+	  and the known pcap/BPF-under-hardened-runtime limitation.
+	-->
+
+	<!--
+	  Bundled frameworks (BIGL.framework, BIGeneric.framework) and the GBStorage
+	  code are signed with the SAME Developer ID team (DMP42GVPJ3) by
+	  scripts/sign_export.sh, so library validation is LEFT ENABLED (the key
+	  below is commented out on purpose). Only uncomment
+	  com.apple.security.cs.disable-library-validation if you must load a
+	  framework signed by a DIFFERENT team identity, and document why in
+	  docs/release.md. Prefer re-signing everything with one team instead.
+
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+	-->
+
+	<!--
+	  CoreLocation: KisMac uses CLLocationManager (GPS tagging of networks,
+	  S1.2). Hardened runtime requires the personal-information location
+	  entitlement to access Location Services; pairs with
+	  NSLocationWhenInUseUsageDescription in Info.plist.
+	-->
+	<key>com.apple.security.personal-information.location</key>
+	<true/>
+
+	<!--
+	  CoreBluetooth: BLE inventory (S3.1). Pairs with
+	  NSBluetoothAlwaysUsageDescription in Info.plist.
+	-->
+	<key>com.apple.security.device.bluetooth</key>
+	<true/>
+
+	<!--
+	  USB / HID / serial inventory via IOKit (S3.2, read-only). The hardened
+	  runtime gates raw USB access behind this entitlement.
+	-->
+	<key>com.apple.security.device.usb</key>
+	<true/>
+</dict>
+</plist>

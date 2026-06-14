@@ -1,6 +1,21 @@
-language: objective-c
-osx_image: xcode8.3
-xcode_workspace: KisMac2.xcworkspace
-xcode_scheme: KisMac2
-xcode_sdk: macosx10.12
-before_install: git submodule update --init --recursive
+# DEPRECATED — KisMac3 CI has migrated from Travis CI to GitHub Actions.
+#
+# The original Travis config targeted Xcode 8.3 / macOS 10.12 SDK, which no
+# longer exists on any Travis or modern runner. CI now lives in:
+#
+#     .github/workflows/build.yml
+#
+# It does a submodule init + a signing-disabled clean Debug build and runs the
+# headless KISMAC_*_SELFTEST smoke checks on a GitHub-hosted macOS runner.
+# The Developer ID signing / notarization pipeline is in scripts/ (S8.x) and
+# is documented in docs/release.md.
+#
+# This file is kept only as a migration breadcrumb. Travis is not used.
+#
+# --- original (obsolete) config, for reference ---
+# language: objective-c
+# osx_image: xcode8.3
+# xcode_workspace: KisMac2.xcworkspace
+# xcode_scheme: KisMac2
+# xcode_sdk: macosx10.12
+# before_install: git submodule update --init --recursive

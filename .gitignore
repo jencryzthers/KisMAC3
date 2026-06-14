@@ -21,3 +21,12 @@ Resources/Generic/vendor.db
 # Python (build-script bytecode cache)
 __pycache__/
 *.pyc
+
+# Release signing/notarization secrets (S8.x). Never commit real credentials,
+# certs, ASC API keys (.p8) or filled .env files. Only the .example template
+# is tracked.
+.secrets/*
+!.secrets/appstoreconnect.env.example
+
+# Release pipeline build artifacts (scripts/release.sh writes here by default)
+dist/
