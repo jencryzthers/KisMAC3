@@ -149,14 +149,16 @@ struct leapClientData
         size_t wrdLen = strlen(wrd);
         if (wrdLen == 0) continue;
         i = wrdLen - 1;
-        wrd[i] = 0;                              // drop trailing '\n'
-        if (i == 0) continue;                    // line was only "\n"
-        --i;
-        if (wrd[i] == '\r') {                    // drop preceding '\r'
-            wrd[i] = 0;
-            if (i == 0) continue;                // line was only "\r\n"
-            --i;
+        // Strip ONLY actual trailing CR/LF -- a newline-less line (the last line,
+        // or a line >=89 chars split at the fgets(wrd,90,...) boundary) keeps all
+        // its characters instead of losing the final one. The (i != 0) guard
+        // prevents the index from underflowing on an all-newline line; the empty
+        // line (wrdLen==0) was already skipped above.
+        while ((wrd[i] == '\r' || wrd[i] == '\n') && i != 0)
+        {
+            wrd[i--] = 0;
         }
+        if (wrd[i] == '\r' || wrd[i] == '\n') { wrd[i] = 0; continue; } // line was only CR/LF
 
         ++words;
 

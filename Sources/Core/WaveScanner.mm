@@ -621,6 +621,19 @@
     wavePlugin = [_wavePlugins valueForKey:@"BeaconFlood"];
     if (wavePlugin == nil)
         return NO;
+    // S4.2 op-site gate (defense in depth): beacon-flood is a BROADCAST offensive
+    // op (it injects spoofed beacons, no single target), so like deauth-ALL it
+    // cannot be constrained to one scoped BSSID. It FAILS CLOSED: -allowActiveOperation:
+    // with a nil target requires (and never gets) per-target scope membership,
+    // so beacon-flood is refused + audited unless a future slice adds explicit
+    // broadcast authorization. Same engine + scope + audit as the other ops.
+    if (![aController allowActiveOperation:@"beacon-flood (broadcast)"
+                                   feature:KMFeatureFrameInjection
+                                    target:nil
+                            targetIsClient:NO])
+    {
+        return NO;   // refused + audited inside allowActiveOperation:
+    }
     ret = [wavePlugin startTest];
     return ret;
 }
@@ -724,7 +737,18 @@
     {
         return NO;
     }
-    
+    // S4.2 op-site gate (defense in depth): auth-flood transmits forged auth
+    // frames at a target AP, so it requires an injection-capable adapter +
+    // authorized in-window scope, and the target AP's BSSID must be in scope.
+    // Fail closed (refused + audited otherwise) -- same gate as the other ops.
+    if (![aController allowActiveOperation:@"auth-flood"
+                                   feature:KMFeatureFrameInjection
+                                    target:[net BSSID]
+                            targetIsClient:NO])
+    {
+        return NO;
+    }
+
     return [wavePlugin startTest:net];
 }
 

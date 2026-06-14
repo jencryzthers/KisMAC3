@@ -191,6 +191,22 @@ NSString * const KMEmergencyStopEngagedNotification = @"KMEmergencyStopEngagedNo
 #pragma mark Active-operation auditing
 
 - (BOOL)recordActiveOperation:(NSString *)operation target:(NSString *)target {
+    // H3 (final review): explicit belt-and-suspenders e-stop latch at the op-site
+    // gate, matching the latch pattern in -engageEmergencyStop. Behavior is
+    // unchanged today (hasActiveScope already returns NO under e-stop), but this
+    // hardens the gate against a future refactor that decouples the two.
+    if (self.isEmergencyStopped) {
+        NSMutableDictionary *ctx = [NSMutableDictionary dictionary];
+        ctx[@"operation"] = operation ?: @"";
+        if (target) ctx[@"target"] = target;
+        ctx[@"inScope"] = @NO;
+        ctx[@"emergencyStop"] = @YES;
+        [self.auditLog appendAction:KMAuditActionActiveOperation
+                             detail:[NSString stringWithFormat:@"Active operation '%@' REFUSED (emergency stop engaged)",
+                                     operation ?: @"?"]
+                            context:ctx];
+        return NO;
+    }
     BOOL inScope = [self.scopeProvider hasActiveScope];
     // If a specific target is named, require it to be in scope too (fail closed).
     if (inScope && target.length) {

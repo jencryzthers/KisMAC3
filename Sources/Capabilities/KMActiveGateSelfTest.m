@@ -188,6 +188,24 @@
         check(@"4h in-scope permit is AUDITED", foundPermit);
     }
 
+    // ---- 4b) C1 (final review): beacon-flood + auth-flood are now gated ----
+    // These two ops used to transmit (beacon-flood: broadcast spoofed beacons;
+    // auth-flood: forged auth frames at an AP) WITHOUT consulting the engine or
+    // scope. WaveScanner now routes both through -allowActiveOperation:, which is
+    // backed by the same scope membership check exercised here via
+    // recordActiveOperation:. Prove:
+    //   - auth-flood at an OUT-of-scope AP BSSID is refused
+    //   - auth-flood at an IN-scope AP BSSID is permitted
+    //   - beacon-flood (broadcast, nil target) FAILS CLOSED like deauth-all:
+    //     a nil/unknown target can never satisfy per-target scope, so it is
+    //     refused even while a campaign is armed.
+    check(@"4i auth-flood out-of-scope AP refused",
+          [mgr recordActiveOperation:@"auth-flood" target:outBSSID] == NO);
+    check(@"4j auth-flood in-scope AP permitted",
+          [mgr recordActiveOperation:@"auth-flood" target:inBSSID] == YES);
+    check(@"4k beacon-flood (broadcast) fails closed -- refused with no in-scope target",
+          [mgr recordActiveOperation:@"beacon-flood (broadcast)" target:outBSSID] == NO);
+
     // ---- 5) emergency stop => back to refused (no scope) ----
     [mgr engageEmergencyStop:@"selftest e-stop"];
     check(@"5a e-stop => hasActiveScope NO", mgr.scopeProvider.hasActiveScope == NO);

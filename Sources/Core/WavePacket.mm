@@ -87,6 +87,15 @@ BOOL is8021xPacket(const UInt8* fileData) {
 	_rateCount = 0;
 
     while(length>2) {
+        // H1 (final review): bounds-check the whole IE (1 byte id + 1 byte len +
+        // `elementLen` body bytes) before dispatching on it. A truncated IE in an
+        // attacker-controlled imported pcap could otherwise let the per-case
+        // memcmp/memcpy below read up to ~3 bytes past the captured frame. Mirror
+        // the check-before-read pattern of the modern KMProtocolMetadata walker.
+        {
+            NSInteger elementLen = (NSInteger)(*(packet+1));
+            if (elementLen + 2 > length) break;
+        }
         switch (*packet) {
         case IEEE80211_ELEMID_SSID:
             len=(*(packet+1));
@@ -117,7 +126,10 @@ BOOL is8021xPacket(const UInt8* fileData) {
         case IEEE80211_ELEMID_RSN:
             // WPA2 Detecting
             len=(*(packet+1));
-            if (len < 6)
+            // Need the full IE present (length >= len+2; guaranteed by the
+            // top-of-loop bounds check) AND at least 6 body bytes before reading
+            // the OUI at packet+4..packet+6.
+            if (len < 6 || length < len + 2)
                 break;
             if (memcmp(packet+4, RSN_OUI, 3) == 0)
 				_isWep = encryptionTypeWPA2;

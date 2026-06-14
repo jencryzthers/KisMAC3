@@ -80,7 +80,11 @@ void fastWP_passwordHash(char *password, const unsigned char *ssid, NSInteger ss
     const char *ssid = 0;
     FILE* fptr = NULL;
     NSUInteger i, j, words, ssidLength, keys, curKey;
-    UInt8 pmk[40], ptk[64], digest[16];
+    // digest must hold a full SHA-1 result: fast_hmac_sha1() writes 20 bytes
+    // (CC_SHA1_DIGEST_LENGTH). The MIC comparison below only reads the first 16,
+    // and fast_hmac_md5() writes 16, but the buffer must be sized for the larger
+    // SHA-1 case to avoid a 4-byte stack overflow.
+    UInt8 pmk[40], ptk[64], digest[20];
     struct clientData *c;
     WaveClient *wc;
     const UInt8 *anonce, *snonce;

@@ -208,3 +208,40 @@ code changed, capability-matrix update if hardware/API behavior changed, parity-
 update (`docs/original-feature-parity.md`) if original behavior changed, `security-abuse-reviewer`
 if active cyber functionality changed, `privacy-reviewer` if identifiers/locations/
 captures/reports/exports changed.
+
+## Final review fixes
+
+Defects found by the final holistic code review of `setup/subagent-orchestration`
+and resolved (all on this branch; Debug + Release builds green, full self-test
+suite green incl. extended `KISMAC_ACTIVEGATE_SELFTEST`):
+
+- **C1 (CRITICAL safety)** — `-beaconFlood` and `-authFloodNetwork:` in
+  `Sources/Core/WaveScanner.mm` bypassed the S4.2 active-op gate. Both now route
+  through `-[ScanController allowActiveOperation:feature:target:targetIsClient:]`
+  before transmitting (auth-flood: targeted at the AP BSSID; beacon-flood:
+  broadcast/nil target, fails closed exactly like `-setDeauthingAll:`). They can
+  no longer transmit without engine-available + in-scope campaign + audit.
+  Proved by new assertions 4i/4j/4k in `KMActiveGateSelfTest`.
+- **C2 (CRITICAL memory-safety)** — `Sources/Crypto/WaveNetWPACrack.m`: `digest`
+  was `UInt8[16]` but `fast_hmac_sha1()` writes 20 bytes (4-byte stack overflow).
+  Resized to `UInt8 digest[20]`; downstream MIC compare still reads 16.
+- **C3** — `KisMac2.entitlements`: removed the inert App-Sandbox keys
+  (`personal-information.location`, `device.bluetooth`, `device.usb`) on this
+  non-sandboxed app. Dict is now empty; comment explains Location/Bluetooth/LAN
+  are handled via TCC + the `NS*UsageDescription` Info.plist strings, and that an
+  empty entitlements file is correct for the hardened-runtime Release build.
+- **H1 (HIGH)** — `Sources/Core/WavePacket.mm` `-parseTaggedData:`: the legacy
+  TLV loop could over-read up to ~3 bytes past a truncated IE from an
+  attacker-controlled imported pcap. Added a check-before-dispatch bounds guard
+  (`if (elementLen + 2 > length) break;`) and tightened the RSN case
+  (`len < 6 || length < len + 2`). Well-formed frames unchanged.
+- **H2 (HIGH)** — `Sources/Crypto/WaveNetLEAPCrack.m`: the wordlist reader
+  unconditionally truncated the last char, dropping a real password char on
+  newline-less lines (last line / >=89-char line split at the fgets boundary).
+  Now strips only actual trailing CR/LF (mirrors `WaveNetWPACrack.m`), keeping
+  the empty-line underflow guard.
+- **H3 (HIGH)** — `Sources/Safety/KMCampaignManager.m` `-recordActiveOperation:`:
+  added an explicit belt-and-suspenders emergency-stop latch at the op-site gate
+  (matching `-engageEmergencyStop`). Refuses + audits under e-stop. Behavior is
+  unchanged today (`hasActiveScope` already honors e-stop); hardens against
+  future refactors.

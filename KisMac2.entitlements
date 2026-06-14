@@ -30,26 +30,21 @@
 	-->
 
 	<!--
-	  CoreLocation: KisMac uses CLLocationManager (GPS tagging of networks,
-	  S1.2). Hardened runtime requires the personal-information location
-	  entitlement to access Location Services; pairs with
-	  NSLocationWhenInUseUsageDescription in Info.plist.
-	-->
-	<key>com.apple.security.personal-information.location</key>
-	<true/>
+	  Intentionally EMPTY. The com.apple.security.personal-information.location,
+	  com.apple.security.device.bluetooth and com.apple.security.device.usb keys
+	  are APP-SANDBOX entitlements; on this non-sandboxed app they are inert and
+	  were removed (final review C3).
 
-	<!--
-	  CoreBluetooth: BLE inventory (S3.1). Pairs with
-	  NSBluetoothAlwaysUsageDescription in Info.plist.
-	-->
-	<key>com.apple.security.device.bluetooth</key>
-	<true/>
+	  Location, Bluetooth and Local Network access are handled at runtime via TCC
+	  (the system permission prompts), driven by the NS*UsageDescription strings
+	  in Info.plist (NSLocationWhenInUseUsageDescription,
+	  NSBluetoothAlwaysUsageDescription, NSLocalNetworkUsageDescription), NOT by
+	  hardened-runtime entitlements. Raw USB/IOKit access also needs no
+	  entitlement on a non-sandboxed app.
 
-	<!--
-	  USB / HID / serial inventory via IOKit (S3.2, read-only). The hardened
-	  runtime gates raw USB access behind this entitlement.
+	  An empty entitlements <dict/> is the correct, complete configuration for a
+	  hardened-runtime, non-sandboxed Developer ID build (hardened runtime stays
+	  enabled via the ENABLE_HARDENED_RUNTIME Release build setting).
 	-->
-	<key>com.apple.security.device.usb</key>
-	<true/>
 </dict>
 </plist>
