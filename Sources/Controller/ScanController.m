@@ -54,7 +54,10 @@
 #import "../Capabilities/KMCryptoSelfTest.h"
 #import "../Capabilities/KMKismetSelfTest.h"
 #import "../Capabilities/KMCapability.h"
+#import "../Capabilities/KMWaveDriverAdapterPresenceProvider.h"
+#import "../Capabilities/KMActiveGateSelfTest.h"
 #import "../Safety/KMCampaignManager.h"
+#import "../Safety/KMAuditLog.h"
 #import "../Safety/KMSafetySelfTest.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
@@ -797,10 +800,14 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         // S4.1: inject the REAL active-scope provider (backed by the authorized
         // campaign) so active/offensive features are gated on an in-window
         // campaign. Fail closed by default: no campaign -> no scope.
+        // S4.2: also inject the REAL adapter-presence provider so the offensive
+        // trio (inject/deauth/AP) reports unsupportedAdapter when no external
+        // transmit-capable adapter is loaded (the built-in card can't inject).
         KMHardwareProbe *probe = [[KMHardwareProbe alloc] init];
         [probe runProbe];
         _capabilityEngine = [[KMCapabilityEngine alloc] initWithProbe:probe
-                                scopeProvider:[KMCampaignManager sharedManager].scopeProvider];
+                                scopeProvider:[KMCampaignManager sharedManager].scopeProvider
+                              adapterProvider:[[KMWaveDriverAdapterPresenceProvider alloc] init]];
     }
     return _capabilityEngine;
 }
@@ -815,8 +822,11 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         // KMCampaignManager and stays live across rebuilds.
         KMHardwareProbe *probe = [[KMHardwareProbe alloc] init];
         [probe runProbe];
+        // S4.2: inject the real adapter-presence provider alongside the S4.1
+        // scope provider so the offensive gate reflects adapter + scope.
         KMCapabilityEngine *engine = [[KMCapabilityEngine alloc] initWithProbe:probe
-                                scopeProvider:[KMCampaignManager sharedManager].scopeProvider];
+                                scopeProvider:[KMCampaignManager sharedManager].scopeProvider
+                              adapterProvider:[[KMWaveDriverAdapterPresenceProvider alloc] init]];
         dispatch_async(dispatch_get_main_queue(), ^{
             self->_capabilityEngine = engine;
             KMCapability *scan = [engine availabilityForCapability:KMFeatureScan];
@@ -876,6 +886,104 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 
     // WaveDriverAirport (built-in active CoreWLAN scan) and the safe default.
     return KMFeatureScan;
+}
+
+#pragma mark - S4.2 active/offensive op-site gate (defense in depth)
+
+- (BOOL)allowActiveOperation:(NSString *)operation
+                     feature:(NSString *)feature
+                      target:(NSString *)target
+              targetIsClient:(BOOL)targetIsClient
+{
+    KMCampaignManager *mgr = [KMCampaignManager sharedManager];
+
+    // (1) Engine must report the feature AVAILABLE (=> injection-capable adapter
+    //     present AND authorized in-window campaign scope). Fail closed.
+    KMCapability *cap = [[self capabilityEngine] availabilityForCapability:feature];
+    if (!cap.isAvailable)
+    {
+        DBNSLog(@"[S4.2] REFUSED active op '%@' (feature %@): %@ -- %@",
+                operation, feature,
+                KMStringFromCapabilityReason(cap.reason), cap.explanation);
+        // Audit the refusal (engine-level block).
+        [mgr.auditLog appendAction:KMAuditActionActiveOperation
+                            detail:[NSString stringWithFormat:
+                                    @"REFUSED active op '%@' -- capability %@ unavailable (%@)",
+                                    operation, feature, KMStringFromCapabilityReason(cap.reason)]
+                           context:@{ @"operation": operation ?: @"",
+                                      @"feature": feature ?: @"",
+                                      @"target": target ?: @"",
+                                      @"allowed": @NO,
+                                      @"reason": KMStringFromCapabilityReason(cap.reason) }];
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:NSLocalizedString(@"Operation not permitted", "S4.2 active op refused title")];
+        [alert setInformativeText:cap.explanation ?:
+            NSLocalizedString(@"This active operation is disabled by the capability/scope policy.",
+                              "S4.2 active op refused body")];
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", nil)];
+        [alert runModal];
+        return NO;
+    }
+
+    // (2) The target must be IN the authorized campaign scope. A targeted client
+    //     is checked via scopeContainsClientMAC:, an AP/broadcast via
+    //     scopeContainsBSSID:. Fail closed when the target is out of scope --
+    //     even with adapter + active scope.
+    KMActiveCampaignScopeProvider *scope = mgr.scopeProvider;
+    BOOL targetInScope;
+    if (target.length == 0)
+    {
+        // No named target (e.g. a blanket broadcast deauth-all) cannot be
+        // constrained to a single scoped BSSID -> fail closed. A future slice
+        // may add explicit broadcast authorization.
+        targetInScope = NO;
+    }
+    else if (targetIsClient)
+    {
+        targetInScope = [scope scopeContainsClientMAC:target];
+    }
+    else
+    {
+        targetInScope = [scope scopeContainsBSSID:target];
+    }
+
+    if (!targetInScope)
+    {
+        DBNSLog(@"[S4.2] REFUSED active op '%@' (feature %@): target %@ is OUT OF campaign scope.",
+                operation, feature, target ?: @"<none>");
+        [mgr.auditLog appendAction:KMAuditActionActiveOperation
+                            detail:[NSString stringWithFormat:
+                                    @"REFUSED active op '%@' -- target %@ out of scope",
+                                    operation, target ?: @"<none>"]
+                           context:@{ @"operation": operation ?: @"",
+                                      @"feature": feature ?: @"",
+                                      @"target": target ?: @"",
+                                      @"targetIsClient": @(targetIsClient),
+                                      @"allowed": @NO,
+                                      @"reason": @"target-out-of-scope" }];
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:NSLocalizedString(@"Target outside authorized scope", "S4.2 target out of scope title")];
+        [alert setInformativeText:[NSString stringWithFormat:
+            NSLocalizedString(@"The target %@ is not within the current authorized campaign scope. The operation was refused and audited.",
+                              "S4.2 target out of scope body"), target ?: @"<none>"]];
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", nil)];
+        [alert runModal];
+        return NO;
+    }
+
+    // (3) Allowed: record an audit entry BEFORE the op executes.
+    [mgr.auditLog appendAction:KMAuditActionActiveOperation
+                        detail:[NSString stringWithFormat:
+                                @"PERMITTED active op '%@' on %@ (in scope, adapter present)",
+                                operation, target]
+                       context:@{ @"operation": operation ?: @"",
+                                  @"feature": feature ?: @"",
+                                  @"target": target ?: @"",
+                                  @"targetIsClient": @(targetIsClient),
+                                  @"allowed": @YES }];
+    DBNSLog(@"[S4.2] PERMITTED active op '%@' (feature %@) on target %@ -- adapter + in-scope; audited.",
+            operation, feature, target);
+    return YES;
 }
 
 #pragma mark -
@@ -1003,6 +1111,19 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // Sources/Safety/KMSafetySelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_SAFETY_SELFTEST"] isEqualToString:@"1"]) {
         [KMSafetySelfTest runSelfTestLogging];
+    }
+
+    // S4.2 - Active/offensive gate self-test. Runs ONLY when
+    // KISMAC_ACTIVEGATE_SELFTEST=1 is set. Builds a MOCK adapter-presence
+    // provider + the REAL S4.1 scope provider into a real KMCapabilityEngine
+    // over MOCKED all-green hardware and asserts the full gate matrix: no
+    // adapter/no scope => unsupportedAdapter; adapter/no scope =>
+    // activeLabScopeMissing; adapter + in-window scope => available; adapter +
+    // scope but target BSSID/client NOT in scope => op-guard refuses + audits;
+    // emergency stop => refused again. PASSIVE: no radio / monitor / channel;
+    // throwaway audit dir. See Sources/Capabilities/KMActiveGateSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_ACTIVEGATE_SELFTEST"] isEqualToString:@"1"]) {
+        [KMActiveGateSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

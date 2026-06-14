@@ -51,6 +51,27 @@ NS_ASSUME_NONNULL_BEGIN
 @interface KMNoActiveScopeProvider : NSObject <KMActiveScopeProviding>
 @end
 
+#pragma mark - Adapter-presence provider (S4.2)
+
+/// Reports whether an injection/transmit-capable radio adapter is present.
+/// The built-in MacBook Wi-Fi card CANNOT inject/deauth/AP (parity: built-in
+/// 🚫), so the only "YES" path is an external USB adapter whose driver
+/// `+allowsInjection` is YES. The engine consumes this to decide the offensive
+/// trio (frameInjection/deauth/apMode) with a 3-way result:
+///   no adapter            => unsupportedAdapter (built-in can't; needs external)
+///   adapter + no scope     => activeLabScopeMissing
+///   adapter + active scope => available
+@protocol KMAdapterPresenceProviding <NSObject>
+/// YES iff an injection/transmit-capable adapter is currently present.
+- (BOOL)hasInjectionCapableAdapter;
+@end
+
+/// Fail-closed default: reports NO injection-capable adapter. Used when no real
+/// provider is injected (e.g. unit tests / engines built before a driver is
+/// known). The built-in card is never injection-capable, so NO is correct.
+@interface KMNoAdapterPresenceProvider : NSObject <KMAdapterPresenceProviding>
+@end
+
 #pragma mark - Protocol parser registry
 
 /// Registry of which protocol decoders exist today. The modern decoders are
@@ -69,11 +90,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface KMCapabilityEngine : NSObject
 
 /// Designated initializer. Takes INJECTED inputs so it is fully testable
-/// without this machine's hardware. Pass nil for scopeProvider/parserRegistry
-/// to get the fail-closed default (no scope) / current-parity defaults.
+/// without this machine's hardware. Pass nil for scopeProvider/parserRegistry/
+/// adapterProvider to get the fail-closed defaults (no scope / current-parity
+/// parsers / NO injection-capable adapter).
 - (instancetype)initWithHardwareCapabilities:(NSArray<KMHardwareCapability *> *)hardware
                                scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider
                              parserRegistry:(nullable KMProtocolParserRegistry *)parserRegistry
+                            adapterProvider:(nullable id<KMAdapterPresenceProviding>)adapterProvider
     NS_DESIGNATED_INITIALIZER;
 
 /// Convenience: build from an already-run hardware probe.
@@ -85,6 +108,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// Pass nil to get the fail-closed default (no scope).
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe
                 scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider;
+
+/// Convenience (S4.2): build from a probe with INJECTED scope + adapter-presence
+/// providers. The adapter provider drives the offensive trio's
+/// unsupportedAdapter vs activeLabScopeMissing vs available 3-way. Pass nil for
+/// either to get the fail-closed default (no scope / no adapter).
+- (instancetype)initWithProbe:(KMHardwareProbe *)probe
+                scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider
+              adapterProvider:(nullable id<KMAdapterPresenceProviding>)adapterProvider;
 
 /// Convenience: run a real probe synchronously and build from it.
 /// NOTE: touches real hardware -- never use this in unit tests.

@@ -2,7 +2,7 @@
  
  File:			WaveScanner.mm
  Program:		KisMAC
- Author:		Michael Ro§berg
+ Author:		Michael Roï¿½berg
                 mick@binaervarianz.de
  Changes:       Vitalii Parovishnyk(1012-2015)
  
@@ -30,6 +30,9 @@
 #import "ScanController.h"
 #import "ScanControllerScriptable.h"
 #import "WaveHelper.h"
+#import "../Capabilities/KMCapability.h"   // S4.2: feature keys for op-site gate
+#import "WaveNet.h"                          // S4.2: -BSSID for scope membership
+#import "WaveClient.h"                        // S4.2: -ID (client MAC) for scope
 #import "WaveDriver.h"
 #import "KisMACNotifications.h"
 #import "80211b.h"
@@ -592,6 +595,22 @@
     wavePlugin = [_wavePlugins valueForKey:@"Deauthentication"];
     if (wavePlugin == nil)
         return;
+    // S4.2 op-site gate (defense in depth): deauth-ALL is a BROADCAST offensive
+    // op with no single target, so it cannot be constrained to one scoped BSSID.
+    // It fails closed: -allowActiveOperation: with a nil target requires (and
+    // never gets) per-target scope membership, so a blanket deauth-all is
+    // refused + audited unless a future slice adds explicit broadcast
+    // authorization. Turning the feature OFF is always permitted.
+    if (deauthing)
+    {
+        if (![aController allowActiveOperation:@"deauth-all (broadcast)"
+                                       feature:KMFeatureDeauth
+                                        target:nil
+                                targetIsClient:NO])
+        {
+            return;   // refused + audited inside allowActiveOperation:
+        }
+    }
     [wavePlugin setDeauthingAll:deauthing];
     return;
 }
@@ -614,6 +633,16 @@
     wavePlugin = [_wavePlugins valueForKey:@"Deauthentication"];
     if (wavePlugin == nil)
         return NO;
+    // S4.2 op-site gate (defense in depth): targeted deauth requires an
+    // injection-capable adapter + authorized in-window scope, and the target
+    // AP's BSSID must be in scope. Fail closed (refused + audited otherwise).
+    if (![aController allowActiveOperation:@"deauth-network"
+                                   feature:KMFeatureDeauth
+                                    target:[net BSSID]
+                            targetIsClient:NO])
+    {
+        return NO;
+    }
     ret = [wavePlugin startTest:net atInterval:interval];
     return ret;
 }
@@ -628,7 +657,18 @@
     {
         return nil;
     }
-    
+
+    // S4.2 op-site gate (defense in depth): frame (re)injection requires an
+    // injection-capable adapter + authorized in-window scope, and the target
+    // AP's BSSID must be in scope. Fail closed (refused + audited otherwise).
+    if (![aController allowActiveOperation:@"inject-packets"
+                                   feature:KMFeatureFrameInjection
+                                    target:[net BSSID]
+                            targetIsClient:NO])
+    {
+        return nil;
+    }
+
     ret = [wavePlugin startTest:net];
     if (ret == NO)
     {
@@ -648,8 +688,31 @@
     {
         return NO;
     }
+    // S4.2 op-site gate (defense in depth): the injection test transmits frames,
+    // so it requires an injection-capable adapter + authorized in-window scope.
+    // When a specific client is targeted, that client MAC must be in scope;
+    // otherwise the AP BSSID must be in scope. Fail closed (refused + audited).
+    BOOL ok;
+    if (client != nil)
+    {
+        ok = [aController allowActiveOperation:@"injection-test (client)"
+                                       feature:KMFeatureFrameInjection
+                                        target:[client ID]
+                                targetIsClient:YES];
+    }
+    else
+    {
+        ok = [aController allowActiveOperation:@"injection-test (AP)"
+                                       feature:KMFeatureFrameInjection
+                                        target:[net BSSID]
+                                targetIsClient:NO];
+    }
+    if (!ok)
+    {
+        return NO;
+    }
     [wavePlugin startTest:net withClient:client];
-    
+
     return YES;
 }
 

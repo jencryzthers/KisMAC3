@@ -177,6 +177,22 @@ typedef NS_ENUM(NSInteger, __availableTabs)
 /// Kismet -> remote capture. Returns KMFeatureScan as the safe default.
 - (NSString *)capabilityKeyForActiveDriver;
 
+/// S4.2: the HARD op-site gate for active/offensive operations (defense in
+/// depth, in addition to the engine decision). Returns YES only when ALL hold:
+///   (1) the capability engine reports `feature` AVAILABLE (=> injection-capable
+///       adapter present AND an authorized in-window campaign scope), and
+///   (2) the named target is in campaign scope: a BSSID via scopeContainsBSSID:,
+///       a client MAC via scopeContainsClientMAC: (pass targetIsClient=YES). A
+///       nil/empty target requires only active scope (e.g. broadcast must still
+///       be backed by an in-scope context -- callers pass the AP BSSID).
+/// On allow it records a KMAuditLog active-operation entry; on refusal it shows
+/// an NSAlert + DBNSLog with the engine's reason and audits the REFUSAL. Fails
+/// closed everywhere (no engine / no scope / emergency stop / out-of-scope).
+- (BOOL)allowActiveOperation:(NSString *)operation
+                     feature:(NSString *)feature
+                      target:(nullable NSString *)target
+              targetIsClient:(BOOL)targetIsClient;
+
 - (IBAction)updateNetworkTable:(id)sender complete:(BOOL)complete;
 
 - (IBAction)showInfo:(id)sender;

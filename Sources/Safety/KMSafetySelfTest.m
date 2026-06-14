@@ -20,6 +20,15 @@
 #define DBNSLog NSLog
 #endif
 
+/// MOCK adapter-presence provider that reports an injection-capable adapter, so
+/// this S4.1 test can exercise the SCOPE gate flip (with no adapter the S4.2
+/// engine would report unsupportedAdapter and mask the scope transition).
+@interface KMSafetyTestAdapterProvider : NSObject <KMAdapterPresenceProviding>
+@end
+@implementation KMSafetyTestAdapterProvider
+- (BOOL)hasInjectionCapableAdapter { return YES; }
+@end
+
 @implementation KMSafetySelfTest
 
 + (NSArray<KMHardwareCapability *> *)mockAllGreenHardware {
@@ -96,10 +105,16 @@
     KMCampaignManager *mgr = [[KMCampaignManager alloc] initWithAuditLog:audit];
 
     // Build a REAL engine over MOCKED all-green hardware + the REAL provider.
+    // S4.2: the engine designated init now also takes an adapter-presence
+    // provider. To exercise the SCOPE gate flip (this test's purpose) we inject
+    // a MOCK provider that reports an injection-capable adapter present, so the
+    // offensive trio's reason depends solely on scope (activeLabScopeMissing
+    // when no scope, available when an authorized in-window campaign is armed).
     KMCapabilityEngine *engine = [[KMCapabilityEngine alloc]
         initWithHardwareCapabilities:[self mockAllGreenHardware]
                        scopeProvider:mgr.scopeProvider
-                     parserRegistry:nil];
+                     parserRegistry:nil
+                    adapterProvider:[[KMSafetyTestAdapterProvider alloc] init]];
 
     DBNSLog(@"[KMSafetySelfTest] ===== S4.1 safety self-test (real provider + real engine) =====");
 
@@ -120,13 +135,15 @@
     camp.authorizedBy = @"selftest";
     [mgr armCampaign:camp];
     check(@"2a in-window armed => hasActiveScope YES", mgr.scopeProvider.hasActiveScope == YES);
-    // The scope gate is OFF activeLabScopeMissing; built-in HW now dominates.
-    featReason(@"2b armed => frameInjection NOT activeLabScopeMissing (unsupportedMacBookHardware)",
-               engine, KMFeatureFrameInjection, KMCapabilityReasonUnsupportedMacBookHardware);
-    featReason(@"2c armed => deauth NOT activeLabScopeMissing (unsupportedMacBookHardware)",
-               engine, KMFeatureDeauth, KMCapabilityReasonUnsupportedMacBookHardware);
-    featReason(@"2d armed => apMode NOT activeLabScopeMissing (unsupportedMacBookHardware)",
-               engine, KMFeatureAPMode, KMCapabilityReasonUnsupportedMacBookHardware);
+    // S4.2: with a (mock) injection-capable adapter present AND an authorized
+    // in-window scope, the offensive trio is AVAILABLE (reason None). The op
+    // site still enforces per-target scope + audit (see KMActiveGateSelfTest).
+    featReason(@"2b armed + adapter => frameInjection available",
+               engine, KMFeatureFrameInjection, KMCapabilityReasonNone);
+    featReason(@"2c armed + adapter => deauth available",
+               engine, KMFeatureDeauth, KMCapabilityReasonNone);
+    featReason(@"2d armed + adapter => apMode available",
+               engine, KMFeatureAPMode, KMCapabilityReasonNone);
     // Scope-membership queries.
     check(@"2e scope contains BSSID 00:11:22:33:44:55",
           [mgr.scopeProvider scopeContainsBSSID:@"00-11-22-33-44-55"]);   // normalized

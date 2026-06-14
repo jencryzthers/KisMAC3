@@ -13,10 +13,21 @@
 @interface KMSelfTestScopeProvider : NSObject <KMActiveScopeProviding>
 @end
 
+/// Concrete adapter-presence provider used only by the self-test (reports an
+/// injection-capable adapter IS present).
+@interface KMSelfTestAdapterProvider : NSObject <KMAdapterPresenceProviding>
+@end
+
 #pragma mark - Scope provider stub
 
 @implementation KMNoActiveScopeProvider
 - (BOOL)hasActiveScope { return NO; }
+@end
+
+#pragma mark - Adapter-presence provider stub (S4.2)
+
+@implementation KMNoAdapterPresenceProvider
+- (BOOL)hasInjectionCapableAdapter { return NO; }   // fail closed: built-in can't
 @end
 
 #pragma mark - Protocol parser registry
@@ -66,6 +77,7 @@
 @property (nonatomic, strong) NSDictionary<NSString *, KMHardwareCapability *> *hardwareByKey;
 @property (nonatomic, strong) id<KMActiveScopeProviding> scopeProvider;
 @property (nonatomic, strong) KMProtocolParserRegistry *parserRegistry;
+@property (nonatomic, strong) id<KMAdapterPresenceProviding> adapterProvider;
 @end
 
 @implementation KMCapabilityEngine
@@ -74,7 +86,8 @@
 
 - (instancetype)initWithHardwareCapabilities:(NSArray<KMHardwareCapability *> *)hardware
                                scopeProvider:(id<KMActiveScopeProviding>)scopeProvider
-                             parserRegistry:(KMProtocolParserRegistry *)parserRegistry {
+                             parserRegistry:(KMProtocolParserRegistry *)parserRegistry
+                            adapterProvider:(id<KMAdapterPresenceProviding>)adapterProvider {
     if ((self = [super init])) {
         NSMutableDictionary *byKey = [NSMutableDictionary dictionary];
         for (KMHardwareCapability *cap in hardware) {
@@ -83,6 +96,10 @@
         _hardwareByKey   = [byKey copy];
         _scopeProvider   = scopeProvider ?: [[KMNoActiveScopeProvider alloc] init];
         _parserRegistry  = parserRegistry ?: [KMProtocolParserRegistry defaultRegistry];
+        // S4.2: fail-closed default reports NO injection-capable adapter (the
+        // built-in card can't inject); a real provider is injected at the build
+        // site (ScanController) backed by WaveDriverUSB +allowsInjection.
+        _adapterProvider = adapterProvider ?: [[KMNoAdapterPresenceProvider alloc] init];
     }
     return self;
 }
@@ -90,14 +107,25 @@
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe {
     return [self initWithHardwareCapabilities:probe.capabilities
                                 scopeProvider:nil
-                              parserRegistry:nil];
+                              parserRegistry:nil
+                             adapterProvider:nil];
 }
 
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe
                 scopeProvider:(id<KMActiveScopeProviding>)scopeProvider {
     return [self initWithHardwareCapabilities:probe.capabilities
                                 scopeProvider:scopeProvider
-                              parserRegistry:nil];
+                              parserRegistry:nil
+                             adapterProvider:nil];
+}
+
+- (instancetype)initWithProbe:(KMHardwareProbe *)probe
+                scopeProvider:(id<KMActiveScopeProviding>)scopeProvider
+              adapterProvider:(id<KMAdapterPresenceProviding>)adapterProvider {
+    return [self initWithHardwareCapabilities:probe.capabilities
+                                scopeProvider:scopeProvider
+                              parserRegistry:nil
+                             adapterProvider:adapterProvider];
 }
 
 - (instancetype)initWithLiveProbe {
@@ -142,6 +170,10 @@
 
 - (BOOL)hasActiveScope {
     return [self.scopeProvider hasActiveScope];
+}
+
+- (BOOL)hasInjectionCapableAdapter {
+    return [self.adapterProvider hasInjectionCapableAdapter];
 }
 
 #pragma mark Public API
@@ -235,23 +267,31 @@
             explanation:@"Handshake capture depends on monitor mode, which requires a user-consented active probe."];
     }
 
-    // -------- Active / offensive ops: fail closed on scope --------
-    // apMode / frameInjection / deauth: even if hardware allowed, these stay
-    // unavailable while no campaign scope is in effect (dominant reason). On
-    // built-in MacBook hardware they are also unsupported per parity, but
-    // activeLabScopeMissing is the policy gate we report first.
+    // -------- Active / offensive ops: 3-way adapter + scope gate (S4.2) ------
+    // apMode / frameInjection / deauth. S4.2 adds the adapter-presence input the
+    // engine lacked at S1.3, so the decision is now a 3-way:
+    //   1. NO injection-capable adapter  => unsupportedAdapter (built-in can't;
+    //      an external USB adapter is required to transmit at all).
+    //   2. adapter present BUT no scope  => activeLabScopeMissing (policy gate).
+    //   3. adapter present AND active     => available (op site STILL hard-checks
+    //      capability + per-target scope membership + audits -- defense in depth).
+    // Fail closed: the default adapter provider reports NO, so absent a real
+    // external adapter these are always unsupportedAdapter.
     if ([featureKey isEqualToString:KMFeatureAPMode] ||
         [featureKey isEqualToString:KMFeatureFrameInjection] ||
         [featureKey isEqualToString:KMFeatureDeauth]) {
+        if (![self hasInjectionCapableAdapter]) {
+            return [KMCapability unavailableCapabilityWithKey:featureKey
+                reason:KMCapabilityReasonUnsupportedAdapter
+                explanation:@"No injection-capable adapter present. Built-in Wi-Fi cannot transmit raw frames; an external USB adapter is required."];
+        }
         if (![self hasActiveScope]) {
             return [KMCapability unavailableCapabilityWithKey:featureKey
                 reason:KMCapabilityReasonActiveLabScopeMissing
                 explanation:@"No authorized campaign scope is in effect; active/offensive operations are disabled (fail-closed)."];
         }
-        // With scope, the built-in still can't do AP/injection per parity.
-        return [KMCapability unavailableCapabilityWithKey:featureKey
-            reason:KMCapabilityReasonUnsupportedMacBookHardware
-            explanation:@"Built-in Wi-Fi cannot perform AP/injection; an external adapter is required."];
+        return [KMCapability availableCapabilityWithKey:featureKey
+            explanation:@"Injection-capable adapter present and an authorized campaign scope is in effect. The operation is still target-scope-checked and audited at the op site."];
     }
 
     // -------- Kismet remote capture --------
@@ -377,6 +417,16 @@
     return p;
 }
 
+/// A MOCK adapter-presence provider that reports an injection-capable adapter,
+/// to prove the S4.2 3-way without real USB hardware.
++ (id<KMAdapterPresenceProviding>)mockAdapterPresent {
+    static dispatch_once_t once; static id<KMAdapterPresenceProviding> a;
+    dispatch_once(&once, ^{
+        a = (id<KMAdapterPresenceProviding>)[KMSelfTestAdapterProvider new];
+    });
+    return a;
+}
+
 + (BOOL)runSelfTestReturningFailures:(NSArray<NSString *> * _Nullable * _Nullable)outFailures {
     NSMutableArray<NSString *> *fail = [NSMutableArray array];
 
@@ -404,18 +454,21 @@
     KMCapabilityEngine *green =
         [[KMCapabilityEngine alloc] initWithHardwareCapabilities:[self mockAllGreenHardware]
                                                    scopeProvider:nil
-                                                 parserRegistry:nil];
+                                                 parserRegistry:nil
+                                                adapterProvider:nil];
     check(@"all-green", green, KMFeatureScan,
           KMCapabilityAvailable, KMCapabilityReasonNone);
     check(@"all-green", green, KMFeaturePassiveCapture,
           KMCapabilityAvailable, KMCapabilityReasonNone);
-    // Active op fails closed on scope even with green hardware.
+    // S4.2: with the fail-closed default adapter provider (NO injection-capable
+    // adapter), the offensive trio is unsupportedAdapter -- the built-in card
+    // can't transmit, so adapter-absence dominates even with green hardware.
     check(@"all-green", green, KMFeatureFrameInjection,
-          KMCapabilityUnavailable, KMCapabilityReasonActiveLabScopeMissing);
+          KMCapabilityUnavailable, KMCapabilityReasonUnsupportedAdapter);
     check(@"all-green", green, KMFeatureDeauth,
-          KMCapabilityUnavailable, KMCapabilityReasonActiveLabScopeMissing);
+          KMCapabilityUnavailable, KMCapabilityReasonUnsupportedAdapter);
     check(@"all-green", green, KMFeatureAPMode,
-          KMCapabilityUnavailable, KMCapabilityReasonActiveLabScopeMissing);
+          KMCapabilityUnavailable, KMCapabilityReasonUnsupportedAdapter);
     // Offline always works.
     check(@"all-green", green, KMFeaturePcapImport,
           KMCapabilityAvailable, KMCapabilityReasonNone);
@@ -464,7 +517,8 @@
     KMCapabilityEngine *bpfDenied =
         [[KMCapabilityEngine alloc] initWithHardwareCapabilities:[self mockLocationGrantedBpfDeniedHardware]
                                                    scopeProvider:nil
-                                                 parserRegistry:nil];
+                                                 parserRegistry:nil
+                                                adapterProvider:nil];
     check(@"bpf-denied", bpfDenied, KMFeatureScan,
           KMCapabilityAvailable, KMCapabilityReasonNone);
     check(@"bpf-denied", bpfDenied, KMFeaturePassiveCapture,
@@ -474,7 +528,8 @@
     KMCapabilityEngine *noWifi =
         [[KMCapabilityEngine alloc] initWithHardwareCapabilities:[self mockNoWiFiHardware]
                                                    scopeProvider:nil
-                                                 parserRegistry:nil];
+                                                 parserRegistry:nil
+                                                adapterProvider:nil];
     check(@"no-wifi", noWifi, KMFeatureScan,
           KMCapabilityUnavailable, KMCapabilityReasonUnsupportedMacBookHardware);
     // Offline still works with no radio at all.
@@ -491,13 +546,40 @@
     KMCapabilityEngine *scoped =
         [[KMCapabilityEngine alloc] initWithHardwareCapabilities:[self mockAllGreenHardware]
                                                    scopeProvider:[self scopedProvider]
-                                                 parserRegistry:reg];
-    // With scope, active op is no longer scope-blocked (built-in HW still
-    // blocks it, but the reason flips off activeLabScopeMissing).
+                                                 parserRegistry:reg
+                                                adapterProvider:nil];
+    // S4.2: scope present but NO injection-capable adapter (default provider) =>
+    // adapter-absence dominates; the offensive trio is unsupportedAdapter.
     check(@"scoped", scoped, KMFeatureFrameInjection,
-          KMCapabilityUnavailable, KMCapabilityReasonUnsupportedMacBookHardware);
+          KMCapabilityUnavailable, KMCapabilityReasonUnsupportedAdapter);
     // Registered parser makes the decode available.
     check(@"scoped", scoped, KMFeatureWPA3Decode,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+
+    // Scenario E (S4.2): MOCK injection-capable adapter present. Prove the full
+    // 3-way: no scope => activeLabScopeMissing; with scope => available.
+    KMCapabilityEngine *adapterNoScope =
+        [[KMCapabilityEngine alloc] initWithHardwareCapabilities:[self mockAllGreenHardware]
+                                                   scopeProvider:nil
+                                                 parserRegistry:nil
+                                                adapterProvider:[self mockAdapterPresent]];
+    check(@"adapter-no-scope", adapterNoScope, KMFeatureFrameInjection,
+          KMCapabilityUnavailable, KMCapabilityReasonActiveLabScopeMissing);
+    check(@"adapter-no-scope", adapterNoScope, KMFeatureDeauth,
+          KMCapabilityUnavailable, KMCapabilityReasonActiveLabScopeMissing);
+    check(@"adapter-no-scope", adapterNoScope, KMFeatureAPMode,
+          KMCapabilityUnavailable, KMCapabilityReasonActiveLabScopeMissing);
+
+    KMCapabilityEngine *adapterScoped =
+        [[KMCapabilityEngine alloc] initWithHardwareCapabilities:[self mockAllGreenHardware]
+                                                   scopeProvider:[self scopedProvider]
+                                                 parserRegistry:nil
+                                                adapterProvider:[self mockAdapterPresent]];
+    check(@"adapter-scoped", adapterScoped, KMFeatureFrameInjection,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"adapter-scoped", adapterScoped, KMFeatureDeauth,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"adapter-scoped", adapterScoped, KMFeatureAPMode,
           KMCapabilityAvailable, KMCapabilityReasonNone);
 
     if (outFailures) *outFailures = [fail copy];
@@ -525,4 +607,8 @@
 
 @implementation KMSelfTestScopeProvider
 - (BOOL)hasActiveScope { return YES; }
+@end
+
+@implementation KMSelfTestAdapterProvider
+- (BOOL)hasInjectionCapableAdapter { return YES; }
 @end

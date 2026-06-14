@@ -41,6 +41,8 @@
 		CA9007050000000000000001 /* KMSafetySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9005100000000000000001 /* KMSafetySelfTest.m */; };
 		CA9003010000000000000001 /* KMKismetTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9003020000000000000001 /* KMKismetTransport.m */; };
 		CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9003050000000000000001 /* KMKismetSelfTest.m */; };
+		CA90030B0000000000000001 /* KMWaveDriverAdapterPresenceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90030C0000000000000001 /* KMWaveDriverAdapterPresenceProvider.m */; };
+		CA90030E0000000000000001 /* KMActiveGateSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90030F0000000000000001 /* KMActiveGateSelfTest.m */; };
 		CA9003070000000000000001 /* mock_kismet_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CA9003080000000000000001 /* mock_kismet_server.py */; };
 		CA9003090000000000000001 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA90030A0000000000000001 /* Network.framework */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
@@ -254,6 +256,10 @@
 		CA9003030000000000000001 /* KMKismetTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMKismetTransport.h; sourceTree = "<group>"; };
 		CA9003050000000000000001 /* KMKismetSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMKismetSelfTest.m; sourceTree = "<group>"; };
 		CA9003060000000000000001 /* KMKismetSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMKismetSelfTest.h; sourceTree = "<group>"; };
+		CA90030C0000000000000001 /* KMWaveDriverAdapterPresenceProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMWaveDriverAdapterPresenceProvider.m; sourceTree = "<group>"; };
+		CA90030D0000000000000001 /* KMWaveDriverAdapterPresenceProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMWaveDriverAdapterPresenceProvider.h; sourceTree = "<group>"; };
+		CA90030F0000000000000001 /* KMActiveGateSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMActiveGateSelfTest.m; sourceTree = "<group>"; };
+		CA9003100000000000000001 /* KMActiveGateSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMActiveGateSelfTest.h; sourceTree = "<group>"; };
 		CA9003080000000000000001 /* mock_kismet_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = mock_kismet_server.py; path = Tests/Fixtures/mock_kismet_server.py; sourceTree = "<group>"; };
 		CA90030A0000000000000001 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
@@ -634,6 +640,10 @@
 				CA9002020000000000000001 /* KMCryptoSelfTest.m */,
 				CA9003060000000000000001 /* KMKismetSelfTest.h */,
 				CA9003050000000000000001 /* KMKismetSelfTest.m */,
+				CA90030D0000000000000001 /* KMWaveDriverAdapterPresenceProvider.h */,
+				CA90030C0000000000000001 /* KMWaveDriverAdapterPresenceProvider.m */,
+				CA9003100000000000000001 /* KMActiveGateSelfTest.h */,
+				CA90030F0000000000000001 /* KMActiveGateSelfTest.m */,
 			);
 			name = Capabilities;
 			path = Sources/Capabilities;
@@ -1379,6 +1389,8 @@
 				CA9007050000000000000001 /* KMSafetySelfTest.m in Sources */,
 				CA9003010000000000000001 /* KMKismetTransport.m in Sources */,
 				CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */,
+				CA90030B0000000000000001 /* KMWaveDriverAdapterPresenceProvider.m in Sources */,
+				CA90030E0000000000000001 /* KMActiveGateSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,
