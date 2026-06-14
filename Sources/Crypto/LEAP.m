@@ -30,7 +30,12 @@
 
 #include "LEAP.h"
 #include "../3rd Party/DESSupport.h"
-#include "md4.h"
+// S2.3: migrated the MD4 primitive from PolarSSL (md4.h) to Apple CommonCrypto.
+// MD4 + DES (DESSupport.c) are kept as the LEAP/MS-CHAP attack primitives; only
+// the MD4 backend changed. CommonCrypto's MD4 is deprecated-but-present (it is
+// required for exactly this kind of legacy-protocol cracking), so silence the
+// deprecation warning around the single call site.
+#import <CommonCrypto/CommonCrypto.h>
 
 //calulate the last two bytes
 NSInteger gethashlast2(const unsigned char *challenge, const unsigned char *response, unsigned char* endofhash)
@@ -72,7 +77,10 @@ void NtPasswordHash(char *secret, NSInteger secret_len, unsigned char *hash)
         unicodePassword[i * 2] = (unsigned char) secret[i];
 
     /* Unicode is 2 bytes per char */
-    md4(unicodePassword, secret_len * 2, hash);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    CC_MD4(unicodePassword, (CC_LONG)(secret_len * 2), hash);
+#pragma clang diagnostic pop
 }
 
 NSInteger testChallenge(const unsigned char* challenge, const unsigned char* response, unsigned char *zpwhash) 

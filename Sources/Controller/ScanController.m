@@ -2,7 +2,7 @@
  
  File:			ScanController.h
  Program:		KisMAC
- Author:		Michael Ro§berg
+ Author:		Michael Roï¿½berg
                 mick@binaervarianz.de
  Changes:       Vitalii Parovishnyk(1012-2015)
  
@@ -51,6 +51,7 @@
 #import "../Capabilities/KMCapabilityEngine.h"
 #import "../Capabilities/KMPcapImportSelfTest.h"
 #import "../Capabilities/KMProtocolSelfTest.h"
+#import "../Capabilities/KMCryptoSelfTest.h"
 #import "../Capabilities/KMCapability.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
@@ -935,6 +936,16 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // Sources/Capabilities/KMProtocolSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_PROTO_SELFTEST"] length] > 0) {
         [KMProtocolSelfTest runSelfTestLogging];
+    }
+
+    // S2.3 - Crypto/cracking self-test. Runs ONLY when KISMAC_CRYPTO_SELFTEST=1
+    // is set in the environment. Asserts the CommonCrypto migration of the
+    // crack path against standard vectors: CC_MD4/CC_MD5/CC_SHA1 digests, the
+    // WPA PMK (PBKDF2-HMAC-SHA1) via both the reference and the migrated
+    // CCKeyDerivationPBKDF path, and a LEAP NtPasswordHash + DES round-trip.
+    // CPU-only / PASSIVE: no radio, no monitor mode. See KMCryptoSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_CRYPTO_SELFTEST"] isEqualToString:@"1"]) {
+        [KMCryptoSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

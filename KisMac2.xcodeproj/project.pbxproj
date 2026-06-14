@@ -31,6 +31,7 @@
 		CA9000130000000000000001 /* golden.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9000140000000000000001 /* golden.pcap */; };
 		CA9001010000000000000001 /* KMProtocolMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9001020000000000000001 /* KMProtocolMetadata.m */; };
 		CA9001040000000000000001 /* KMProtocolSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9001050000000000000001 /* KMProtocolSelfTest.m */; };
+		CA9002010000000000000001 /* KMCryptoSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9002020000000000000001 /* KMCryptoSelfTest.m */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
 		CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001250000000000000001 /* proto_wpa3_sae.pcap */; };
@@ -222,6 +223,8 @@
 		CA9001030000000000000001 /* KMProtocolMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMProtocolMetadata.h; sourceTree = "<group>"; };
 		CA9001050000000000000001 /* KMProtocolSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMProtocolSelfTest.m; sourceTree = "<group>"; };
 		CA9001060000000000000001 /* KMProtocolSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMProtocolSelfTest.h; sourceTree = "<group>"; };
+		CA9002020000000000000001 /* KMCryptoSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCryptoSelfTest.m; sourceTree = "<group>"; };
+		CA9002030000000000000001 /* KMCryptoSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCryptoSelfTest.h; sourceTree = "<group>"; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001250000000000000001 /* proto_wpa3_sae.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa3_sae.pcap; path = Tests/Fixtures/proto_wpa3_sae.pcap; sourceTree = SOURCE_ROOT; };
@@ -565,6 +568,8 @@
 				CA9000120000000000000001 /* KMPcapImportSelfTest.m */,
 				CA9001060000000000000001 /* KMProtocolSelfTest.h */,
 				CA9001050000000000000001 /* KMProtocolSelfTest.m */,
+				CA9002030000000000000001 /* KMCryptoSelfTest.h */,
+				CA9002020000000000000001 /* KMCryptoSelfTest.m */,
 			);
 			name = Capabilities;
 			path = Sources/Capabilities;
@@ -1294,6 +1299,7 @@
 				0035344506A5DD8500AB4577 /* WavePacket.mm in Sources */,
 				CA9001010000000000000001 /* KMProtocolMetadata.m in Sources */,
 				CA9001040000000000000001 /* KMProtocolSelfTest.m in Sources */,
+				CA9002010000000000000001 /* KMCryptoSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,

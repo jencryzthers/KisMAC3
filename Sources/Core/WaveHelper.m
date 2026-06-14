@@ -2,7 +2,7 @@
  
  File:			WaveHelper.m
  Program:		KisMAC
- Author:		Michael Ro§berg
+ Author:		Michael Roï¿½berg
                 mick@binaervarianz.de
  Changes:       Vitalii Parovishnyk(1012-2015)
  
@@ -31,7 +31,10 @@
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriver.h"
 
-#include "md5.h"
+// S2.3: migrated WirelessCryptMD5 (WEP wordlist key derivation) off PolarSSL
+// MD5 (md5.h) onto Apple CommonCrypto, so the crack path no longer calls
+// PolarSSL.
+#import <CommonCrypto/CommonCrypto.h>
 #include <unistd.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <IOKit/IOKitLib.h>
@@ -52,20 +55,26 @@ void WirelessCryptMD5(char const *str, unsigned char *key)
 {
     NSInteger i, j;
     u_char md5_buf[64];
-    md5_context ctx;
-    
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5_CTX ctx;
+
     j = 0;
     for(i = 0; i < 64; ++i)
     {
         if(str[j] == 0) j = 0;
         md5_buf[i] = str[j++];
     }
-    
-    md5_starts(&ctx);
-    md5_update(&ctx, md5_buf, 64);
-    md5_finish(&ctx, md5_buf);
-    
-    memcpy(key, md5_buf, 13);
+
+    // MD5 is used here as the legacy WEP "Apple" wordlist key-derivation
+    // primitive, not as a security mechanism; the deprecation is expected.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    CC_MD5_Init(&ctx);
+    CC_MD5_Update(&ctx, md5_buf, 64);
+    CC_MD5_Final(digest, &ctx);
+#pragma clang diagnostic pop
+
+    memcpy(key, digest, 13);
 }
 
 @implementation WaveHelper

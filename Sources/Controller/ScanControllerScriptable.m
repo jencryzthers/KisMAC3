@@ -763,7 +763,11 @@ if ([[_curNet cryptedPacketsLog] count] < 8) return NO; \
     if ([_curNet passwordAvailable]) return YES;
     if ([_curNet wep] != encryptionTypeWEP && [_curNet wep] != encryptionTypeWEP40) return NO;
     if ([_curNet uniqueIVs] < 8) return NO;
-    if (keyLen != 13 || keyLen != 5 || keyLen != 0xFFFFFF) return NO;
+    // S2.3 bug fix: the original guard was a tautology
+    // (keyLen != 13 || keyLen != 5 || keyLen != 0xFFFFFF) is always true for
+    // every value, so the FMS/KoreK weak-scheduling attack could never launch.
+    // Accept only the valid key lengths: 5 (40-bit), 13 (104-bit), or all.
+    if (keyLen != 13 && keyLen != 5 && keyLen != 0xFFFFFF) return NO;
     if (keyID < 0 || keyID > 3) return NO;
     
     NSInteger arg = (keyLen << 8) | keyID;

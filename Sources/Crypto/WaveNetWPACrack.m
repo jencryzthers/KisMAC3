@@ -32,7 +32,14 @@
 #import "WPA.h"
 #import "ImportController.h"
 #import "80211b.h"
-#import "sha1.h"
+// S2.3: migrated the WPA PMK derivation from a hand-rolled PolarSSL
+// (sha1_context/sha1_process) HMAC-SHA1 unrolling to Apple CommonCrypto's
+// CCKeyDerivationPBKDF (kCCPBKDF2 / kCCPRFHmacAlgSHA1). This produces the
+// identical 256-bit WPA PMK (PBKDF2-HMAC-SHA1, 4096 iterations, SSID as salt)
+// and removes BOTH the PolarSSL dependency and the strict-aliasing UB that the
+// old fastF() inner loop committed by XOR-ing the 20-byte SHA1 digest through
+// (NSInteger*) casts.
+#import <CommonCrypto/CommonCrypto.h>
 
 struct clientData {
     UInt8 ptkInput[WPA_NONCE_LENGTH+WPA_NONCE_LENGTH+12];
@@ -43,106 +50,25 @@ struct clientData {
     NSInteger wpaKeyCipher;
 };
 
-#pragma mark-
-#pragma mark Macros for SHA1
-#pragma mark-
-
-/* SHA1InitAndUpdateFistSmall64 - Initialize new context And fillup 64*/
-void SHA1InitWithStatic64(sha1_context* context, unsigned char* staticT) {
-	
-	sha1_starts(context);
-	sha1_process(context, staticT);
-}
-
-/* Add padding and return the message digest. */
-void SHA1FinalFastWith20ByteData(unsigned char digest[20], sha1_context* context,unsigned char data[64])
-{
-        //memcpy(buffer, data, 20);
-	memset(&data[21], 0, 41);
-	data[20] = 128;
-	data[62] = 2;
-	data[63] = 160;
-
-	sha1_process(context, data);
-
-	for (UInt32 i = 0; i < 20; ++i)
-	{
-		digest[i] = (unsigned char)((context->state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
-	}
-}
-
-void prepared_hmac_sha1(const sha1_context *k_ipad, const sha1_context *k_opad, unsigned char digest[64])
-{
-    sha1_context ipad, opad;
-
-    memcpy(&ipad, k_ipad, sizeof(ipad));
-    memcpy(&opad, k_opad, sizeof(opad));
-    
-    /* perform inner SHA1*/
-    SHA1FinalFastWith20ByteData(digest, &ipad, digest); /* finish up 1st pass */ 
-    
-    /* perform outer SHA1 */ 
-    SHA1FinalFastWith20ByteData(digest, &opad, digest); /* finish up 2nd pass */
-}
-
 #pragma mark -
-#pragma mark optimized WPA password -> PMK mapping
+#pragma mark WPA password -> PMK mapping (CommonCrypto PBKDF2)
 #pragma mark -
 
-void fastF(unsigned char *password, NSInteger pwdLen, const unsigned char *ssid, NSInteger ssidlength, const sha1_context *ipadContext, const sha1_context *opadContext, NSInteger count, unsigned char output[40])
-{
-    unsigned char digest[64], digest1[64];
-    
-    /* U1 = PRF(P, S || NSInteger(i)) */ 
-    memcpy(digest1, ssid, ssidlength);
-    digest1[ssidlength]   = 0;   
-    digest1[ssidlength+1] = 0; 
-    digest1[ssidlength+2] = 0;
-    digest1[ssidlength+3] = (unsigned char)(count & 0xff); 
-    
-    fast_hmac_sha1(digest1, ssidlength+4, password, pwdLen, digest);
-    
-    /* output = U1 */ 
-    memcpy(output, digest, SHA_DIGEST_LENGTH);
-
-	NSInteger j;
-    for (NSInteger i = 1; i < 4096; ++i) {
-        /* Un = PRF(P, Un-1) */ 
-        prepared_hmac_sha1(ipadContext, opadContext, digest); 
-    
-        j = 0;
-        /* output = output xor Un */
-        ((NSInteger*)output)[j] ^= ((NSInteger*)digest)[j]; ++j;
-        ((NSInteger*)output)[j] ^= ((NSInteger*)digest)[j]; ++j;
-        ((NSInteger*)output)[j] ^= ((NSInteger*)digest)[j]; ++j;
-        ((NSInteger*)output)[j] ^= ((NSInteger*)digest)[j]; ++j;
-        ((NSInteger*)output)[j] ^= ((NSInteger*)digest)[j];
-    }
-} 
-
-
+// Derive the 256-bit WPA/WPA2 PMK from a candidate passphrase.
+//
+// WPA-PSK defines PMK = PBKDF2(HMAC-SHA1, passphrase, SSID, 4096, 256 bits).
+// Apple's CCKeyDerivationPBKDF computes exactly that, so it is bit-for-bit
+// identical to the previous hand-rolled fastF()/fastWP_passwordHash() pair --
+// without the strict-aliasing UB and without PolarSSL. `output` must be >= 32
+// bytes (callers pass UInt8[40]).
 void fastWP_passwordHash(char *password, const unsigned char *ssid, NSInteger ssidlength, unsigned char output[40])
 {
-    unsigned char k_ipad[65]; /* inner padding - key XORd with ipad */ 
-    unsigned char k_opad[65]; /* outer padding - key XORd with opad */
-    sha1_context ipadContext, opadContext;
-    NSInteger pwdLen = strlen(password);
-    
-    /* XOR key with ipad and opad values */ 
-    for (NSInteger i = 0; i < pwdLen; ++i) {
-        k_ipad[i] = password[i] ^ 0x36; 
-        k_opad[i] = password[i] ^ 0x5c;
-    } 
-
-    memset(&k_ipad[pwdLen], 0x36, sizeof k_ipad - pwdLen); 
-    memset(&k_opad[pwdLen], 0x5c, sizeof k_opad - pwdLen); 
-
-    SHA1InitWithStatic64(&ipadContext, k_ipad);
-    SHA1InitWithStatic64(&opadContext, k_opad);
- 
-    fastF((UInt8*)password, pwdLen, ssid, ssidlength, &ipadContext, &opadContext, 1, output);
-    fastF((UInt8*)password, pwdLen, ssid, ssidlength, &ipadContext, &opadContext, 2, &output[SHA_DIGEST_LENGTH]); 
-} 
+    CCKeyDerivationPBKDF(kCCPBKDF2,
+                         password, strlen(password),
+                         ssid, (size_t)ssidlength,
+                         kCCPRFHmacAlgSHA1, 4096,
+                         output, 32);
+}
 
 #pragma mark -
 
@@ -234,23 +160,33 @@ void fastWP_passwordHash(char *password, const unsigned char *ssid, NSInteger ss
 	
     while(![im canceled] && !feof(fptr))
     {
-        //get the line from the file
-        fgets(wrd, 90, fptr);
-        
+        //get the line from the file. S2.3: check the return value -- on EOF or
+        //read error fgets() returns NULL and leaves wrd untouched, so the old
+        //code would re-test a stale line. Also note wrd is char[100] but we
+        //only ever request 90 bytes, so it is always NUL-terminated in range.
+        if (fgets(wrd, 90, fptr) == NULL) break;
+
         //get the length.  no need to account for linefeed because it will
-        //be done below.  Remember indexed from 0
-        i = strlen(wrd) - 1;
-        
+        //be done below.  Remember indexed from 0.
+        //S2.3 bounds fix: strlen() can be 0 for a bare "\n"/empty read; with
+        //NSUInteger i, "strlen(wrd) - 1" would wrap to SIZE_MAX and the
+        //wrd[i] reads below would be a wild out-of-bounds access. Guard first.
+        size_t wrdLen = strlen(wrd);
+        if (wrdLen == 0) continue;
+        i = wrdLen - 1;
+
         //passwords must be shorter than 63 signs
         if (i < 8 || i > 63) continue;
-    
+
         //remove the linefeed by setting the last char to null
-        //if we still have line feed chars, keep going
-        while('\r' == wrd[i] || '\n' == wrd[i])
+        //if we still have line feed chars, keep going. The (i != 0) guard keeps
+        //the index from underflowing on an all-newline line.
+        while(('\r' == wrd[i] || '\n' == wrd[i]) && i != 0)
         {
             wrd[i--] = 0;
         }
-        
+        if ('\r' == wrd[i] || '\n' == wrd[i]) wrd[i] = 0;
+
         //switch i back to length instead of an index into the array
         //this is kinda dumb
         i = strlen(wrd);

@@ -136,11 +136,28 @@ struct leapClientData
 
     while(![im canceled] && !feof(fptr))
 	{
-        fgets(wrd, 90, fptr);
-        i = strlen(wrd) - 1;
-        wrd[i--] = 0;
-        if (wrd[i]=='\r') wrd[i] = 0;
-        
+        //S2.3: check fgets() -- NULL on EOF/error leaves wrd stale. wrd is
+        //char[100] and we request 90, so it is always NUL-terminated in range.
+        if (fgets(wrd, 90, fptr) == NULL) break;
+
+        //S2.3 bounds fix: an empty line / bare "\n" gives strlen()==0; with the
+        //unsigned NSUInteger i, "strlen(wrd) - 1" wrapped to SIZE_MAX and the
+        //"wrd[i] = 0" stores below were a wild out-of-bounds write. Guard, then
+        //strip a trailing "\n" and optional preceding "\r" without underflow.
+        //Afterwards `i` is the index of the last surviving char (downstream
+        //uses i+1 as the password length, matching the original semantics).
+        size_t wrdLen = strlen(wrd);
+        if (wrdLen == 0) continue;
+        i = wrdLen - 1;
+        wrd[i] = 0;                              // drop trailing '\n'
+        if (i == 0) continue;                    // line was only "\n"
+        --i;
+        if (wrd[i] == '\r') {                    // drop preceding '\r'
+            wrd[i] = 0;
+            if (i == 0) continue;                // line was only "\r\n"
+            --i;
+        }
+
         ++words;
 
         if (words % 100000 == 0)

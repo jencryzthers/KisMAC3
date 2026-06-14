@@ -96,7 +96,9 @@
 			{
 				SRET;
 			}
-			if([self doWeakCrackForLen:keyLen40bit andKeyID:keyID])
+			// S2.3 bug fix: the keyLenAll branch tried 40-bit twice (copy-paste);
+			// the second attempt must target 104-bit so "all" really tries both.
+			if([self doWeakCrackForLen:keyLen104bit andKeyID:keyID])
 			{
 				SRET;
 			}
