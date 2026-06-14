@@ -93,7 +93,7 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 | Feature | Key source | Current status | Decision |
 |---|---|---|---|
 | Kismet drone/client | `WaveDriverKismet.m`, `WaveDriverKismetDrone.m` | Raw BSD sockets; protocol pinned to ~2006 | 🔧 `modernized` (Network.framework; verify/refresh protocol; needs `network.client` entitlement) |
-| Import pcap / dump | `WaveScanner.mm:443`, `ScanControllerScriptable.m:338` | `pcap_open_offline` reuses parse pipeline | ✅ `working` / 🔧 (wire a File-menu action; verify pcapng) |
+| Import pcap / dump | `WaveScanner.mm:443`, `ScanControllerScriptable.m:386`, `BridgeController.m:importPCPFile:` | `pcap_open_offline` reuses parse pipeline; File→Import→PCAP Dump wired to `readPCAPDump:` (offline/passive); **pcapng reads transparently** | ✅ `working` (S2.2 — File-menu action restricted to pcap/pcapng/cap/dump; golden fixture + headless self-test `KISMAC_PCAP_IMPORT_SELFTEST`; modern-decode enrichment lands with S2.1) |
 | Import Kismet XML / NetStumbler | `KismetXMLImporter.m`, `WaveStorageController.m:262` | NSXMLParser / text parse | 🔧 `modernized` (harden untrusted parsing) |
 | Native `.kismac` load | `WaveStorageController.m:83`, BIGeneric | BICompressor + insecure unarchiver fallback | 🔧 `modernized` (secure-coding unarchiver) |
 | Export (NS / KML / MacStumbler / PDF / JPEG) | `WaveStorageController.m:456-807`, `ScanControllerMenus.m` | C stdio writers | 🔧 `modernized` (**won't compile** — `descriptionWithCalendarFormat:`; fix buffer overflows in KML) |

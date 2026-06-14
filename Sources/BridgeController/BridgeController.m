@@ -269,10 +269,24 @@
 }
 - (IBAction)importPCPFile:(id)sender
 {
+    // S2.2 - First-class OFFLINE pcap/pcapng import. Opens an NSOpenPanel
+    // restricted to capture-file types, then imports each selection through the
+    // existing offline pipeline (-[ScanController importPCAP:] ->
+    // -[WaveScanner readPCAPDump:] -> pcap_open_offline). PASSIVE ONLY: this
+    // never starts a scan, touches a radio, enters monitor mode or changes
+    // channels. The linked libpcap reads both pcap and pcapng transparently.
     NSOpenPanel *op = [NSOpenPanel openPanel];
     [op setAllowsMultipleSelection:YES];
     [op setCanChooseFiles:YES];
     [op setCanChooseDirectories:NO];
+
+    // Restrict to capture-file extensions: pcap, pcapng, cap, dump. We use the
+    // (still functional) extension-based -setAllowedFileTypes: rather than the
+    // modern UTType-based -setAllowedContentTypes: to stay consistent with the
+    // other importers here and avoid linking UniformTypeIdentifiers.framework;
+    // pcap/pcapng have no system-declared UTType anyway.
+    [op setAllowedFileTypes:@[@"pcap", @"pcapng", @"cap", @"dump"]];
+
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
 		 if (result == NSFileHandlingPanelOKButton)
@@ -282,7 +296,7 @@
                  [self.scanController importPCAP:[[op URLs][i] path]];
 			 }
 		 }
-		 
+
 	 }];
 }
 

@@ -49,6 +49,7 @@
 #import "GrowlController.h"
 #import "../Capabilities/KMHardwareProbe.h"
 #import "../Capabilities/KMCapabilityEngine.h"
+#import "../Capabilities/KMPcapImportSelfTest.h"
 #import "../Capabilities/KMCapability.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
@@ -912,6 +913,17 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // (hardware-independent) and logs PASS/FAIL. See KMCapabilityEngine.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_CAP_SELFTEST"] isEqualToString:@"1"]) {
         [KMCapabilityEngine runSelfTestLogging];
+    }
+
+    // S2.2 - Offline pcap/pcapng import self-test. Runs ONLY when
+    // KISMAC_PCAP_IMPORT_SELFTEST is set (to "1"/a fixture path) in the
+    // environment. Imports a golden fixture through the OFFLINE pipeline
+    // (-[WaveScanner readPCAPDump:] -> pcap_open_offline) into a throwaway
+    // container and logs PASS/FAIL with actual vs expected network/client
+    // counts. PASSIVE ONLY: never starts a scan / touches a radio / changes
+    // channels. See Sources/Capabilities/KMPcapImportSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_PCAP_IMPORT_SELFTEST"] length] > 0) {
+        [KMPcapImportSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

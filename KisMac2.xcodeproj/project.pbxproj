@@ -27,6 +27,8 @@
 		CA9000070000000000000001 /* KMCapability.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9000090000000000000001 /* KMCapability.m */; };
 		CA9000080000000000000001 /* KMCapabilityEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90000B0000000000000001 /* KMCapabilityEngine.m */; };
 		CA9000050000000000000001 /* KMHardwareProbe.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9000030000000000000001 /* KMHardwareProbe.m */; };
+		CA9000110000000000000001 /* KMPcapImportSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9000120000000000000001 /* KMPcapImportSelfTest.m */; };
+		CA9000130000000000000001 /* golden.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9000140000000000000001 /* golden.pcap */; };
 		002E7DFC06A86C6F00C9D931 /* ImportController.m in Sources */ = {isa = PBXBuildFile; fileRef = 002E7DF806A86C6F00C9D931 /* ImportController.m */; };
 		0035337A06A5DD5700AB4577 /* example.dump in Resources */ = {isa = PBXBuildFile; fileRef = 0035332E06A5DD5700AB4577 /* example.dump */; };
 		0035337D06A5DD5700AB4577 /* vendor.db in Resources */ = {isa = PBXBuildFile; fileRef = 0035333106A5DD5700AB4577 /* vendor.db */; };
@@ -199,6 +201,9 @@
 		CA9000090000000000000001 /* KMCapability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCapability.m; sourceTree = "<group>"; };
 		CA90000A0000000000000001 /* KMCapabilityEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCapabilityEngine.h; sourceTree = "<group>"; };
 		CA90000B0000000000000001 /* KMCapabilityEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCapabilityEngine.m; sourceTree = "<group>"; };
+		CA9000150000000000000001 /* KMPcapImportSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMPcapImportSelfTest.h; sourceTree = "<group>"; };
+		CA9000120000000000000001 /* KMPcapImportSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMPcapImportSelfTest.m; sourceTree = "<group>"; };
+		CA9000140000000000000001 /* golden.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = golden.pcap; path = Tests/Fixtures/golden.pcap; sourceTree = SOURCE_ROOT; };
 		002E7DF706A86C6F00C9D931 /* ImportController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ImportController.h; path = Sources/WindowControllers/ImportController.h; sourceTree = SOURCE_ROOT; };
 		002E7DF806A86C6F00C9D931 /* ImportController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = ImportController.m; path = Sources/WindowControllers/ImportController.m; sourceTree = SOURCE_ROOT; };
 		0035332E06A5DD5700AB4577 /* example.dump */ = {isa = PBXFileReference; lastKnownFileType = file; path = example.dump; sourceTree = "<group>"; };
@@ -526,6 +531,8 @@
 				CA9000090000000000000001 /* KMCapability.m */,
 				CA90000A0000000000000001 /* KMCapabilityEngine.h */,
 				CA90000B0000000000000001 /* KMCapabilityEngine.m */,
+				CA9000150000000000000001 /* KMPcapImportSelfTest.h */,
+				CA9000120000000000000001 /* KMPcapImportSelfTest.m */,
 			);
 			name = Capabilities;
 			path = Sources/Capabilities;
@@ -1126,6 +1133,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0035337A06A5DD5700AB4577 /* example.dump in Resources */,
+				CA9000130000000000000001 /* golden.pcap in Resources */,
 				A529ADA21A20A4B400CD8E1E /* PrefsMap.xib in Resources */,
 				A5A2F5B019DDA55B0046299A /* NetworkWPA.tif in Resources */,
 				0035337D06A5DD5700AB4577 /* vendor.db in Resources */,
@@ -1224,6 +1232,7 @@
 				CA9000050000000000000001 /* KMHardwareProbe.m in Sources */,
 				CA9000070000000000000001 /* KMCapability.m in Sources */,
 				CA9000080000000000000001 /* KMCapabilityEngine.m in Sources */,
+				CA9000110000000000000001 /* KMPcapImportSelfTest.m in Sources */,
 				0035342C06A5DD8500AB4577 /* InfoController.mm in Sources */,
 				0035342E06A5DD8500AB4577 /* ScanController.m in Sources */,
 				A581FC2C177B36AC00C05CE9 /* FCS.m in Sources */,
