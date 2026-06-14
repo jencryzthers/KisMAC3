@@ -9,6 +9,13 @@ Produced by `kismac-program-lead` from a five-cluster code audit of the
 `setup/subagent-orchestration` branch. Evidence is `file:line`-cited inline; this
 is a synthesis, not a re-derivation — re-audit a feature before acting on it.
 
+> **Build-confirmed correction (post-S0.6, see `docs/build-triage.md`).** The static
+> audit predicted several *compile-breakers*. A green build on Xcode 26.5 / macOS 27.0
+> proved otherwise: **the KisMac2 Debug build succeeds with 0 hard errors.** The
+> "removed API" items below are in fact **deprecated-but-present** (warnings), and
+> `WirelessCryptMD5` **still ships in the private `Apple80211` framework and links**.
+> Rows and blockers affected by this are corrected inline and flagged `[corrected]`.
+
 ## Decision vocabulary
 
 | Tag | Meaning |
@@ -31,8 +38,8 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 1. **Monitor-mode capture path is dead.** Passive capture relies on `libpcap` over a BPF device whose permissions are forced by a privileged `/bin/chmod 0777 /dev/bpf*` helper (`WaveDriverAirportExtreme.m:182-190`), plus CoreWLAN channel/monitor calls that modern macOS restricts. The whole passive chain (passive scan, channel hop, hidden-SSID, live capture) is gated on this → **`needs-probe`**.
 2. **All injection/deauth needs legacy USB adapters.** Transmit goes through the deprecated IOKit USB user-client API (`IOUSBDeviceInterface197`/`IOUSBInterfaceInterface220`) in `USBJack` (`WaveDriverUSB.mm`, `*Jack.mm`). No DriverKit equivalent exists; the built-in card cannot inject (`pcap_inject` commented out). → **`hardware-required`** + driver rewrite.
 3. **Bundled crypto = PolarSSL** (`Subprojects/polarssl`, end-of-life, now mbedTLS) + local DES/FCS. Cracking math is sound but should migrate to CommonCrypto/CryptoKit for performance, signing, and notarization.
-4. **Removed Apple private symbols.** `WaveNetWEPWordlist.m` calls `WirelessCryptMD5`/`WirelessEncrypt` from the deleted private `Apple80211` framework — unlinkable against modern SDKs.
-5. **Deprecated/removed APIs everywhere:** `NSDate descriptionWithCalendarFormat:` (removed — breaks several export paths at compile time), `NSKeyedUnarchiver unarchiveObjectWith…` (insecure), `NSBeginAlertSheet`/`NSRunCriticalAlertPanel`, `IOMasterPort`, `gethostbyname`/`inet_addr`, Carbon Speech/QuickTime Music, OpenGL (BIGL), private `_toolbarView` SPI.
+4. **Private Apple80211 dependency `[corrected]`.** `WaveNetWEPWordlist.m:341` calls `WirelessCryptMD5` from the **private** `Apple80211` framework. Contrary to the original prediction, this symbol **still ships and links on macOS 27** (the app builds), and `Apple80211` is linked in the pbxproj (4 refs). It is a *private-API dependency*, not a dead one — a notarization/longevity risk that the `objc-appkit-reviewer` rule ("no private API dependency") flags. Migrate off it; don't treat it as removed. (`WirelessEncrypt` call sites remain commented out.)
+5. **Deprecated (not removed) APIs everywhere `[corrected]`:** all of these currently **compile as warnings** on Xcode 26.5 — `NSDate descriptionWithCalendarFormat:`, `NSKeyedUnarchiver unarchiveObjectWith…` (insecure), `NSBeginAlertSheet`/`NSRunCriticalAlertPanel`, `IOMasterPort`, `gethostbyname`/`inet_addr`, Carbon Speech/QuickTime Music, OpenGL (BIGL), private `_toolbarView` SPI. They are tech-debt/modernization targets, **not** build blockers (295 deprecation warnings in KisMac2 sources per `docs/build-triage.md`).
 6. **No entitlements / no Info.plist usage strings.** No `*.entitlements`, no `NSLocationWhenInUseUsageDescription`, no `NSBluetoothAlwaysUsageDescription`, no Automation/Contacts strings, no `com.apple.security.network.client`. Every Location/Network/Contacts use currently fails closed on modern macOS.
 7. **Dead bundled Growl + dead remote endpoints.** `Resources/Growl.framework` is still linked/CodeSignOnCopy'd though code no longer references it. `kismac-ng.org`/`trac`/`forum`, TerraServer/Expedia/Map24/Census map providers, and the crash-report endpoint are all defunct.
 8. **Audio-feedback regression.** Sounds/geiger/voice prefs (`PrefsSounds.m`) have **zero runtime consumers** — the "alert on network found" behavior is already lost in the legacy tree.
@@ -73,11 +80,11 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 | WPA handshake detection | `WavePacket.mm:944`, `WaveClient.m:131` | Functional (offset parsing) | passive capture | adapter | 🔧 `modernized` |
 | WPA wordlist cracking | `WaveNetWPACrack.m`, `WPA.m` | Functional, PolarSSL, 64-bit aliasing | CPU-only | n/a | 🔧 `modernized` (CommonCrypto/CryptoKit, fix aliasing, multithread) |
 | LEAP capture + crack | `WavePacket.mm:1033`, `WaveNetLEAPCrack.m`, `LEAP.m` | Functional, MD4(PolarSSL)+DES | CPU-only | n/a | 🔧 `modernized` (keep MD4/DES as attack primitives; replace lib; bounds-check wordlist) |
-| WEP "Apple" wordlist (40/104/MD5) | `WaveNetWEPWordlist.m:341` | **Broken** — needs removed `WirelessCryptMD5` private symbol | unlinkable | n/a | 🗑 `removed` (depends on deleted Apple80211 private API) |
+| WEP "Apple" wordlist (40/104/MD5) `[corrected]` | `WaveNetWEPWordlist.m:341` | Compiles & links — `WirelessCryptMD5` still in private `Apple80211` fw | CPU-only | n/a | 🔧 `modernized` (works today via **private** Apple80211; re-implement the MD5 keying to drop the private-API dependency — notarization/longevity risk) |
 
 **Permissions:** none for the math (runs on captured data); wordlist file read via NSOpenPanel (security-scoped under sandbox).
 
-**Test steps:** drive each attack from a fixture capture with a known key → assert recovered key matches (`protocol-fixture-test-agent`). Specifically regression-test the weak-scheduling path that the tautology guard currently disables. Confirm the three "Apple" WEP wordlist verbs are removed/disabled cleanly, not crashing.
+**Test steps:** drive each attack from a fixture capture with a known key → assert recovered key matches (`protocol-fixture-test-agent`). Specifically regression-test the weak-scheduling path that the tautology guard currently disables (build-confirmed at `ScanControllerScriptable.m:718-719`). For the three "Apple" WEP wordlist verbs, confirm they still function via the private Apple80211 path, then track their migration off the private symbol (do not ship a private-API dependency through notarization).
 
 ---
 
@@ -144,11 +151,11 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 - 🔧 `modernized`: the large majority — most features have a clear modern path.
 - 🔍 `needs-probe`: built-in passive/monitor/channel-hop/hidden-SSID/live-capture (6) — **blocked on Milestone 1**.
 - 🔌 `hardware-required`: injection, deauth (built-in 🚫).
-- 🗑 `removed`: server export, crash upload, MIDI, "Apple" WEP wordlist attacks, server map download (5).
-- ✅ `working` (pending validation): active-scan plumbing, pcap import, per-channel counts.
+- 🗑 `removed`: server export, crash upload, MIDI, server map download (4). *(The "Apple" WEP wordlist attacks were reclassified 🗑→🔧 after the build proved `WirelessCryptMD5` still links.)*
+- ✅ `working` (pending validation): active-scan plumbing, pcap import, per-channel counts. **Whole-app build: green on Xcode 26.5 / macOS 27 (0 hard errors).**
 
 ## What this unblocks
 
 1. The 🔍 set is the entire justification for **Milestone 1 (hardware probe)** — nothing in the passive/monitor family may be claimed until it runs on real Intel + Apple Silicon MacBooks.
 2. The 🗑 set should be deleted/quarantined early (dead Growl framework, dead endpoints, i386 MIDI) to shrink the surface and clear notarization blockers.
-3. The compile-breakers (`descriptionWithCalendarFormat:`, removed Apple80211 symbols) are the first targets for **Milestone 4 build stabilization** — see `docs/task-slices.md`.
+3. Build stabilization (Milestone 4 / Wave 0) is **further along than predicted**: the app already builds green (post-S0.6). What remains is *deprecation cleanup* (≈295 KisMac2 warnings) and *dead-code/private-API removal* — not fixing compile errors. S0.2–S0.5 are re-scoped accordingly in `docs/task-slices.md`.
