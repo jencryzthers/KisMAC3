@@ -29,6 +29,8 @@
 #import "KisMAC80211.h"
 #import <sys/time.h>
 
+@class KMProtocolMetadata;
+
 //#define DEBUG			//This has currently no meaning
 //#define LOGPACKETS		//do not enable unless you know what you are doing
 
@@ -134,6 +136,9 @@ typedef NS_ENUM(NSUInteger, leapAuthCode)
     //WPA stuff
     NSInteger _wpaKeyCipher;
     wpaNoncePresent _nonce;
+
+    //S2.1 modern protocol metadata (decoded from tagged params; nil if none)
+    KMProtocolMetadata *_protocolMetadata;
 }
 
 //input function
@@ -157,6 +162,7 @@ typedef NS_ENUM(NSUInteger, leapAuthCode)
 - (NSArray*)SSIDs;
 - (UInt8)getRates:(UInt8*)rates;
 - (BOOL)isCorrectSSID;
+- (KMProtocolMetadata*)protocolMetadata;   //S2.1 decoded modern metadata, or nil
 
 - (UInt8*)rawSenderID;
 - (NSString*)stringSenderID;

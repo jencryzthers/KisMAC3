@@ -30,6 +30,7 @@
 #import "WaveHelper.h"
 #import "80211b.h"
 #import "KisMAC80211.h"
+#import "KMProtocolMetadata.h"
 #import <pcap.h>
 
 #define AMOD(x, y) ((x) % (y) < 0 ? ((x) % (y)) + (y) : (x) % (y))
@@ -56,14 +57,35 @@ BOOL is8021xPacket(const UInt8* fileData) {
     NSInteger len;
 	UInt32 *vendorID;
     char ssid[LAST_BIT];
-	
+
+    // S2.1: keep the original IE pointer for the modern metadata decode (the
+    // loop below mutates packet/length as it walks). The metadata decoder is an
+    // independent, bounds-checked TLV walker over the same buffer.
+    //
+    // IMPORTANT: the legacy callers pass `length` as `_length - <fixed>` where
+    // <fixed> is only the management-frame FIXED-parameter size (12/4/10), NOT
+    // the 802.11 header, so the supplied `length` over-counts the true IE region
+    // by the header size. The legacy walk tolerates that (it stops harmlessly on
+    // trailing bytes), but a strict decoder can be tricked by a spurious element
+    // in the over-read tail. Clamp to the real frame bound: bytes from iesStart
+    // to the end of the captured 802.11 frame (_frame + _length).
+    const uint8_t *iesStart = (const uint8_t *)packet;
+    NSInteger      iesLength = length;
+    if (_frame != NULL && _length > 0) {
+        NSInteger offsetInFrame = (NSInteger)(iesStart - _frame);
+        NSInteger realRemaining = _length - offsetInFrame;
+        if (offsetInFrame >= 0 && realRemaining >= 0 && realRemaining < iesLength) {
+            iesLength = realRemaining;
+        }
+    }
+
     _primaryChannel = 0;
-    
+
 	_SSID = nil;
 	_SSIDs = nil;
 
 	_rateCount = 0;
-	
+
     while(length>2) {
         switch (*packet) {
         case IEEE80211_ELEMID_SSID:
@@ -145,6 +167,43 @@ BOOL is8021xPacket(const UInt8* fileData) {
         length-=(*packet)+2;
         packet+=(*packet)+1;
     }
+
+    // S2.1: decode the modern protocol metadata (RSN/WPA IE -> WPA2/WPA3/OWE/
+    // Enterprise/PMF, HT/VHT/HE/EHT -> Wi-Fi 4/5/6/6E/7, hidden SSID). This is
+    // a fully bounds-checked pass over the SAME tagged-parameter region; it
+    // never reads past iesLength and is safe on malformed/truncated frames.
+    // The Privacy bit (capability) was already reflected into _isWep == WEP for
+    // beacon/probe-resp before this method was called, so pass that through to
+    // let the decoder distinguish WEP vs Open when no RSN/WPA IE is present.
+    BOOL privacy = (_isWep == encryptionTypeWEP);
+    _protocolMetadata = [KMProtocolMetadata metadataFromInformationElements:iesStart
+                                                                     length:iesLength
+                                                                 privacyBit:privacy];
+
+    // Refine the legacy encryptionType from the decoded RSN posture so the rest
+    // of the legacy pipeline benefits without a rewrite: an RSN IE means WPA2+.
+    if (_protocolMetadata && _protocolMetadata.didDecodeAnything) {
+        switch (_protocolMetadata.securityMode) {
+            case KMSecurityModeWPA2:
+            case KMSecurityModeWPA2Enterprise:
+            case KMSecurityModeWPA3SAE:
+            case KMSecurityModeWPA3Transition:
+            case KMSecurityModeWPA3Enterprise:
+            case KMSecurityModeOWE:
+            case KMSecurityModeEnterprise:
+                if (_isWep < encryptionTypeWPA2) _isWep = encryptionTypeWPA2;
+                break;
+            case KMSecurityModeWPA:
+                if (_isWep < encryptionTypeWPA) _isWep = encryptionTypeWPA;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+- (KMProtocolMetadata*)protocolMetadata {
+    return _protocolMetadata;
 }
 
 //this initializes the structure with a raw frame

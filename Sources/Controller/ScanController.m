@@ -50,6 +50,7 @@
 #import "../Capabilities/KMHardwareProbe.h"
 #import "../Capabilities/KMCapabilityEngine.h"
 #import "../Capabilities/KMPcapImportSelfTest.h"
+#import "../Capabilities/KMProtocolSelfTest.h"
 #import "../Capabilities/KMCapability.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
@@ -924,6 +925,16 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // channels. See Sources/Capabilities/KMPcapImportSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_PCAP_IMPORT_SELFTEST"] length] > 0) {
         [KMPcapImportSelfTest runSelfTestLogging];
+    }
+
+    // S2.1 - Modern protocol metadata self-test. Runs ONLY when
+    // KISMAC_PROTO_SELFTEST is set in the environment. Imports each bundled
+    // proto_*.pcap through the OFFLINE pipeline and asserts the decoded
+    // security + PHY/generation display strings match the fixture's known
+    // values. PASSIVE ONLY: no radio, no monitor, no channel switching. See
+    // Sources/Capabilities/KMProtocolSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_PROTO_SELFTEST"] length] > 0) {
+        [KMProtocolSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

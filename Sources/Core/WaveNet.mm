@@ -32,6 +32,7 @@
 #import "WaveClient.h"
 #import "WaveHelper.h"
 #import "80211b.h"
+#import "KMProtocolMetadata.h"
 #import "WaveNetWPACrack.h"
 #import "WaveNetLEAPCrack.h"
 #import "WaveScanner.h"
@@ -922,6 +923,27 @@ NSInteger lengthSort(id string1, id string2, void *context)
             }
         }
     }
+
+    // S2.1: accumulate the modern protocol metadata decoded from this frame's
+    // tagged parameters (beacon/probe-resp/assoc). A network is seen many times;
+    // keep the strongest/most-specific signal (e.g. WPA3 once it appears, the
+    // widest channel width, the highest PHY generation).
+    {
+        KMProtocolMetadata *pm = [w protocolMetadata];
+        // Accumulate when the frame's tagged params yielded any classification
+        // (modern IE decode OR a basic security/PHY posture from a mgmt frame).
+        // Data frames carry no IEs, so their metadata is nil and skipped.
+        if (pm && (pm.didDecodeAnything ||
+                   pm.securityMode  != KMSecurityModeUnknown ||
+                   pm.phyGeneration != KMPHYGenerationUnknown)) {
+            if (_protocolMetadata == nil) {
+                _protocolMetadata = pm;
+            } else {
+                [_protocolMetadata mergeWith:pm];
+            }
+        }
+    }
+
     if ([w netType]) _type = [w netType];	//gets the type of network
     
     [_dataLock lock];
@@ -1284,8 +1306,33 @@ NSInteger lengthSort(id string1, id string2, void *context)
 - (NSArray*)getClientKeys {
     return aClientKeys;
 }
-- (encryptionType)wep { 
+- (encryptionType)wep {
     return _isWep;
+}
+- (KMProtocolMetadata *)protocolMetadata {
+    return _protocolMetadata;
+}
+- (NSString *)securityString {
+    // Prefer the modern decode when present; otherwise map the legacy enum.
+    if (_protocolMetadata && _protocolMetadata.didDecodeAnything &&
+        _protocolMetadata.securityMode != KMSecurityModeUnknown) {
+        return [_protocolMetadata securityDisplayString];
+    }
+    switch (_isWep) {
+        case encryptionTypeNone:  return @"Open";
+        case encryptionTypeWEP:
+        case encryptionTypeWEP40: return @"WEP";
+        case encryptionTypeWPA:   return @"WPA";
+        case encryptionTypeWPA2:  return @"WPA2";
+        case encryptionTypeLEAP:  return @"LEAP";
+        default:                  return @"Unknown";
+    }
+}
+- (NSString *)phyString {
+    if (_protocolMetadata && _protocolMetadata.phyGeneration != KMPHYGenerationUnknown) {
+        return [_protocolMetadata phyDisplayString];
+    }
+    return @"Unknown";
 }
 - (NSString *)ID {
     return _ID;

@@ -81,6 +81,60 @@ transparently — no code change was needed and the self-test PASSes on the
 pcapng variant with identical counts. (`tcpdump -r golden.pcapng` also reads it,
 confirming the file is a valid pcapng independent of KisMac.)
 
+## S2.1 — Modern protocol metadata corpus
+
+In addition to the `golden.*` import fixtures above, the generator emits a
+single-beacon fixture per modern protocol posture. Each beacon's tagged
+parameters (RSN IE id 48, vendor WPA IE id 221, HT id 45, VHT id 191, HE/EHT
+element-extensions, 6 GHz band caps) encode a **known** security and PHY value.
+The `KMProtocolMetadata` decoder is a fully bounds-checked TLV walker; these
+fixtures pin its output.
+
+| File                          | Decoded security                        | Decoded PHY                       |
+|-------------------------------|-----------------------------------------|-----------------------------------|
+| `proto_wep.pcap`              | `WEP`                                    | `802.11a/b/g`                     |
+| `proto_wpa2.pcap`             | `WPA2-Personal`                          | `802.11a/b/g`                     |
+| `proto_wpa3_sae.pcap`         | `WPA3-SAE (PMF required)`                | `802.11a/b/g`                     |
+| `proto_wpa3_transition.pcap`  | `WPA2/WPA3-Transition (PMF capable)`     | `802.11a/b/g`                     |
+| `proto_owe.pcap`              | `OWE (Enhanced Open) (PMF required)`     | `802.11a/b/g`                     |
+| `proto_enterprise.pcap`       | `WPA2-Enterprise`                        | `802.11a/b/g`                     |
+| `proto_pmf_required.pcap`     | `WPA2-Personal (PMF required)`           | `802.11a/b/g`                     |
+| `proto_hidden.pcap`           | `WPA2-Personal` (hidden SSID flagged)    | `802.11a/b/g`                     |
+| `proto_wifi6.pcap`            | `WPA3-SAE (PMF required)`                | `Wi-Fi 6 (802.11ax), 80 MHz`      |
+| `proto_wifi6e.pcap`           | `WPA3-SAE (PMF required)`                | `Wi-Fi 6E (802.11ax, 6 GHz)`      |
+| `proto_wifi7.pcap`            | `WPA3-SAE (PMF required)`                | `Wi-Fi 7 (802.11be), 320 MHz`     |
+| `proto_malformed.pcap`        | *(no-crash; best-effort `WEP`)*          | `802.11a/b/g`                     |
+
+`proto_malformed.pcap` carries an RSN IE whose declared length overruns the
+buffer plus a truncated element-extension (id 255 with no sub-id). The decoder
+must **not** crash; it falls back to the Privacy bit.
+
+These values are asserted by the in-app **`KISMAC_PROTO_SELFTEST`** harness
+(`Sources/Capabilities/KMProtocolSelfTest.m`) and were independently verified by
+compiling `KMProtocolMetadata.m` standalone against these bytes.
+
+### Known limitations (no fixture / not faithfully synthesizable)
+
+- **HE/EHT channel width:** width for Wi-Fi 6/6E is carried in the HE PHY
+  Capabilities bitmap / HE Operation IE, which the decoder does **not** parse.
+  Width is asserted only from HT (40), VHT (80/160) and EHT (320). So
+  `proto_wifi6e` deliberately shows no width, and `proto_wifi6` derives 80 MHz
+  from a co-present VHT element. Documented decode limitation, not a faked claim.
+- **MLO / puncturing (Wi-Fi 7):** detected only to the extent of EHT presence
+  (→ Wi-Fi 7, 320 MHz). Per-link MLO and puncturing bitmaps are not decoded.
+- **Live capture of these frames is NOT claimed.** This is offline/imported-pcap
+  decode only; built-in monitor capture remains `unknownRequiresActiveProbe`.
+
+### Running the protocol self-test (headless, no GUI, no radio)
+
+```sh
+# imports every bundled proto_*.pcap and asserts security + PHY strings
+KISMAC_PROTO_SELFTEST=1 .../KisMac2.app/Contents/MacOS/KisMac2
+```
+
+It logs one PASS/FAIL line per fixture (actual vs expected) plus a summary, and
+explicitly proves the malformed fixture does not crash.
+
 ## Safety
 
 This whole path is **offline / passive**. Importing a file routes only through

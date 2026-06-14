@@ -43,10 +43,18 @@
 }
 
 + (instancetype)defaultRegistry {
-    // Current parity (S2.1 not done): no modern decoders registered. The
-    // legacy WEP/WPA2 frame path is not exposed as a Milestone 3 "decode"
-    // capability here, so the modern decode features all resolve missing.
-    return [[self alloc] init];
+    // S2.1 DONE: the KMProtocolMetadata decoder parses RSN/WPA IEs and
+    // HT/VHT/HE/EHT capability elements from imported management frames, so the
+    // modern decode capabilities are now AVAILABLE (offline/imported-pcap
+    // decode -- not a claim of live monitor capture). Only register what we
+    // actually decode: WPA3 (SAE/transition/enterprise), OWE, Enterprise
+    // (802.1X EAP), and Wi-Fi 6/6E/7 PHY generation.
+    KMProtocolParserRegistry *reg = [[self alloc] init];
+    [reg registerParserForFeature:KMFeatureWPA3Decode];
+    [reg registerParserForFeature:KMFeatureOWEDecode];
+    [reg registerParserForFeature:KMFeatureEnterpriseDecode];
+    [reg registerParserForFeature:KMFeatureWiFi6Decode];
+    return reg;
 }
 
 @end
@@ -396,11 +404,16 @@
           KMCapabilityAvailable, KMCapabilityReasonNone);
     check(@"all-green", green, KMFeaturePcapExport,
           KMCapabilityAvailable, KMCapabilityReasonNone);
-    // Parser-missing regardless of hardware.
+    // S2.1: modern decoders are now registered in the default registry, so the
+    // decode capabilities are available regardless of hardware (offline decode).
     check(@"all-green", green, KMFeatureWPA3Decode,
-          KMCapabilityUnavailable, KMCapabilityReasonProtocolParserMissing);
+          KMCapabilityAvailable, KMCapabilityReasonNone);
     check(@"all-green", green, KMFeatureWiFi6Decode,
-          KMCapabilityUnavailable, KMCapabilityReasonProtocolParserMissing);
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"all-green", green, KMFeatureOWEDecode,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"all-green", green, KMFeatureEnterpriseDecode,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
     // Adapter-required.
     check(@"all-green", green, KMFeatureSubGhzExternalModule,
           KMCapabilityUnavailable, KMCapabilityReasonUnsupportedAdapter);

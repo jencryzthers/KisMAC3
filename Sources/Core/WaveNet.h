@@ -54,6 +54,7 @@ struct graphStruct
 @class WaveWeakContainer;
 @class CWNetwork;
 @class ImportController;
+@class KMProtocolMetadata;
 
 @interface WaveNet : NSObject /*<UKTest>*/ {
     NSInteger					_netID;					//network ID
@@ -75,6 +76,7 @@ struct graphStruct
     struct graphStruct          *graphData;
     
     encryptionType              _isWep;                 //0=unknown, 1=disabled, 2=enabled 3=40-bit 4-WPA .....
+    KMProtocolMetadata          *_protocolMetadata;     //S2.1 accumulated modern security/PHY metadata
     UInt8                       _IV[3];				    //last iv
     UInt8                       _rawID[6];			    //our id
     UInt8                       _rawBSSID[6];			//our bssid
@@ -155,6 +157,9 @@ struct graphStruct
 - (void)setVisible:(BOOL)visible;
 
 - (encryptionType)wep;
+- (KMProtocolMetadata *)protocolMetadata;   //S2.1 accumulated modern metadata, or nil
+- (NSString *)securityString;               //S2.1 human-readable modern security posture
+- (NSString *)phyString;                    //S2.1 human-readable PHY/generation
 - (NSString *)ID;
 - (NSString *)BSSID;
 - (NSString *)SSID;
