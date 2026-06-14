@@ -2,7 +2,7 @@
  
  File:			KisMACNotifications.h
  Program:		KisMAC
- Author:		Michael Ro§berg
+ Author:		Michael Roï¿½berg
                 mick@binaervarianz.de
  Changes:       Vitalii Parovishnyk(1012-2015)
  
@@ -25,6 +25,8 @@
  along with KisMAC; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#import <Foundation/Foundation.h>
 
 extern NSString *const KisMACViewItemChanged;
 extern NSString *const KisMACCrackDone;
