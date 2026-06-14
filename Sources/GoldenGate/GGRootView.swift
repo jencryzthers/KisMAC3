@@ -25,7 +25,7 @@ struct GGRootView: View {
                 statusBar
             }
         }
-        .frame(minWidth: 980, minHeight: 640)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .preferredColorScheme(.dark)
         .overlay(prefsOverlay)
     }
