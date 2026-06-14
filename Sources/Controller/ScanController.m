@@ -1239,7 +1239,7 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 
     // Golden Gate native SwiftUI UI (Stage 1). Adds an ADDITIONAL window
     // (the existing main window is untouched) via a Window-menu item.
-    // Set KISMAC_GOLDENGATE_AUTOSHOW=1 to open it automatically at launch.
+    // Opens automatically on launch; set KISMAC_GOLDENGATE_AUTOSHOW=0 to suppress.
     [self setupGoldenGateInterface];
 }
 
@@ -1266,8 +1266,11 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         [windowMenu addItem:item];
     }
 
-    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_GOLDENGATE_AUTOSHOW"]
-            isEqualToString:@"1"]) {
+    // Golden Gate is the modern interface — open it on launch by default so
+    // the app presents the new UI. Set KISMAC_GOLDENGATE_AUTOSHOW=0 to suppress
+    // it and use only the legacy main window.
+    if (![[[NSProcessInfo processInfo] environment][@"KISMAC_GOLDENGATE_AUTOSHOW"]
+            isEqualToString:@"0"]) {
         [goldenGateController showWindow];
     }
 }
