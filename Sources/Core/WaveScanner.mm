@@ -47,7 +47,6 @@
 #import "WavePluginInjecting.h"
 #import "WavePluginAuthenticationFlood.h"
 #import "WavePluginBeaconFlood.h"
-#import "WavePluginMidi.h"
 
 @implementation WaveScanner
 
@@ -172,10 +171,10 @@
     
     [_wavePlugins setValue:[[WavePluginBeaconFlood alloc] initWithDriver:wd]
                     forKey:@"BeaconFlood"];
-    
-    [_wavePlugins setValue:[[WavePluginMidi alloc] initWithDriver: wd]
-                    forKey:@"MidiTrack"];
-    
+
+    // S0.4: WavePluginMidi (i386/Carbon QuickTime Music signal-strength sonification)
+    // removed as dead code -- it was a no-op on x86_64/arm64. No replacement.
+
     //tries to open the dump file
     if (dumpFilter)
     {

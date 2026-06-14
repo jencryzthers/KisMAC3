@@ -133,8 +133,6 @@ typedef NS_ENUM(NSInteger, __availableTabs)
     IBOutlet NSMenuItem         *_deauthMenu;
 	IBOutlet NSMenuItem			*_deauthAllMenu;
     IBOutlet NSMenuItem         *_authFloodMenu;
-	IBOutlet NSMenuItem			*_monitorMenu;
-	IBOutlet NSMenuItem			*_monitorAllMenu;
     IBOutlet NSMenuItem         *aInjPacketsMenu;
     IBOutlet NSMenuItem         *_showNetInMap;
     IBOutlet NSMenuItem         *_showAllNetsInMap;
@@ -213,7 +211,6 @@ typedef NS_ENUM(NSInteger, __availableTabs)
 - (IBAction)exportNS:(id)sender;
 - (IBAction)exportKMLFile:(id)sender;
 - (IBAction)exportWarD:(id)sender;
-- (IBAction)exportToServer:(id)sender;
 - (IBAction)exportMacstumbler:(id)sender;
 - (IBAction)exportPDF:(id)sender;
 - (IBAction)exportJPEG:(id)sender;
@@ -229,8 +226,6 @@ typedef NS_ENUM(NSInteger, __availableTabs)
 - (IBAction)deautheticateNetwork:(id)sender;
 - (IBAction)deautheticateAllNetworks:(id)sender;
 - (IBAction)authFloodNetwork:(id)sender;
-- (IBAction)monitorSignal:(id)sender;
-- (IBAction)monitorAllNetworks:(id)sender;
 - (IBAction)injectPackets:(id)sender;
 
 - (IBAction)restartGPS:(id)sender;

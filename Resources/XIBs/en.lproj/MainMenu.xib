@@ -348,11 +348,6 @@
                                                 <action selector="exportWarD:" target="466" id="1002"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="  .kismac Server" id="1159">
-                                            <connections>
-                                                <action selector="exportToServer:" target="466" id="1160"/>
-                                            </connections>
-                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="908">
                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                                         </menuItem>
@@ -600,20 +595,6 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="680">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Monitor Signal Strength" keyEquivalent="m" id="1533">
-                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
-                                <connections>
-                                    <action selector="monitorSignal:" target="466" id="1537"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Monitor all signals" id="1534">
-                                <connections>
-                                    <action selector="monitorAllNetworks:" target="466" id="1538"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="1535">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
                             <menuItem title="Deauthenticate" keyEquivalent="D" id="679">
@@ -976,8 +957,6 @@ CA
                 <outlet property="_mainView" destination="1353" id="1355"/>
                 <outlet property="_mapView" destination="1201" id="1267"/>
                 <outlet property="_mappingView" destination="1461" id="1462"/>
-                <outlet property="_monitorAllMenu" destination="1534" id="1553"/>
-                <outlet property="_monitorMenu" destination="1533" id="1552"/>
                 <outlet property="_netHierarchDrawer" destination="500" id="1320"/>
                 <outlet property="_networkTable" destination="1212" id="1319"/>
                 <outlet property="_networkView" destination="1199" id="1268"/>

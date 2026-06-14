@@ -112,8 +112,8 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 | Native `.kismac` load | `WaveStorageController.m:83`, BIGeneric | BICompressor + insecure unarchiver fallback | 🔧 `modernized` (secure-coding unarchiver) |
 | Export (NS / KML / MacStumbler / PDF / JPEG) | `WaveStorageController.m:456-807`, `ScanControllerMenus.m` | C stdio writers | 🔧 `modernized` (**won't compile** — `descriptionWithCalendarFormat:`; fix buffer overflows in KML) |
 | Decrypt capture workflow | (= crack vs captures) | See Cluster 2 | 🔧 `modernized` (no separate frame-decrypt feature exists) |
-| Server export of captures | `ScanControllerMenus.m:273` (empty stub), `HTTPStream.m` (dead) | Non-functional | 🗑 `removed` (stub + dead transport + dead endpoint) |
-| Crash-report upload | `CrashReportController.m:88` | POSTs logs + Address Book email to dead `kismac-ng.org` over HTTP | 🗑 `removed` (privacy + dead endpoint; replace later if wanted, opt-in) |
+| Server export of captures `[S0.4]` | ~~`ScanControllerMenus.m` `-exportToServer:` stub, `HTTPStream.{h,m}`~~ **DELETED** | **Removed** | 🗑 `removed` **(done, S0.4)** — `HTTPStream.{h,m}` files + pbxproj refs deleted, empty `-exportToServer:` stub + decls deleted, "  .kismac Server" Export-menu item removed from `MainMenu.xib`. `rg` confirms `HTTPStream`/`exportToServer` gone from compiled sources. |
+| Crash-report upload `[S0.4]` | ~~`CrashReportController.{h,m}`~~ **DELETED** | **Removed (Contacts read + plaintext upload GONE)** | 🗑 `removed` **(done, S0.4)** — the whole `CrashReportController` (it read the user's **Address Book "me" email** via `ABAddressBook`/`kABEmailProperty` and POSTed it + crash logs to the dead `http://kismac-ng.org/crash.php` over plaintext HTTP) deleted: files + pbxproj refs + the startup invocation in `-[ScanController applicationDidFinishLaunching:]` + `AddressBook.framework` link (no other consumer). `rg` confirms `ABAddressBook`/`AddressBook`/`kismac-ng.org/crash.php` no longer appear in compiled sources; runtime launch shows no crash-reporter window / no Contacts prompt. `security-abuse-reviewer` privacy gate: Contacts read + plaintext upload are GONE. Any future crash reporting must be opt-in + privacy-reviewed (no Contacts, no plaintext POST). |
 
 **Permissions:** outbound network (Kismet) → `com.apple.security.network.client` *only under App Sandbox; app is currently unsandboxed so no entitlement is needed/added — see S2.4/S8.x*; file read/write via panels; crash reporter used Contacts (`ABAddressBook`).
 
@@ -148,7 +148,7 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 | Save/open `.kismac` sessions | `WaveStorageController.m`, `ScanControllerScriptable.m` | Bespoke (not NSDocument); insecure unarchiver | 🔧 `modernized` (secure coding; consider NSDocument) |
 | Notifications | `GrowlController.m` | Growl removed → `NSUserNotification` (deprecated); most methods stubbed; only scan-start fires | 🔧 `modernized` (UserNotifications framework; strip bundled Growl.framework from pbxproj) |
 | Sounds / geiger / voice | `PrefsSounds.m`, `BISpeechController.m` | Configurable but **no runtime consumer** (regression); Carbon Speech | 🔧 `modernized` (restore audio feedback via AVSpeechSynthesizer/AVFoundation) — or 🗑 if descoped |
-| MIDI plugin | `WavePluginMidi.m` | `#ifdef __i386__` Carbon QuickTime → no-op on modern builds | 🗑 `removed` |
+| MIDI plugin `[S0.4]` | ~~`WavePluginMidi.{h,m}`~~ **DELETED** | **Removed** | 🗑 `removed` **(done, S0.4)** — the `#ifdef __i386__` Carbon QuickTime Music signal sonification (a no-op on x86_64/arm64) deleted: files + pbxproj refs + the `WaveScanner.mm` `@"MidiTrack"` registration + all wiring that existed only to feed it (`-[ScanController trackClient:]`, the `InfoController` client-table double-action, `-monitorSignal:`/`-monitorAllNetworks:` + their outlets/IBActions, and the "Monitor Signal Strength"/"Monitor all signals" Network-menu items in `MainMenu.xib`). `rg` confirms `WavePluginMidi` gone from compiled sources. |
 | AppleScript automation | `ScanControllerScriptable.m`, Info.plist `NSAppleScriptEnabled` | Scriptable category present but **no `.sdef`/terminology, no AE registration** | 🔧 `modernized` (author `.sdef`; Automation usage string) |
 | Preference panes (7: Scanning, Traffic, Filter, Sounds, Driver, GPS, Map; Advanced disabled) | `PrefsController.m`, `Resources/XIBs` | Private `_toolbarView` SPI; Advanced half-wired | 🔧 `modernized` (rebuild; re-wire or remove Advanced) |
 | Menu commands | `MainMenu.xib`, `ScanControllerMenus.m` | Deprecated sheets, manual fullscreen, dead Help/Forum URLs, `/test.tiff` debug write | 🔧 `modernized` |
@@ -165,11 +165,11 @@ These recur throughout and should be tackled as shared infrastructure, not per-f
 - 🔧 `modernized`: the large majority — most features have a clear modern path.
 - 🔍 `needs-probe`: built-in passive/monitor/channel-hop/hidden-SSID/live-capture (6) — **blocked on Milestone 1**.
 - 🔌 `hardware-required`: injection, deauth (built-in 🚫).
-- 🗑 `removed`: server export, crash upload, MIDI, server map download (4). *(The "Apple" WEP wordlist attacks were reclassified 🗑→🔧 after the build proved `WirelessCryptMD5` still links.)*
+- 🗑 `removed`: server export **(removed, S0.4)**, crash upload **(removed, S0.4)**, MIDI **(removed, S0.4)**, server map download (4). *(The "Apple" WEP wordlist attacks were reclassified 🗑→🔧 after the build proved `WirelessCryptMD5` still links.)*
 - ✅ `working` (pending validation): active-scan plumbing, pcap import, per-channel counts. **Whole-app build: green on Xcode 26.5 / macOS 27 (0 hard errors).**
 
 ## What this unblocks
 
 1. The 🔍 set is the entire justification for **Milestone 1 (hardware probe)** — nothing in the passive/monitor family may be claimed until it runs on real Intel + Apple Silicon MacBooks.
-2. The 🗑 set should be deleted/quarantined early (dead Growl framework, dead endpoints, i386 MIDI) to shrink the surface and clear notarization blockers.
+2. The 🗑 set should be deleted/quarantined early (dead Growl framework, dead endpoints, i386 MIDI) to shrink the surface and clear notarization blockers. **(S0.4 done:** i386 MIDI plugin, dead `HTTPStream`/server-export stub, and the crash-report upload + its Address Book Contacts read all removed; Growl was S0.2. Remaining: dead Help/Forum/map-provider URLs → S5.x.**)**
 3. Build stabilization (Milestone 4 / Wave 0) is **further along than predicted**: the app already builds green (post-S0.6). What remains is *deprecation cleanup* (≈295 KisMac2 warnings) and *dead-code/private-API removal* — not fixing compile errors. S0.2–S0.5 are re-scoped accordingly in `docs/task-slices.md`.

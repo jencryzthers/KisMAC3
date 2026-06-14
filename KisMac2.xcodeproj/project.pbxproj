@@ -113,7 +113,6 @@
 		00875D1C0708ADB300CACFCB /* WaveHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 00875D1A0708ADB300CACFCB /* WaveHelper.m */; };
 		0090AC8606E5E3250096C5FC /* MapControlPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0090AC8406E5E3250096C5FC /* MapControlPanel.m */; };
 		0090B7CC07B2A43D005FEEB1 /* WaveStorageController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0090B7CA07B2A43D005FEEB1 /* WaveStorageController.m */; };
-		0093E65506B2A1F300B3357A /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0093E65306B2A1F300B3357A /* AddressBook.framework */; };
 		00971F3F06E4FA6F004307EA /* BIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00971F3D06E4FA6F004307EA /* BIView.m */; };
 		00971F5706E4FFBF004307EA /* BISubView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00971F5506E4FFBF004307EA /* BISubView.m */; };
 		0097241506E51844004307EA /* BIImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0097241306E51844004307EA /* BIImageView.m */; };
@@ -153,7 +152,6 @@
 		69BFC5F30F078532008DB1AF /* WavePluginBeaconFlood.m in Sources */ = {isa = PBXBuildFile; fileRef = 69BFC5F10F078532008DB1AF /* WavePluginBeaconFlood.m */; };
 		6C32713412CFC4070033A649 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C32713312CFC4070033A649 /* CoreLocation.framework */; };
 		6C41BAB10AA0B52900E0B411 /* GPSInfoController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C41BAAF0AA0B52900E0B411 /* GPSInfoController.m */; };
-		6C461C6F12CEC58100156CBF /* WavePluginMidi.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C461C6D12CEC58100156CBF /* WavePluginMidi.m */; };
 		6C94AA300ADF3FBC001BE161 /* GPSSatInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C94AA2E0ADF3FBC001BE161 /* GPSSatInfo.m */; };
 		6CA3BCCB09B2A58F00DCB407 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CA3BCCA09B2A58F00DCB407 /* Accelerate.framework */; };
 		6CDAFD030AC4FA7D00A5D180 /* KismetXMLImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CDAFD010AC4FA7D00A5D180 /* KismetXMLImporter.m */; };
@@ -197,12 +195,10 @@
 		A57E645B1607BC9700BE1BCA /* WaveNetWEPWordlist.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E64471607BC9700BE1BCA /* WaveNetWEPWordlist.m */; };
 		A57E645D1607BC9700BE1BCA /* WaveNetWPACrack.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E64491607BC9700BE1BCA /* WaveNetWPACrack.m */; };
 		A57E645F1607BC9700BE1BCA /* WPA.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E644B1607BC9700BE1BCA /* WPA.m */; };
-		A57E64631607BD0900BE1BCA /* CrashReportController.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E64611607BD0900BE1BCA /* CrashReportController.m */; };
 		A57E646B1607BD3200BE1BCA /* DownloadMapController.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E64671607BD3200BE1BCA /* DownloadMapController.m */; };
 		A57E646F1607BD6700BE1BCA /* MapDownload.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E646D1607BD6700BE1BCA /* MapDownload.m */; };
 		A57E64731607BD8C00BE1BCA /* WaveWeakContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = A57E64711607BD8C00BE1BCA /* WaveWeakContainer.m */; };
 		A581FC2C177B36AC00C05CE9 /* FCS.m in Sources */ = {isa = PBXBuildFile; fileRef = A581FC2B177B36A800C05CE9 /* FCS.m */; };
-		A585F77B1771DB7100045928 /* HTTPStream.m in Sources */ = {isa = PBXBuildFile; fileRef = A585F77A1771DB7100045928 /* HTTPStream.m */; };
 		A5A2F59619DD74C20046299A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5A2F59519DD74C20046299A /* Images.xcassets */; };
 		A5A2F59A19DD9EB40046299A /* spin@2x.gif in Resources */ = {isa = PBXBuildFile; fileRef = A5A2F59919DD9EB40046299A /* spin@2x.gif */; };
 		A5A2F5AB19DDA55B0046299A /* NetworkLEAP.tif in Resources */ = {isa = PBXBuildFile; fileRef = A5A2F5A519DDA55B0046299A /* NetworkLEAP.tif */; };
@@ -399,7 +395,6 @@
 		0090AC8406E5E3250096C5FC /* MapControlPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MapControlPanel.m; sourceTree = "<group>"; };
 		0090B7C907B2A43D005FEEB1 /* WaveStorageController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveStorageController.h; sourceTree = "<group>"; };
 		0090B7CA07B2A43D005FEEB1 /* WaveStorageController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaveStorageController.m; sourceTree = "<group>"; };
-		0093E65306B2A1F300B3357A /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = /System/Library/Frameworks/AddressBook.framework; sourceTree = "<absolute>"; };
 		00971F3C06E4FA6F004307EA /* BIView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BIView.h; sourceTree = "<group>"; };
 		00971F3D06E4FA6F004307EA /* BIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BIView.m; sourceTree = "<group>"; };
 		00971F5406E4FFBF004307EA /* BISubView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BISubView.h; sourceTree = "<group>"; };
@@ -481,8 +476,6 @@
 		6C32713312CFC4070033A649 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		6C41BAAE0AA0B52900E0B411 /* GPSInfoController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GPSInfoController.h; sourceTree = "<group>"; };
 		6C41BAAF0AA0B52900E0B411 /* GPSInfoController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = GPSInfoController.m; sourceTree = "<group>"; };
-		6C461C6C12CEC58100156CBF /* WavePluginMidi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WavePluginMidi.h; sourceTree = "<group>"; };
-		6C461C6D12CEC58100156CBF /* WavePluginMidi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WavePluginMidi.m; sourceTree = "<group>"; };
 		6C94AA2D0ADF3FBC001BE161 /* GPSSatInfo.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GPSSatInfo.h; sourceTree = "<group>"; };
 		6C94AA2E0ADF3FBC001BE161 /* GPSSatInfo.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = GPSSatInfo.m; sourceTree = "<group>"; };
 		6CA3BCCA09B2A58F00DCB407 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = /System/Library/Frameworks/Accelerate.framework; sourceTree = "<absolute>"; };
@@ -544,8 +537,6 @@
 		A57E64491607BC9700BE1BCA /* WaveNetWPACrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaveNetWPACrack.m; sourceTree = "<group>"; };
 		A57E644A1607BC9700BE1BCA /* WPA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WPA.h; sourceTree = "<group>"; };
 		A57E644B1607BC9700BE1BCA /* WPA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WPA.m; sourceTree = "<group>"; };
-		A57E64601607BD0900BE1BCA /* CrashReportController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CrashReportController.h; sourceTree = "<group>"; };
-		A57E64611607BD0900BE1BCA /* CrashReportController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CrashReportController.m; sourceTree = "<group>"; };
 		A57E64651607BD3200BE1BCA /* DownloadMapController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadMapController.h; sourceTree = "<group>"; };
 		A57E64671607BD3200BE1BCA /* DownloadMapController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DownloadMapController.m; sourceTree = "<group>"; };
 		A57E646C1607BD6700BE1BCA /* MapDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapDownload.h; sourceTree = "<group>"; };
@@ -555,8 +546,6 @@
 		A581FC27177B2B6700C05CE9 /* Apple80211.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Apple80211.h; sourceTree = "<group>"; };
 		A581FC2A177B36A800C05CE9 /* FCS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCS.h; sourceTree = "<group>"; };
 		A581FC2B177B36A800C05CE9 /* FCS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCS.m; sourceTree = "<group>"; };
-		A585F7791771DB7100045928 /* HTTPStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPStream.h; sourceTree = "<group>"; };
-		A585F77A1771DB7100045928 /* HTTPStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPStream.m; sourceTree = "<group>"; };
 		A599CC9B1B82349000C48A5D /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		A599CC9C1B82349000C48A5D /* md4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = md4.h; sourceTree = "<group>"; };
 		A599CC9D1B82349000C48A5D /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
@@ -581,7 +570,6 @@
 			files = (
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				00F57BD306A881210035AE2F /* AppleScriptKit.framework in Frameworks */,
-				0093E65506B2A1F300B3357A /* AddressBook.framework in Frameworks */,
 				A505CE411B271A410095C7A0 /* BIGL.framework in Frameworks */,
 				00F9C64006DB378F00E357F0 /* Security.framework in Frameworks */,
 				00F9C65006DB37E200E357F0 /* Carbon.framework in Frameworks */,
@@ -872,8 +860,6 @@
 		003533F906A5DD8500AB4577 /* Support */ = {
 			isa = PBXGroup;
 			children = (
-				A585F7791771DB7100045928 /* HTTPStream.h */,
-				A585F77A1771DB7100045928 /* HTTPStream.m */,
 				A57E646C1607BD6700BE1BCA /* MapDownload.h */,
 				A57E646D1607BD6700BE1BCA /* MapDownload.m */,
 				003533FA06A5DD8500AB4577 /* GPSController.h */,
@@ -944,8 +930,6 @@
 			children = (
 				A57E64651607BD3200BE1BCA /* DownloadMapController.h */,
 				A57E64671607BD3200BE1BCA /* DownloadMapController.m */,
-				A57E64601607BD0900BE1BCA /* CrashReportController.h */,
-				A57E64611607BD0900BE1BCA /* CrashReportController.m */,
 				6C41BAAE0AA0B52900E0B411 /* GPSInfoController.h */,
 				6C41BAAF0AA0B52900E0B411 /* GPSInfoController.m */,
 				002E7DF706A86C6F00C9D931 /* ImportController.h */,
@@ -1041,7 +1025,6 @@
 				00F9C64E06DB37E200E357F0 /* Carbon.framework */,
 				00F9C64F06DB37E200E357F0 /* IOKit.framework */,
 				00F9C63F06DB378F00E357F0 /* Security.framework */,
-				0093E65306B2A1F300B3357A /* AddressBook.framework */,
 				00F57BD206A881210035AE2F /* AppleScriptKit.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				CA90030A0000000000000001 /* Network.framework */,
@@ -1169,8 +1152,6 @@
 				69BFC5F10F078532008DB1AF /* WavePluginBeaconFlood.m */,
 				694A888A0F3CD87E006B819C /* WavePcapDump.h */,
 				694A888B0F3CD87E006B819C /* WavePcapDump.m */,
-				6C461C6C12CEC58100156CBF /* WavePluginMidi.h */,
-				6C461C6D12CEC58100156CBF /* WavePluginMidi.m */,
 			);
 			name = WavePlugins;
 			path = Sources/WavePlugins;
@@ -1580,7 +1561,6 @@
 				69BFC5F30F078532008DB1AF /* WavePluginBeaconFlood.m in Sources */,
 				A5353826180ABCE1008BB6A1 /* md4.c in Sources */,
 				694A888D0F3CD87E006B819C /* WavePcapDump.m in Sources */,
-				6C461C6F12CEC58100156CBF /* WavePluginMidi.m in Sources */,
 				A57E644D1607BC9700BE1BCA /* AirCrackWrapper.m in Sources */,
 				A57E644F1607BC9700BE1BCA /* LEAP.m in Sources */,
 				A57E64551607BC9700BE1BCA /* WaveNetLEAPCrack.m in Sources */,
@@ -1589,12 +1569,10 @@
 				A57E645B1607BC9700BE1BCA /* WaveNetWEPWordlist.m in Sources */,
 				A57E645D1607BC9700BE1BCA /* WaveNetWPACrack.m in Sources */,
 				A57E645F1607BC9700BE1BCA /* WPA.m in Sources */,
-				A57E64631607BD0900BE1BCA /* CrashReportController.m in Sources */,
 				A57E646B1607BD3200BE1BCA /* DownloadMapController.m in Sources */,
 				A57E646F1607BD6700BE1BCA /* MapDownload.m in Sources */,
 				A57E64731607BD8C00BE1BCA /* WaveWeakContainer.m in Sources */,
 				A5353972180B15B9008BB6A1 /* DESSupport.c in Sources */,
-				A585F77B1771DB7100045928 /* HTTPStream.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

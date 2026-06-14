@@ -70,9 +70,10 @@ enum _rowIndexes {
 {
     _clientCount = 0;
     [aShortTable setHeaderView:nil];
-    
-    SEL trackClientSelector = NSSelectorFromString(@"trackClient:");
-	[aClientTable setDoubleAction:trackClientSelector];
+
+    // S0.4: the client-table double-click action (trackClient:) was removed -- it
+    // only fed the dead i386/Carbon WavePluginMidi signal sonification. No
+    // double-action is wired now (a dangling selector would crash on double-click).
 }
 
 - (void)setDetails:(BOOL)visible {

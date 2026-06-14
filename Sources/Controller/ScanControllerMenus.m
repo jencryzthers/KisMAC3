@@ -32,7 +32,6 @@
 #import "WaveScanner.h"
 #import "KisMACNotifications.h"
 #import "GPSInfoController.h"
-#import "HTTPStream.h"
 #import "../Core/KismetXMLImporter.h"
 #import "../Crypto/WPA.h"
 #import "TrafficController.h"
@@ -47,7 +46,6 @@
 #import "ImportController.h"
 #import "WaveHelper.h"
 #import "WaveContainer.h"
-#import "WavePluginMidi.h"
 #import "../Core/80211b.h"
 #import "GPSController.h"
 
@@ -268,11 +266,6 @@
 					   error:NULL];
 	
 	[[WaveHelper scanController] changeSearchValue:self];
-}
-
-- (IBAction)exportToServer:(id)sender
-{
-
 }
 
 - (IBAction)exportMacstumbler:(id)sender
@@ -653,49 +646,11 @@
     }
 }
 
-- (IBAction)monitorSignal:(id)sender
-{
-	if ([_monitorMenu state]==NSOffState)
-	{
-	   [_monitorMenu setState:NSOnState];
-	   
-	   [_monitorAllMenu setState:NSOffState];
-
-	   [_monitorMenu setTitle:[NSLocalizedString(@"Monitoring ", "menu item") stringByAppendingString:[_curNet BSSID]]];
-	   
-	   [WavePluginMidi setTrackString:[_curNet BSSID]];
-	   [WavePluginMidi setTrackStringClient:@"any"];
-	}
-	else
-	{
-		[_monitorMenu setState:NSOffState];
-		[_monitorMenu setTitle:NSLocalizedString(@"Monitor Signal Strength", "menu item")];
-
-		[WavePluginMidi setTrackString:@""];
-		[WavePluginMidi setTrackStringClient:@""];
-	}
-}
-
-- (IBAction)monitorAllNetworks:(id)sender
-{
-	if ([_monitorAllMenu state]==NSOffState)
-	{
-		[_monitorAllMenu setState:NSOnState];
-		
-		[_monitorMenu setState:NSOffState];
-		[_monitorMenu setTitle:NSLocalizedString(@"Monitor Signal Strength", "menu item")];
-		
-		[WavePluginMidi setTrackString:@"any"];
-		[WavePluginMidi setTrackStringClient:@"any"];
-	}
-	else
-	{
-		[_monitorAllMenu setState:NSOffState];
-		[_monitorAllMenu setTitle:NSLocalizedString(@"Monitor all signals", "menu item")];
-		[WavePluginMidi setTrackString:@""];
-		[WavePluginMidi setTrackStringClient:@""];
-	}	
-}
+// S0.4: -monitorSignal:/-monitorAllNetworks: REMOVED. Their sole purpose was to
+// set the WavePluginMidi track strings (signal-strength sonification via the dead
+// i386/Carbon QuickTime MIDI plugin); they drove no other behavior. The plugin
+// and its two Network-menu items ("Monitor Signal Strength" / "Monitor all
+// signals") were removed with it.
 
 #pragma mark -
 #pragma mark MAP MENU

@@ -34,7 +34,6 @@
 #import "GPSController.h"
 #import "WaveClient.h"
 #import "WaveNet.h"
-#import "../WindowControllers/CrashReportController.h"
 #import "../Controller/TrafficController.h"
 #import "WaveContainer.h"
 #import "../WaveDrivers/WaveDriver.h"
@@ -73,7 +72,6 @@
 // -isKindOfClass: instead, so no C++ header is required here.
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
-#import "WavePluginMidi.h"
 
 NSString *const KisMACViewItemChanged       = @"KisMACViewItemChanged";
 NSString *const KisMACCrackDone             = @"KisMACCrackDone";
@@ -1042,15 +1040,7 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    NSString * logPath;
-    NSString * crashPath;
-    NSFileManager * mang;
-    NSUserDefaults * sets;
-    NSDirectoryEnumerator * enumerator;
-    NSMutableData * crashLogs = nil;
-    
     [self updatePrefs:nil];
-    sets = [NSUserDefaults standardUserDefaults];
 
     // S1.1 - MacBook hardware capability probe. Runs once at launch,
     // asynchronously and NON-DISRUPTIVELY (never drops Wi-Fi / enters monitor
@@ -1186,46 +1176,12 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         [KMInterfaceInventorySelfTest runSelfTestLogging];
     }
 
-    logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];
-    mang = [NSFileManager defaultManager];
-    
-    if ([[sets objectForKey:@"SupressCrashReport"] intValue] != 1)
-    {
-        enumerator = [mang enumeratorAtPath: logPath];
-        
-        //find all the crash logs and turn them into one big data blob
-        for(NSString * file in enumerator)
-        {
-            if([file hasPrefix:@"KisMAC"])
-            {
-                //if we don't have any yet, allocate the data
-                if(nil == crashLogs)
-                {
-                    crashLogs = [[NSMutableData alloc] init];
-                }
-                crashPath = [NSString stringWithFormat:@"%@/%@", logPath, file];
-                DBNSLog(@"Found crash log at: %@", crashPath);
-                [crashLogs appendData: [mang contentsAtPath:crashPath]];
-            }
-        }
-        
-        if(crashLogs != nil)
-        {
-            //append the last kismac log
-            crashPath = [NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Logs/KisMAC.log.1"];
-            [crashLogs appendData: [mang contentsAtPath:crashPath]];
-            
-            CrashReportController* crc = [[CrashReportController alloc] initWithWindowNibName:@"CrashReporter"];
-            [[crc window] setFrameUsingName:@"aKisMAC_CRC"];
-            [[crc window] setFrameAutosaveName:@"aKisMAC_CRC"];
-            
-            [crc setReport:crashLogs];
-            [crc showWindow:self];
-            [[crc window] makeKeyAndOrderFront:self];
-            
-            DBNSLog(@"crash occured the last time kismac started");
-        }
-    }//crash logs enabled
+    // S0.4: the startup crash-reporter was REMOVED (privacy + dead endpoint).
+    // It collected ~/Library/Logs/DiagnosticReports/KisMAC* crash logs and, via
+    // CrashReportController, read the user's Address Book email and POSTed both to
+    // the long-dead http://kismac-ng.org/crash.php over plaintext HTTP. Both the
+    // Contacts read and the upload are gone. If a crash-reporting flow is wanted
+    // later it must be opt-in and privacy-reviewed (no Contacts, no plaintext POST).
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification
@@ -1339,19 +1295,6 @@ void NotifySleep( void * refCon, io_service_t service,
             break;
             
     }
-}
-
-- (void)trackClient:(id)sender
-{
-    [_monitorMenu setState:NSOnState];
-    [_monitorAllMenu setState:NSOffState];
-    NSString *bssid, *mac;
-    bssid = [_curNet BSSID];
-    mac = [aInfoController theRow];
-    [_monitorMenu setTitle:[NSString stringWithFormat:@"%@ %@ - %@",NSLocalizedString(@"Monitoring ", "menu item"), bssid, mac]];
-    [WavePluginMidi setTrackString:bssid];
-    [WavePluginMidi setTrackStringClient:mac];
-    
 }
 
 - (void)selectedTableContextMenuItem:(id)sender
