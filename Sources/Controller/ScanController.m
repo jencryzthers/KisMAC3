@@ -77,6 +77,10 @@
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
 
+// Golden Gate native SwiftUI UI (Stage 1). The generated Swift header exposes
+// the @objc(KGGoldenGateWindowController) hosting controller to Obj-C.
+#import "KisMac2-Swift.h"
+
 NSString *const KisMACViewItemChanged       = @"KisMACViewItemChanged";
 NSString *const KisMACCrackDone             = @"KisMACCrackDone";
 NSString *const KisMACAdvNetViewInvalid     = @"KisMACAdvNetViewInvalid";
@@ -1232,6 +1236,40 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // the long-dead http://kismac-ng.org/crash.php over plaintext HTTP. Both the
     // Contacts read and the upload are gone. If a crash-reporting flow is wanted
     // later it must be opt-in and privacy-reviewed (no Contacts, no plaintext POST).
+
+    // Golden Gate native SwiftUI UI (Stage 1). Adds an ADDITIONAL window
+    // (the existing main window is untouched) via a Window-menu item.
+    // Set KISMAC_GOLDENGATE_AUTOSHOW=1 to open it automatically at launch.
+    [self setupGoldenGateInterface];
+}
+
+// Wires the Golden Gate SwiftUI window into the Window menu programmatically
+// (no XIB edits). Holds the hosting controller strongly so it survives.
+- (void)setupGoldenGateInterface
+{
+    static KGGoldenGateWindowController *goldenGateController = nil;
+    if (goldenGateController == nil) {
+        goldenGateController = [[KGGoldenGateWindowController alloc] init];
+    }
+
+    NSMenu *windowMenu = [[NSApplication sharedApplication] windowsMenu];
+    if (windowMenu != nil &&
+        [windowMenu indexOfItemWithTitle:@"Golden Gate Interface"] < 0) {
+        NSMenuItem *item =
+            [[NSMenuItem alloc] initWithTitle:@"Golden Gate Interface"
+                                       action:@selector(showWindow)
+                                keyEquivalent:@"g"];
+        [item setKeyEquivalentModifierMask:
+            (NSEventModifierFlagCommand | NSEventModifierFlagOption)];
+        [item setTarget:goldenGateController];
+        [windowMenu addItem:[NSMenuItem separatorItem]];
+        [windowMenu addItem:item];
+    }
+
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_GOLDENGATE_AUTOSHOW"]
+            isEqualToString:@"1"]) {
+        [goldenGateController showWindow];
+    }
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification

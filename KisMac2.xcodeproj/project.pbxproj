@@ -219,6 +219,12 @@
 		A5A2F5AF19DDA55B0046299A /* NetworkWEP.tif in Resources */ = {isa = PBXBuildFile; fileRef = A5A2F5A919DDA55B0046299A /* NetworkWEP.tif */; };
 		A5A2F5B019DDA55B0046299A /* NetworkWPA.tif in Resources */ = {isa = PBXBuildFile; fileRef = A5A2F5AA19DDA55B0046299A /* NetworkWPA.tif */; };
 		A5A6FA7E1B289F65006B90E1 /* GBStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = A5A6FA791B289F65006B90E1 /* GBStorage.m */; };
+		CA9020110000000000000001 /* GGTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020010000000000000001 /* GGTheme.swift */; };
+		CA9020120000000000000001 /* GGModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020020000000000000001 /* GGModel.swift */; };
+		CA9020130000000000000001 /* GGComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020030000000000000001 /* GGComponents.swift */; };
+		CA9020140000000000000001 /* GGRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020040000000000000001 /* GGRootView.swift */; };
+		CA9020150000000000000001 /* GGStubViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020050000000000000001 /* GGStubViews.swift */; };
+		CA9020160000000000000001 /* GGWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020060000000000000001 /* GGWindowController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -246,6 +252,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CA9020010000000000000001 /* GGTheme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGTheme.swift; sourceTree = "<group>"; };
+		CA9020020000000000000001 /* GGModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGModel.swift; sourceTree = "<group>"; };
+		CA9020030000000000000001 /* GGComponents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGComponents.swift; sourceTree = "<group>"; };
+		CA9020040000000000000001 /* GGRootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGRootView.swift; sourceTree = "<group>"; };
+		CA9020050000000000000001 /* GGStubViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGStubViews.swift; sourceTree = "<group>"; };
+		CA9020060000000000000001 /* GGWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGWindowController.swift; sourceTree = "<group>"; };
 		CA9000000000000000000001 /* KMHardwareCapability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareCapability.h; sourceTree = "<group>"; };
 		CA9000020000000000000001 /* KMHardwareCapability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareCapability.m; sourceTree = "<group>"; };
 		CA9000010000000000000001 /* KMHardwareProbe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareProbe.h; sourceTree = "<group>"; };
@@ -619,6 +631,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CA9020000000000000000001 /* GoldenGate */ = {
+			isa = PBXGroup;
+			children = (
+				CA9020010000000000000001 /* GGTheme.swift */,
+				CA9020020000000000000001 /* GGModel.swift */,
+				CA9020030000000000000001 /* GGComponents.swift */,
+				CA9020040000000000000001 /* GGRootView.swift */,
+				CA9020050000000000000001 /* GGStubViews.swift */,
+				CA9020060000000000000001 /* GGWindowController.swift */,
+			);
+			name = GoldenGate;
+			path = Sources/GoldenGate;
+			sourceTree = "<group>";
+		};
 		0035332D06A5DD5700AB4577 /* Generic */ = {
 			isa = PBXGroup;
 			children = (
@@ -1062,6 +1088,7 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				CA9020000000000000000001 /* GoldenGate */,
 				CA9000060000000000000001 /* Capabilities */,
 				CA9008000000000000000001 /* Bluetooth */,
 				CA9010000000000000000001 /* HardwareInventory */,
@@ -1654,6 +1681,12 @@
 				A57E646F1607BD6700BE1BCA /* MapDownload.m in Sources */,
 				A57E64731607BD8C00BE1BCA /* WaveWeakContainer.m in Sources */,
 				A5353972180B15B9008BB6A1 /* DESSupport.c in Sources */,
+				CA9020110000000000000001 /* GGTheme.swift in Sources */,
+				CA9020120000000000000001 /* GGModel.swift in Sources */,
+				CA9020130000000000000001 /* GGComponents.swift in Sources */,
+				CA9020140000000000000001 /* GGRootView.swift in Sources */,
+				CA9020150000000000000001 /* GGStubViews.swift in Sources */,
+				CA9020160000000000000001 /* GGWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1818,12 +1851,16 @@
 		00A9158F0858D6410093943F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_EXPLICIT_MODULES = NO;
+				CLANG_ENABLE_MODULES = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				DEFINES_MODULE = NO;
 				DEVELOPMENT_TEAM = DMP42GVPJ3;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
@@ -1834,6 +1871,9 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = KisMAC_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				PRODUCT_MODULE_NAME = KisMac2;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/Subprojects/polarssl/include",
 					"$(SRCROOT)/Subprojects/BIGeneric/**",
@@ -1920,14 +1960,18 @@
 		690377A00F8B1D8F00627C6D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_EXPLICIT_MODULES = NO;
+				CLANG_ENABLE_MODULES = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = KisMac2.entitlements;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = NO;
 				DEVELOPMENT_TEAM = DMP42GVPJ3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1955,8 +1999,11 @@
 					Apple80211,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.igrsoft.kismac;
+				PRODUCT_MODULE_NAME = KisMac2;
 				PRODUCT_NAME = KisMac2;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
