@@ -47,6 +47,7 @@
 #import "ScanHierarch.h"
 #import "ImportController.h"
 #import "GrowlController.h"
+#import "../Capabilities/KMHardwareProbe.h"
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
 #import "WavePluginMidi.h"
@@ -805,7 +806,13 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     
     [self updatePrefs:nil];
     sets = [NSUserDefaults standardUserDefaults];
-    
+
+    // S1.1 - MacBook hardware capability probe. Runs once at launch,
+    // asynchronously and NON-DISRUPTIVELY (never drops Wi-Fi / enters monitor
+    // mode / switches channels / injects). Persists a per-model+OS report and
+    // logs a summary. See Sources/Capabilities/KMHardwareProbe.
+    [KMHardwareProbe runProbeAsynchronouslyWithCompletion:nil];
+
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];
     mang = [NSFileManager defaultManager];
     
