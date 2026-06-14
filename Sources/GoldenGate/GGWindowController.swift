@@ -43,10 +43,10 @@ public final class GGWindowController: NSObject, NSWindowDelegate {
         win.title = "Golden Gate Interface"
         win.appearance = NSAppearance(named: .darkAqua)
         win.contentViewController = hosting
-        // Minimum usable size: the Networks table needs ~1034pt for all 11
-        // columns, so floor the window there to prevent the content from being
-        // clipped on the sides when the user resizes down.
-        win.contentMinSize = NSSize(width: 1080, height: 640)
+        // Lock the minimum to the default opening size (1320x840): the window
+        // can grow but never shrink below the size it launches at, so the
+        // layout is always shown at full fidelity.
+        win.contentMinSize = NSSize(width: 1320, height: 840)
         win.titlebarAppearsTransparent = true
         win.isReleasedWhenClosed = false
         win.delegate = self

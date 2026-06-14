@@ -81,12 +81,30 @@ Toolchain validated: Xcode 26.5 / macOS 27 / Apple Silicon.
 - ✅ Builds (Debug + Release) and launches on current macOS; capability-gated end-to-end.
 - ✅ Offline analysis (pcap/pcapng import, protocol decode, cracking, reporting) works today.
 - 🔜 **Signed/notarized distribution** — pipeline is scaffolded; needs a Developer ID cert.
-- 🔜 **Modern UI** (sidebar/dashboard, Metal graphs, the BLE/USB/LAN workspaces) — the data
-  layer is in place; the GUI rewrite is in progress.
+- 🧪 **Modern "Golden Gate" UI** — a native SwiftUI redesign (all views + Preferences) ships
+  and opens on launch, but it's currently a **visual preview on demo data** (see below); the
+  legacy window remains the functional app.
 - 🔜 **Live Wi-Fi capture / active radio features** — gated behind the hardware probe and,
   where the built-in card can't, an external adapter. Real permission grants
   (Location/Bluetooth/Local-Network) require a signed build.
 - ℹ️ Validated on Apple Silicon; Intel validation pending.
+
+## ⚠️ Golden Gate interface — preview status
+
+KisMAC3 ships a native **SwiftUI "Golden Gate"** redesign (dark Liquid-Glass; unified
+toolbar, Networks / Details / Graph / Map, and an 8-tab Preferences window). It **opens
+automatically on launch** (set `KISMAC_GOLDENGATE_AUTOSHOW=0` to suppress, or use the
+**Window → "Golden Gate Interface"** menu item / ⌥⌘G).
+
+**It is currently a faithful visual preview running on the design's demo data** (10 mocked
+networks) — it is **not yet wired to the real scan / capability engine.** So today:
+
+- **Golden Gate window** = the exact new design, animations included, but **placeholder data**.
+- **Legacy main window** = the **functional** app (real scanning, cracking, capture, etc.).
+
+**Next step** (not done yet): wire Golden Gate to the real data layer already built (capability
+engine + scan + pcap import) and retire the legacy window, so the new UI becomes the actual,
+functional application. Until then, treat Golden Gate as a UI preview.
 
 ## Documentation
 
