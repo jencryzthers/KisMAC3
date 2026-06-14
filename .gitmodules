@@ -3,7 +3,7 @@
 	url = https://github.com/polarssl/polarssl.git
 [submodule "Subprojects/BIGeneric"]
 	path = Subprojects/BIGeneric
-	url = https://github.com/IGRSoft/BIGeneric.git
+	url = https://github.com/jencryzthers/BIGeneric.git
 [submodule "Subprojects/GBStorage"]
 	path = Subprojects/GBStorage
 	url = https://github.com/lmirosevic/GBStorage.git
