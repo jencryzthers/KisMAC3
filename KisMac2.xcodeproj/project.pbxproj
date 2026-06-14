@@ -63,6 +63,7 @@
 		CA9012030000000000000001 /* KMInterfaceInventory.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012040000000000000001 /* KMInterfaceInventory.m */; };
 		CA9012050000000000000001 /* KMInterfaceInventorySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */; };
 		CA9014010000000000000001 /* KMReport.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9014020000000000000001 /* KMReport.m */; };
+		CA9015010000000000000001 /* KMProjectCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9015020000000000000001 /* KMProjectCrypto.m */; };
 		CA9014030000000000000001 /* KMReportSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9014040000000000000001 /* KMReportSelfTest.m */; };
 		CA9013010000000000000001 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA9013020000000000000001 /* SystemConfiguration.framework */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
@@ -312,6 +313,8 @@
 		CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMInterfaceInventorySelfTest.m; sourceTree = "<group>"; };
 		CA9012090000000000000001 /* KMInterfaceInventorySelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMInterfaceInventorySelfTest.h; sourceTree = "<group>"; };
 		CA9014020000000000000001 /* KMReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMReport.m; sourceTree = "<group>"; };
+		CA9015020000000000000001 /* KMProjectCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMProjectCrypto.m; sourceTree = "<group>"; };
+		CA9015030000000000000001 /* KMProjectCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMProjectCrypto.h; sourceTree = "<group>"; };
 		CA9014050000000000000001 /* KMReport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMReport.h; sourceTree = "<group>"; };
 		CA9014040000000000000001 /* KMReportSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMReportSelfTest.m; sourceTree = "<group>"; };
 		CA9014060000000000000001 /* KMReportSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMReportSelfTest.h; sourceTree = "<group>"; };
@@ -664,6 +667,8 @@
 				CA9005080000000000000001 /* KMCampaignManager.m */,
 				CA9005090000000000000001 /* KMSafetySelfTest.h */,
 				CA9005100000000000000001 /* KMSafetySelfTest.m */,
+				CA9015030000000000000001 /* KMProjectCrypto.h */,
+				CA9015020000000000000001 /* KMProjectCrypto.m */,
 			);
 			name = Safety;
 			path = Sources/Safety;
@@ -1523,6 +1528,7 @@
 				CA9012030000000000000001 /* KMInterfaceInventory.m in Sources */,
 				CA9012050000000000000001 /* KMInterfaceInventorySelfTest.m in Sources */,
 				CA9014010000000000000001 /* KMReport.m in Sources */,
+				CA9015010000000000000001 /* KMProjectCrypto.m in Sources */,
 				CA9014030000000000000001 /* KMReportSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,

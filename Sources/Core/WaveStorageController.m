@@ -36,8 +36,11 @@
 #import "WaveNet.h"
 #import "WaveClient.h"   // S6.1: WaveClient class in the secure-unarchive allowlist
 #import "WaveContainer.h"
+#import "WaveScanner.h"   // S6.2 self-test: import golden.pcap offline
 #import "Trace.h"
 #import "ImportController.h"
+#import "../Safety/KMPrivacySettings.h"   // S6.2: projectEncryptionEnabled
+#import "../Safety/KMProjectCrypto.h"      // S6.2: passphrase envelope
 
 #ifndef CRCFUNCTION
     #define CRCFUNCTION(s) @"00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF"
@@ -48,6 +51,86 @@ struct pointCoords {
 } __attribute__((packed));
 
 @implementation WaveStorageController
+
+// S6.2 — Project encryption envelope (passphrase-based).
+//
+// When KMPrivacySettings.projectEncryptionEnabled is ON and an operator
+// passphrase is set (KMProjectCrypto sessionPassphrase, memory-only), the
+// serialized/compressed `.kismac` payload is wrapped through KMProjectCrypto on
+// save and unwrapped on open — BEFORE the existing BIDecompressor / secure-
+// unarchive path. When OFF, behaviour is exactly as before (plain gzip file).
+// An encrypted file is detected on open by its KMENC1 magic header; a
+// non-encrypted file opens unchanged. The passphrase is never written to disk
+// or logged; no key material is logged here.
+
+// YES iff encryption should wrap a SAVE right now (flag on + passphrase set).
++ (BOOL)shouldEncryptOnSave {
+    return [[KMPrivacySettings sharedSettings] isProjectEncryptionEnabled]
+        && [KMProjectCrypto hasSessionPassphrase];
+}
+
+// Allocate a unique temp file path in the system temp dir.
++ (NSString *)temporaryWorkPath {
+    NSString *name = [NSString stringWithFormat:@"kismac-%@.tmp", [[NSUUID UUID] UUIDString]];
+    return [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+}
+
+// If `filename` is an encrypted envelope, decrypt it (using the session
+// passphrase) to a fresh temp file and return that temp path via *outTempPath
+// (caller MUST delete it). On a non-encrypted file, returns `filename` and sets
+// *outTempPath = nil. Returns nil on a missing passphrase / wrong passphrase /
+// tamper / read failure (fails closed — caller treats nil as load failure).
++ (NSString *)decryptedWorkPathForFile:(NSString *)filename tempPath:(NSString **)outTempPath {
+    if (outTempPath) *outTempPath = nil;
+    if (![KMProjectCrypto fileIsEncryptedEnvelope:filename]) {
+        return filename; // plain file — unchanged path
+    }
+    if (![KMProjectCrypto hasSessionPassphrase]) {
+        DBNSLog(@"Encrypted .kismac project: a passphrase is required to open it (none set).");
+        return nil;
+    }
+    NSData *envelope = [NSData dataWithContentsOfFile:filename];
+    NSError *err = nil;
+    NSData *plain = [KMProjectCrypto openData:envelope
+                               withPassphrase:[KMProjectCrypto sessionPassphrase]
+                                        error:&err];
+    if (!plain) {
+        // err.localizedDescription is a generic reason — never the passphrase.
+        DBNSLog(@"Could not open encrypted .kismac project: %@",
+                err.localizedDescription ?: @"authentication failed");
+        return nil;
+    }
+    NSString *tmp = [self temporaryWorkPath];
+    if (![plain writeToFile:tmp atomically:YES]) {
+        DBNSLog(@"Could not stage decrypted project to a temp file.");
+        return nil;
+    }
+    if (outTempPath) *outTempPath = tmp;
+    return tmp;
+}
+
+// Seal the plain gzip payload at `tempPath` into `finalPath` as a KMENC1
+// envelope, then remove the temp. Returns NO (and leaves nothing partial) on
+// failure. Only called when +shouldEncryptOnSave is YES.
++ (BOOL)sealWorkFile:(NSString *)tempPath toFile:(NSString *)finalPath {
+    NSData *payload = [NSData dataWithContentsOfFile:tempPath];
+    if (!payload) {
+        DBNSLog(@"Could not read staged project payload for encryption.");
+        return NO;
+    }
+    NSError *err = nil;
+    NSData *envelope = [KMProjectCrypto sealData:payload
+                                  withPassphrase:[KMProjectCrypto sessionPassphrase]
+                                           error:&err];
+    if (!envelope) {
+        DBNSLog(@"Could not encrypt project: %@", err.localizedDescription ?: @"seal failed");
+        return NO;
+    }
+    BOOL ok = [envelope writeToFile:finalPath atomically:YES];
+    [[NSFileManager defaultManager] removeItemAtPath:tempPath error:NULL];
+    if (!ok) DBNSLog(@"Could not write encrypted project file.");
+    return ok;
+}
 
 // S6.1 — Secure legacy `.kismac` unarchive.
 //
@@ -146,20 +229,32 @@ struct pointCoords {
     NSParameterAssert(filename);
 	NSParameterAssert(container);
 	NSParameterAssert(im);
-    
+
+	// S6.2: if this is an encrypted KMENC1 envelope, decrypt it to a temp file
+	// first (requires the session passphrase); a plain file passes through
+	// unchanged. Fails closed (returns NO) on missing/wrong passphrase or tamper.
+	NSString *workTemp = nil;
+	NSString *workPath = [WaveStorageController decryptedWorkPathForFile:filename tempPath:&workTemp];
+	if (!workPath) return NO;
+
 	//try to decompress from kismac file. if not successful try with legacy formats
-	deco = [[BIDecompressor alloc] initWithFile:filename];
-	if (!deco) return [WaveStorageController loadLegacyFromFile:filename 
+	deco = [[BIDecompressor alloc] initWithFile:workPath];
+	if (!deco) {
+		BOOL legacyRet = [WaveStorageController loadLegacyFromFile:workPath
                                                   withContainer:container andImportController:im];
-	
+		if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
+		return legacyRet;
+	}
+
 	creator = [deco nextString];
 	if (![creator isEqualToString:@"KisMAC"])
     {
 		DBNSLog(@"Invaild creator code %@", creator);
 		[deco close];
+		if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
 		return NO;
 	}
-	
+
 	version = [deco nextString];
 	DBNSLog(@"Loading KisMAC file created by: %@ %@", creator, version);
 	
@@ -170,15 +265,17 @@ struct pointCoords {
     {
 		DBNSLog(@"Could not decode trace: %@", error);
 		[deco close];
+		if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
 		return NO;
 	}
-	
+
 	[[WaveHelper trace] setTrace:data];
 	data = [deco nextData];
 	if (!data || [(NSData*)data length] != sizeof(i))
     {
 		DBNSLog(@"Could not decode net count");
 		[deco close];
+		if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
 		return NO;
 	}
 	memcpy(&i, [(NSData*)data bytes], sizeof(i));
@@ -193,6 +290,7 @@ struct pointCoords {
         {
 			DBNSLog(@"Could not decode wavenet: %@", error);
 			[deco close];
+			if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
 			return NO;
 		}
 		
@@ -203,13 +301,15 @@ struct pointCoords {
             {
 				DBNSLog(@"Adding a network failed! Make sure you are not hitting MAXNETs");
 				[deco close];
+				if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
 				return NO;
 			}
 		}
 		[im increment];
 	}
-	
+
 	[deco close];
+	if (workTemp) [[NSFileManager defaultManager] removeItemAtPath:workTemp error:NULL];
 	return YES;
 }
 
@@ -459,10 +559,16 @@ struct pointCoords {
     NSParameterAssert(filename);
 	NSParameterAssert(container);
 	NSParameterAssert(im);
-	
-	c = [[BICompressor alloc] initWithFile: filename];
+
+	// S6.2: when encryption is on (flag + passphrase), the compressor writes to a
+	// temp file which is then sealed into the encrypted envelope at `filename`.
+	// Otherwise it writes the plain gzip directly to `filename` (unchanged).
+	BOOL encrypt = [WaveStorageController shouldEncryptOnSave];
+	NSString *writePath = encrypt ? [WaveStorageController temporaryWorkPath] : filename;
+
+	c = [[BICompressor alloc] initWithFile: writePath];
 	if (!c) return NO;
-	
+
 	[c addString:@"KisMAC"];
 	[c addString:[[NSBundle mainBundle] infoDictionary][@"CFBundleVersion"]];
     
@@ -503,8 +609,14 @@ struct pointCoords {
 		
 		[im increment];
 	}
-	
+
 	[c close];
+
+	// S6.2: seal the staged plain payload into the encrypted envelope at the
+	// real destination. On failure, nothing partial is left at `filename`.
+	if (encrypt) {
+		return [WaveStorageController sealWorkFile:writePath toFile:filename];
+	}
 	return YES;
 }
 
@@ -916,9 +1028,109 @@ struct pointCoords {
         fprintf(fd, "\t%s\n", [[net comment] UTF8String]);
 		[im increment];
     }
-    
+
     fclose(fd);
     return YES;
+}
+
+#pragma mark - S6.2 self-test
+
+// Import golden.pcap into a throwaway container via the OFFLINE pipeline.
++ (WaveContainer *)pcSelfTestImportGolden:(NSString *)path {
+    WaveContainer *container = [[WaveContainer alloc] init];
+    [container clearAllEntries];
+    WaveScanner *scanner = [[WaveScanner alloc] init];
+    [scanner setValue:container forKey:@"_container"];
+    [scanner readPCAPDump:path];   // OFFLINE — no radio.
+    [container refreshView];
+    return container;
+}
+
+static BOOL stAssert(BOOL cond, NSString *label, NSString *detail, BOOL *all) {
+    *all = *all && cond;
+    DBNSLog(@"[PROJCRYPTO-STORAGE-SELFTEST] %@ %@%@",
+            cond ? @"PASS" : @"FAIL", label,
+            detail.length ? [@" — " stringByAppendingString:detail] : @"");
+    return cond;
+}
+
++ (BOOL)runProjectCryptoStorageSelfTestLogging {
+    DBNSLog(@"[PROJCRYPTO-STORAGE-SELFTEST] === S6.2 .kismac save-with-encryption -> open-with-passphrase ===");
+    BOOL all = YES;
+
+    NSString *fixture = [[NSBundle mainBundle] pathForResource:@"golden" ofType:@"pcap"];
+    if (!fixture) fixture = [[[NSProcessInfo processInfo] environment][@"KISMAC_REPORT_FIXTURE"] stringByExpandingTildeInPath];
+    if (!fixture || ![[NSFileManager defaultManager] fileExistsAtPath:fixture]) {
+        stAssert(NO, @"golden.pcap fixture present", @"no golden.pcap (set KISMAC_REPORT_FIXTURE)", &all);
+        return NO;
+    }
+
+    // Save/restore the real privacy flag + session passphrase so the self-test
+    // is side-effect-free.
+    KMPrivacySettings *privacy = [KMPrivacySettings sharedSettings];
+    BOOL savedFlag = [privacy isProjectEncryptionEnabled];
+    NSString *savedPass = [KMProjectCrypto sessionPassphrase];
+
+    NSString *pass  = @"s6.2-storage-roundtrip-passphrase";
+    NSString *wrong = @"s6.2-storage-roundtrip-passphrasE";
+    NSString *outPath = [NSTemporaryDirectory() stringByAppendingPathComponent:
+                         [NSString stringWithFormat:@"kismac-s62-%@.kismac", [[NSUUID UUID] UUIDString]]];
+    ImportController *im = [[ImportController alloc] init];
+
+    @try {
+        WaveContainer *src = [self pcSelfTestImportGolden:fixture];
+        NSUInteger srcCount = [src count];
+        stAssert(srcCount == 3, @"golden import -> 3 networks",
+                 [NSString stringWithFormat:@"count=%lu", (unsigned long)srcCount], &all);
+
+        // SAVE with encryption ON + passphrase set.
+        privacy.projectEncryptionEnabled = YES;
+        [KMProjectCrypto setSessionPassphrase:pass];
+        BOOL saved = [self saveToFile:outPath withContainer:src andImportController:im];
+        stAssert(saved, @"encrypted save succeeded", nil, &all);
+
+        // The file on disk is a KMENC1 envelope (NOT a readable gzip/plist).
+        stAssert([KMProjectCrypto fileIsEncryptedEnvelope:outPath],
+                 @"on-disk file is a KMENC1 envelope", nil, &all);
+
+        // OPEN with the RIGHT passphrase -> network set preserved.
+        WaveContainer *ok = [[WaveContainer alloc] init];
+        [ok clearAllEntries];
+        BOOL loaded = [self loadFromFile:outPath withContainer:ok andImportController:im];
+        stAssert(loaded && [ok count] == srcCount,
+                 @"open with right passphrase preserves network set",
+                 [NSString stringWithFormat:@"loaded=%d count=%lu/%lu", loaded,
+                  (unsigned long)[ok count], (unsigned long)srcCount], &all);
+
+        // OPEN with WRONG passphrase -> fails cleanly (no networks loaded).
+        [KMProjectCrypto setSessionPassphrase:wrong];
+        WaveContainer *bad = [[WaveContainer alloc] init];
+        [bad clearAllEntries];
+        BOOL loadedWrong = [self loadFromFile:outPath withContainer:bad andImportController:im];
+        stAssert(!loadedWrong && [bad count] == 0,
+                 @"open with WRONG passphrase fails cleanly (no data)",
+                 [NSString stringWithFormat:@"loaded=%d count=%lu", loadedWrong, (unsigned long)[bad count]], &all);
+
+        // OPEN with NO passphrase -> fails cleanly.
+        [KMProjectCrypto clearSessionPassphrase];
+        WaveContainer *none = [[WaveContainer alloc] init];
+        [none clearAllEntries];
+        BOOL loadedNone = [self loadFromFile:outPath withContainer:none andImportController:im];
+        stAssert(!loadedNone && [none count] == 0,
+                 @"open with NO passphrase fails cleanly (no data)",
+                 [NSString stringWithFormat:@"loaded=%d count=%lu", loadedNone, (unsigned long)[none count]], &all);
+    } @catch (NSException *ex) {
+        stAssert(NO, @"no exception during storage round-trip",
+                 [NSString stringWithFormat:@"%@ — %@", ex.name, ex.reason], &all);
+    }
+
+    // Cleanup + restore.
+    [[NSFileManager defaultManager] removeItemAtPath:outPath error:NULL];
+    privacy.projectEncryptionEnabled = savedFlag;
+    [KMProjectCrypto setSessionPassphrase:savedPass];
+
+    DBNSLog(@"[PROJCRYPTO-STORAGE-SELFTEST] %@", all ? @"ALL PASS" : @"FAILURES PRESENT");
+    return all;
 }
 
 @end

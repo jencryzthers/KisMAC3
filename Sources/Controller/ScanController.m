@@ -64,6 +64,8 @@
 #import "../LAN/KMLANSelfTest.h"
 #import "../LAN/KMInterfaceInventorySelfTest.h"
 #import "../Reporting/KMReport.h"
+#import "../Safety/KMProjectCrypto.h"
+#import "WaveStorageController.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
 #import "../WaveDrivers/WaveDriverKismet.h"
@@ -1186,6 +1188,22 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // OFFLINE / LOCAL-ONLY. See Sources/Reporting/KMReportSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_REPORT_SELFTEST"] isEqualToString:@"1"]) {
         [KMReport runSelfTestLogging];
+    }
+
+    // S6.2 - Project encryption self-test. Runs ONLY when
+    // KISMAC_PROJCRYPTO_SELFTEST=1 is set. Part 1: the KMProjectCrypto envelope
+    // (AES-256-CBC + HMAC-SHA256 encrypt-then-MAC, PBKDF2-HMAC-SHA256 KDF) —
+    // seal/open round-trip, WRONG-passphrase + TAMPERED ciphertext/tag failures
+    // (no plaintext leak), versioning, and salt/iv uniqueness across seals.
+    // Part 2: a full .kismac save-with-encryption -> open-with-passphrase
+    // round-trip through WaveStorageController over golden.pcap (network set
+    // preserved; open without / with the wrong passphrase fails cleanly).
+    // CPU-only / OFFLINE / LOCAL-ONLY: no radio, no monitor, no channel switch;
+    // the passphrase is memory-only and never logged. See KMProjectCrypto +
+    // WaveStorageController.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_PROJCRYPTO_SELFTEST"] isEqualToString:@"1"]) {
+        [KMProjectCrypto runSelfTestLogging];
+        [WaveStorageController runProjectCryptoStorageSelfTestLogging];
     }
 
     // S0.4: the startup crash-reporter was REMOVED (privacy + dead endpoint).

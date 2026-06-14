@@ -48,6 +48,13 @@
 // class or corrupt data — never the old insecure -unarchiveObjectWithData: path.
 + (NSSet<Class> *)secureLegacyAllowedClasses;
 + (NSDictionary *)secureLegacyDictionaryFromData:(NSData *)rawData;
+
+// S6.2 — full save-with-encryption -> open-with-passphrase round-trip self-test
+// through this controller (imports golden.pcap, saves encrypted, reloads,
+// asserts the network set is preserved, and that open WITHOUT / with WRONG
+// passphrase fails cleanly). Returns YES iff all sub-checks pass. Logs PASS/FAIL,
+// never the passphrase. Restores any prior privacy flag + session passphrase.
++ (BOOL)runProjectCryptoStorageSelfTestLogging;
 + (BOOL)exportNSToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;
 + (BOOL)exportKMLToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;
 + (BOOL)exportMacStumblerToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;
