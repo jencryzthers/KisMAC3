@@ -49,6 +49,43 @@ code still must be removed), but their *acceptance bar moves from "make it compi
 "replace the deprecated API / remove the dead code without regressing the now-green
 build"*. This should be reflected when those slices are picked up.
 
+## Runtime smoke test (S0.1 runtime addendum)
+
+After the green build, the produced app was launched directly from the build product to
+confirm it reaches its runtime event loop — not just that it compiles. **Result: it
+launches and runs clean.**
+
+```
+$ …/Build/Products/Debug/KisMac2.app/Contents/MacOS/KisMac2
+2026-06-14 00:12:06 KisMac2[37734] KisMAC startup done. Version Alpha 4.
+                    Build from Jun 14 2026 00:03:04. NSAppKitVersionNumber: 2757.5
+2026-06-14 00:12:06 KisMac2[37734] Registering with Growl
+2026-06-14 00:12:06 KisMac2[37734] Using native macOS notifications
+Error Domain=kCLErrorDomain Code=1 "(null)"
+```
+
+| Check | Result |
+|---|---|
+| Process | **alive** (PID 37734), no early exit, left running |
+| Crash reports | none in `~/Library/Logs/DiagnosticReports/` |
+| AppKit init | reaches `applicationDidFinishLaunching` (startup-done log) on AppKit 2757.5 / macOS 27 |
+| Notifications | **`Using native macOS notifications`** — the Growl→`NSUserNotification` migration works at runtime. (The preceding `Registering with Growl` is a stale log string, not a real Growl call — harmless; clean it up under S0.2.) |
+| CoreLocation | **`kCLErrorDomain Code=1` (denied)** — runtime confirmation of the parity-audit gap: no authorization is requested and no `NSLocationWhenInUseUsageDescription` exists, so location fails closed. Owner: **S1.2**. |
+| Code signature | ad-hoc / linker-signed (`codesign -dv` → `flags=0x20002(adhoc)`); bundle id `com.igrsoft.kismac`, min OS 13.0. |
+
+**Limitation — no pixel capture.** This CLI context lacks **Screen Recording**
+permission (`screencapture` → `could not create image from display`) and **Accessibility**
+permission (System Events → `not allowed assistive access`), and no `Quartz` Python
+module is available, so the window could not be screenshotted or introspected by the
+agent. Visual confirmation of the main window's appearance is therefore **deferred to
+the human operator** (the window was left open for that). To enable agent-driven GUI
+capture later, grant Screen Recording (+ Accessibility) to the terminal app.
+
+**Milestone-4 Definition-of-Done impact:** "Launches outside Xcode" is **partially
+met** — the app launches from the unsigned build product and runs. The *signed*-launch
+half (Developer ID + hardened runtime, so it runs after Gatekeeper/quarantine) remains
+owned by **S8.x** (see ENV-1).
+
 ## Environment
 
 | Item | Value |
