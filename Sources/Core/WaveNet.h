@@ -57,7 +57,11 @@ struct graphStruct
 @class ImportController;
 @class KMProtocolMetadata;
 
-@interface WaveNet : NSObject /*<UKTest>*/ {
+// S6.1: adopts NSSecureCoding so a legacy `.kismac` archive (root NSDictionary
+// whose values are WaveNet objects) loads via the secure
+// +unarchivedObjectOfClasses:fromData:error: path instead of the insecure
+// -unarchiveObjectWithData:. See WaveStorageController +secureUnarchive...
+@interface WaveNet : NSObject <NSSecureCoding> /*<UKTest>*/ {
     NSInteger					_netID;					//network ID
     NSInteger					_maxSignal;				//biggest signal ever
     NSInteger					_curSignal;				//current signal

@@ -28,7 +28,11 @@
 
 @class WavePacket;
 
-@interface WaveClient : NSObject
+// S6.1: adopts NSSecureCoding so a legacy `.kismac` archive can be loaded via
+// the secure +unarchivedObjectOfClasses:fromData:error: path (no arbitrary-class
+// deserialization). WaveClient instances appear nested inside an archived WaveNet
+// (the `aClients` dictionary).
+@interface WaveClient : NSObject <NSSecureCoding>
 {
     NSString *_ID, *_vendor;
     NSString * _IPAddress;

@@ -63,6 +63,7 @@
 #import "../HardwareInventory/KMHardwareInventorySelfTest.h"
 #import "../LAN/KMLANSelfTest.h"
 #import "../LAN/KMInterfaceInventorySelfTest.h"
+#import "../Reporting/KMReport.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
 #import "../WaveDrivers/WaveDriverKismet.h"
@@ -1174,6 +1175,17 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // Sources/LAN/KMInterfaceInventorySelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_IFACE_SELFTEST"] isEqualToString:@"1"]) {
         [KMInterfaceInventorySelfTest runSelfTestLogging];
+    }
+
+    // S6.1 - Report + secure-load self-test. Runs ONLY when
+    // KISMAC_REPORT_SELFTEST=1 is set. Part A: secure `.kismac` unarchive
+    // round-trip + malformed/hostile-input fail-closed (no arbitrary-class
+    // decode, no crash). Part B: import golden.pcap, generate the unified
+    // report, assert sections + 3 known networks + the capability/blocked
+    // section, and prove redaction ON emits no raw SSID/BSSID (OFF emits them).
+    // OFFLINE / LOCAL-ONLY. See Sources/Reporting/KMReportSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_REPORT_SELFTEST"] isEqualToString:@"1"]) {
+        [KMReport runSelfTestLogging];
     }
 
     // S0.4: the startup crash-reporter was REMOVED (privacy + dead endpoint).

@@ -41,6 +41,13 @@
 + (NSString*)webServiceDataOfContainer:(WaveContainer*)container andImportController:(ImportController*)im;
 
 + (BOOL)saveToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;
+
+// S6.1 — secure legacy `.kismac` unarchive (exposed for the S6.1 self-test).
+// Decodes an NSKeyedArchiver graph with an EXPLICIT NSSecureCoding allowlist via
+// +unarchivedObjectOfClasses:fromData:error:. Returns nil (logs) on a disallowed
+// class or corrupt data — never the old insecure -unarchiveObjectWithData: path.
++ (NSSet<Class> *)secureLegacyAllowedClasses;
++ (NSDictionary *)secureLegacyDictionaryFromData:(NSData *)rawData;
 + (BOOL)exportNSToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;
 + (BOOL)exportKMLToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;
 + (BOOL)exportMacStumblerToFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im;

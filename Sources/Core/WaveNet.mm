@@ -141,17 +141,21 @@ NSInteger lengthSort(id string1, id string2, void *context)
     return self;
 }
 
+// S6.1 - NSSecureCoding. Permits this class in the secure-unarchiver allowlist.
++ (BOOL)supportsSecureCoding { return YES; }
+
 - (id)initWithCoder:(NSCoder *)coder {
     waypoint wp;
     NSInteger bssid[6];
     NSData *data;
-        
+
     if (![coder allowsKeyedCoding]) {
         DBNSLog(@"Cannot decode this way");
         return nil;
     }
 
-    if ([coder decodeObjectForKey:@"aFirstDate"] == nil) {
+    // S6.1: typed decode. NSDate here too so the secure unarchiver enforces it.
+    if ([coder decodeObjectOfClass:[NSDate class] forKey:@"aFirstDate"] == nil) {
         DBNSLog(@"Invalid net, dropping!");
         return nil;
     }
@@ -186,11 +190,11 @@ NSInteger lengthSort(id string1, id string2, void *context)
     wp._long = [coder decodeDoubleForKey:@"a_Long"];
     wp._elevation = [coder decodeDoubleForKey:@"a_Elev"];
     
-    aLat = [coder decodeObjectForKey:@"aLat"];
-    aLong = [coder decodeObjectForKey:@"aLong"];
-    aElev = [coder decodeObjectForKey:@"aElev"];
-    
-    _ID = [coder decodeObjectForKey:@"aID"];
+    aLat = [coder decodeObjectOfClass:[NSString class] forKey:@"aLat"];
+    aLong = [coder decodeObjectOfClass:[NSString class] forKey:@"aLong"];
+    aElev = [coder decodeObjectOfClass:[NSString class] forKey:@"aElev"];
+
+    _ID = [coder decodeObjectOfClass:[NSString class] forKey:@"aID"];
     if (_ID != nil && sscanf([_ID UTF8String], "%2lX%2lX%2lX%2lX%2lX%2lX", &bssid[0], &bssid[1], &bssid[2], &bssid[3], &bssid[4], &bssid[5])!=6) {
         DBNSLog(@"Error could not decode ID %@!", _ID);
     }
@@ -198,8 +202,8 @@ NSInteger lengthSort(id string1, id string2, void *context)
     for (NSInteger x=0; x<6; ++x)
         _rawID[x] = bssid[x];
     
-    _SSID=[coder decodeObjectForKey:@"aSSID"];
-    _BSSID=[coder decodeObjectForKey:@"aBSSID"];
+    _SSID=[coder decodeObjectOfClass:[NSString class] forKey:@"aSSID"];
+    _BSSID=[coder decodeObjectOfClass:[NSString class] forKey:@"aBSSID"];
     if (![_BSSID isEqualToString:@"<no bssid>"]) {
         if (_BSSID!=nil && sscanf([_BSSID UTF8String], "%2lX:%2lX:%2lX:%2lX:%2lX:%2lX", &bssid[0], &bssid[1], &bssid[2], &bssid[3], &bssid[4], &bssid[5])!=6)
             DBNSLog(@"Error could not decode BSSID %@!", _BSSID);
@@ -210,27 +214,33 @@ NSInteger lengthSort(id string1, id string2, void *context)
             _rawBSSID[x] = bssid[0];
     }
     
-    _date = [coder decodeObjectForKey:@"aDate"];
-    aFirstDate=[coder decodeObjectForKey:@"aFirstDate"];
-    
-    data = [coder decodeObjectForKey:@"ivData0"];
+    _date = [coder decodeObjectOfClass:[NSDate class] forKey:@"aDate"];
+    aFirstDate=[coder decodeObjectOfClass:[NSDate class] forKey:@"aFirstDate"];
+
+    data = [coder decodeObjectOfClass:[NSData class] forKey:@"ivData0"];
     if (data) _ivData[0] = [[WaveWeakContainer alloc] initWithData:data];
-    data = [coder decodeObjectForKey:@"ivData1"];
+    data = [coder decodeObjectOfClass:[NSData class] forKey:@"ivData1"];
     if (data) _ivData[1] = [[WaveWeakContainer alloc] initWithData:data];
-    data = [coder decodeObjectForKey:@"ivData2"];
+    data = [coder decodeObjectOfClass:[NSData class] forKey:@"ivData2"];
     if (data) _ivData[2] = [[WaveWeakContainer alloc] initWithData:data];
-    data = [coder decodeObjectForKey:@"ivData3"];
+    data = [coder decodeObjectOfClass:[NSData class] forKey:@"ivData3"];
     if (data) _ivData[3] = [[WaveWeakContainer alloc] initWithData:data];
-    
+
     //_packetsLog=[[coder decodeObjectForKey:@"aPacketsLog"] retain];
     //_ARPLog=[[coder decodeObjectForKey:@"aARPLog"] retain]; cannot be used because it is now data
     //_ACKLog=[[coder decodeObjectForKey:@"aACKLog"] retain];
-    _password=[coder decodeObjectForKey:@"aPassword"];
-    aComment=[coder decodeObjectForKey:@"aComment"];
-    _coordinates=[coder decodeObjectForKey:@"_coordinates"];
-    
-    aClients=[coder decodeObjectForKey:@"aClients"];
-    aClientKeys=[coder decodeObjectForKey:@"aClientKeys"];
+    _password=[coder decodeObjectOfClass:[NSString class] forKey:@"aPassword"];
+    aComment=[coder decodeObjectOfClass:[NSString class] forKey:@"aComment"];
+    // S6.1: legacy `_coordinates` was archived as either an NSDictionary or NSData.
+    _coordinates=[coder decodeObjectOfClasses:[NSSet setWithObjects:[NSDictionary class], [NSData class], [NSString class], [NSDate class], [NSNumber class], nil]
+                                       forKey:@"_coordinates"];
+
+    // S6.1: aClients is a dictionary { NSString : WaveClient }, aClientKeys an
+    // array of NSString. decodeObjectOfClasses: enforces the whole nested graph.
+    aClients=[coder decodeObjectOfClasses:[NSSet setWithObjects:[NSDictionary class], [NSString class], [WaveClient class], nil]
+                                   forKey:@"aClients"];
+    aClientKeys=[coder decodeObjectOfClasses:[NSSet setWithObjects:[NSArray class], [NSString class], nil]
+                                      forKey:@"aClientKeys"];
     
     if (!_packetsLog) _packetsLog=[NSMutableArray arrayWithCapacity:20];
     if (!_ARPLog) _ARPLog=[NSMutableArray arrayWithCapacity:20];
@@ -264,6 +274,62 @@ NSInteger lengthSort(id string1, id string2, void *context)
     [self updateSettings:nil];
     [_dataLock unlock];
     return self;
+}
+
+// S6.1 - symmetric encoder. Legacy KisMAC dropped the WaveNet/WaveClient encode
+// path (saving now goes through the plist dataDictionary in WaveStorageController),
+// but a faithful keyed encoder is required to (a) keep NSSecureCoding well-formed
+// and (b) let the S6.1 round-trip self-test build a legacy-shaped `.kismac`
+// archive to prove the secure +unarchivedObjectOfClasses: load path. Keys mirror
+// -initWithCoder:.
+- (void)encodeWithCoder:(NSCoder *)coder {
+    [_dataLock lock];
+    [coder encodeInt:(int)_channel forKey:@"aChannel"];
+    [coder encodeInt:(int)_primaryChannel forKey:@"originalChannel"];
+    [coder encodeInt:(int)_netID forKey:@"aNetID"];
+    [coder encodeInt:(int)_packets forKey:@"aPackets"];
+    [coder encodeInt:(int)_maxSignal forKey:@"aMaxSignal"];
+    [coder encodeInt:(int)_curSignal forKey:@"aCurSignal"];
+    [coder encodeInt:(int)_type forKey:@"aType"];
+    [coder encodeInt:(int)_isWep forKey:@"aIsWep"];
+    [coder encodeInt:(int)_dataPackets forKey:@"aDataPackets"];
+    [coder encodeInt:(int)_mgmtPackets forKey:@"aMgmtPackets"];
+    [coder encodeInt:(int)_ctrlPackets forKey:@"aCtrlPackets"];
+    [coder encodeBool:_liveCaptured forKey:@"_liveCaptured"];
+    for (NSUInteger x = 0; x < 14; ++x) {
+        [coder encodeInt:(int)_packetsPerChannel[x]
+                  forKey:[NSString stringWithFormat:@"_packetsPerChannel%@", @(x)]];
+    }
+    [coder encodeDouble:_bytes forKey:@"aBytes"];
+
+    waypoint wp;
+    if (_netView) { wp = [_netView coord]; }
+    else { wp._lat = 0; wp._long = 100; wp._elevation = 0; } // 100 = "no coord"
+    [coder encodeDouble:wp._lat forKey:@"a_Lat"];
+    [coder encodeDouble:wp._long forKey:@"a_Long"];
+    [coder encodeDouble:wp._elevation forKey:@"a_Elev"];
+
+    if (aLat)  [coder encodeObject:aLat forKey:@"aLat"];
+    if (aLong) [coder encodeObject:aLong forKey:@"aLong"];
+    if (aElev) [coder encodeObject:aElev forKey:@"aElev"];
+    if (_ID)    [coder encodeObject:_ID forKey:@"aID"];
+    if (_SSID)  [coder encodeObject:_SSID forKey:@"aSSID"];
+    if (_BSSID) [coder encodeObject:_BSSID forKey:@"aBSSID"];
+    if (_date)      [coder encodeObject:_date forKey:@"aDate"];
+    // aFirstDate must be present: -initWithCoder: rejects the net if it is nil.
+    [coder encodeObject:(aFirstDate ?: [NSDate date]) forKey:@"aFirstDate"];
+    for (int k = 0; k < 4; ++k) {
+        if (_ivData[k]) {
+            NSData *d = [_ivData[k] data];
+            if (d) [coder encodeObject:d forKey:[NSString stringWithFormat:@"ivData%d", k]];
+        }
+    }
+    if (_password) [coder encodeObject:_password forKey:@"aPassword"];
+    if (aComment)  [coder encodeObject:aComment forKey:@"aComment"];
+    if (_coordinates) [coder encodeObject:_coordinates forKey:@"_coordinates"];
+    if (aClients)    [coder encodeObject:aClients forKey:@"aClients"];
+    if (aClientKeys) [coder encodeObject:aClientKeys forKey:@"aClientKeys"];
+    [_dataLock unlock];
 }
 
 - (id)initWithNetstumbler:(const char*)buf andDate:(NSString *)date {

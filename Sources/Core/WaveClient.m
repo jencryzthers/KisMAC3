@@ -39,35 +39,62 @@
 #pragma mark Coder stuff
 #pragma mark -
 
+// S6.1 - NSSecureCoding. Permits this class in the secure-unarchiver allowlist.
++ (BOOL)supportsSecureCoding { return YES; }
+
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
     if ( [coder allowsKeyedCoding] ) {
+        // S6.1: typed decodes (decodeObjectOfClass:forKey:) so the secure
+        // unarchiver enforces the expected class at every node. Scalars are
+        // already type-safe via the primitive decoders.
         _curSignal=[coder decodeIntForKey:@"aCurSignal"];
 
         _receivedBytes=[coder decodeDoubleForKey:@"aReceivedBytes"];
         _sentBytes=[coder decodeDoubleForKey:@"aSentBytes"];
-        
-        _ID     = [coder decodeObjectForKey:@"aID"];
-        _date   = [coder decodeObjectForKey:@"aDate"];
-        _IPAddress = [coder decodeObjectForKey:@"aIPA"];
-        
+
+        _ID     = [coder decodeObjectOfClass:[NSString class] forKey:@"aID"];
+        _date   = [coder decodeObjectOfClass:[NSDate class] forKey:@"aDate"];
+        _IPAddress = [coder decodeObjectOfClass:[NSString class] forKey:@"aIPA"];
+
         //WPA stuff
-        _sNonce = [coder decodeObjectForKey:@"sNonce"];
-        _aNonce = [coder decodeObjectForKey:@"aNonce"];
-        _packet = [coder decodeObjectForKey:@"packet"];
-        _MIC    = [coder decodeObjectForKey:@"MIC"];
+        _sNonce = [coder decodeObjectOfClass:[NSData class] forKey:@"sNonce"];
+        _aNonce = [coder decodeObjectOfClass:[NSData class] forKey:@"aNonce"];
+        _packet = [coder decodeObjectOfClass:[NSData class] forKey:@"packet"];
+        _MIC    = [coder decodeObjectOfClass:[NSData class] forKey:@"MIC"];
         _wpaKeyCipher = [coder decodeIntForKey:@"wpaKeyCipher"];
-        
+
         //LEAP stuff
-        _leapUsername   = [coder decodeObjectForKey:@"leapUsername"];
-        _leapChallenge  = [coder decodeObjectForKey:@"leapChallenge"];
-        _leapResponse   = [coder decodeObjectForKey:@"leapResponse"];
-        
+        _leapUsername   = [coder decodeObjectOfClass:[NSString class] forKey:@"leapUsername"];
+        _leapChallenge  = [coder decodeObjectOfClass:[NSData class] forKey:@"leapChallenge"];
+        _leapResponse   = [coder decodeObjectOfClass:[NSData class] forKey:@"leapResponse"];
+
         _changed = YES;
      } else {
         DBNSLog(@"Cannot decode this way");
     }
     return self;
+}
+
+// S6.1 - symmetric encoder. Legacy KisMAC dropped the WaveClient/WaveNet encode
+// path (saving now goes through plist dataDictionary), but a faithful encoder is
+// required to (a) keep NSSecureCoding well-formed and (b) let the S6.1 round-trip
+// self-test build a legacy-shaped archive to prove the secure load path.
+- (void)encodeWithCoder:(NSCoder *)coder {
+    [coder encodeInt:(int)_curSignal forKey:@"aCurSignal"];
+    [coder encodeDouble:_receivedBytes forKey:@"aReceivedBytes"];
+    [coder encodeDouble:_sentBytes forKey:@"aSentBytes"];
+    if (_ID)        [coder encodeObject:_ID forKey:@"aID"];
+    if (_date)      [coder encodeObject:_date forKey:@"aDate"];
+    if (_IPAddress) [coder encodeObject:_IPAddress forKey:@"aIPA"];
+    if (_sNonce)    [coder encodeObject:_sNonce forKey:@"sNonce"];
+    if (_aNonce)    [coder encodeObject:_aNonce forKey:@"aNonce"];
+    if (_packet)    [coder encodeObject:_packet forKey:@"packet"];
+    if (_MIC)       [coder encodeObject:_MIC forKey:@"MIC"];
+    [coder encodeInt:(int)_wpaKeyCipher forKey:@"wpaKeyCipher"];
+    if (_leapUsername)  [coder encodeObject:_leapUsername forKey:@"leapUsername"];
+    if (_leapChallenge) [coder encodeObject:_leapChallenge forKey:@"leapChallenge"];
+    if (_leapResponse)  [coder encodeObject:_leapResponse forKey:@"leapResponse"];
 }
 
 - (id)initWithDataDictionary:(NSDictionary*)dict {

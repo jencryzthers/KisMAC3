@@ -34,6 +34,7 @@
 #import "ScanController.h"
 #import "WaveHelper.h"
 #import "WaveNet.h"
+#import "WaveClient.h"   // S6.1: WaveClient class in the secure-unarchive allowlist
 #import "WaveContainer.h"
 #import "Trace.h"
 #import "ImportController.h"
@@ -48,24 +49,79 @@ struct pointCoords {
 
 @implementation WaveStorageController
 
+// S6.1 — Secure legacy `.kismac` unarchive.
+//
+// The legacy `.kismac` format is an NSKeyedArchiver graph rooted at an
+// NSDictionary { "Creator"?, "Trace"?, "Networks" }. The original code decoded
+// it with -unarchiveObjectWithData:/-unarchiveObjectWithFile:, which deserialize
+// ARBITRARY classes from an untrusted file (the documented S6.x security debt).
+//
+// This replaces those with +unarchivedObjectOfClasses:fromData:error: under an
+// EXPLICIT allowlist of exactly the classes the format legitimately contains:
+//   - Foundation containers/leaves: NSDictionary, NSArray, NSString, NSDate,
+//     NSData, NSNumber (+ mutable variants);
+//   - the two KisMAC model classes actually coded into the graph: WaveNet and
+//     WaveClient (both now adopt NSSecureCoding, see WaveNet.h / WaveClient.h).
+// Any other class (or corrupt data) makes the decode fail with an NSError; we
+// log it and return nil — no arbitrary-class instantiation, no crash.
++ (NSSet<Class> *)secureLegacyAllowedClasses {
+    static NSSet<Class> *allowed = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        allowed = [NSSet setWithObjects:
+                   [NSDictionary class], [NSMutableDictionary class],
+                   [NSArray class],      [NSMutableArray class],
+                   [NSString class],     [NSMutableString class],
+                   [NSData class],       [NSMutableData class],
+                   [NSDate class],       [NSNumber class],
+                   [WaveNet class],      [WaveClient class],
+                   nil];
+    });
+    return allowed;
+}
+
+// Securely unarchive a legacy `.kismac` graph and verify the root is the
+// expected NSDictionary. Returns nil (and logs) on any failure — malformed or
+// hostile input fails closed and never runs the old insecure path.
++ (NSDictionary *)secureLegacyDictionaryFromData:(NSData *)rawData {
+    if (![rawData isKindOfClass:[NSData class]] || rawData.length == 0) {
+        DBNSLog(@"Secure legacy unarchive: no data");
+        return nil;
+    }
+    NSError *err = nil;
+    id data = [NSKeyedUnarchiver unarchivedObjectOfClasses:[self secureLegacyAllowedClasses]
+                                                  fromData:rawData
+                                                     error:&err];
+    if (!data || err) {
+        DBNSLog(@"Secure legacy unarchive failed (rejected disallowed class or corrupt archive): %@",
+                err.localizedDescription ?: @"unknown");
+        return nil;
+    }
+    if (![data isKindOfClass:[NSDictionary class]]) {
+        DBNSLog(@"Could not load data, because root object is not a NSDictionary!");
+        return nil;
+    }
+    return data;
+}
+
 //loads a saved kismac meta file. pre 0.2a
 + (BOOL)loadLegacyFromFile:(NSString*)filename withContainer:(WaveContainer*)container andImportController:(ImportController*)im {
     id data;
     BOOL ret = YES;
-	
+
     NSParameterAssert(filename);
 	NSParameterAssert(container);
 	NSParameterAssert(im);
-    
+
 	NSData *rawData = [NSData dataWithContentsOfFile:filename];
 	if (!rawData) {
         DBNSLog(@"Could not load data!");
 		return NO;
 	}
-	
-	data = [NSKeyedUnarchiver unarchiveObjectWithData:rawData];
+
+	// S6.1: secure unarchive with explicit allowlist (was -unarchiveObjectWithData:).
+	data = [self secureLegacyDictionaryFromData:rawData];
     if (![data isKindOfClass:[NSDictionary class]]) {
-        DBNSLog(@"Could not load data, because root object is not a NSDictionary!");
         return NO;
     }
     
@@ -167,12 +223,12 @@ struct pointCoords {
 	NSParameterAssert(container);
 	NSParameterAssert(im);
 
-	data = [NSKeyedUnarchiver unarchiveObjectWithFile:filename];
+	// S6.1: secure unarchive with explicit allowlist (was -unarchiveObjectWithFile:).
+	data = [self secureLegacyDictionaryFromData:[NSData dataWithContentsOfFile:filename]];
     if (![data isKindOfClass:[NSDictionary class]]) {
-        DBNSLog(@"Could not load data, because root object is not a NSDictionary!");
         return NO;
     }
-    
+
     d = data;
     
     if (d[@"Creator"]) { //could be a new file

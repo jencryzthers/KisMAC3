@@ -62,6 +62,8 @@
 		CA9012010000000000000001 /* KMNetworkInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012020000000000000001 /* KMNetworkInterface.m */; };
 		CA9012030000000000000001 /* KMInterfaceInventory.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012040000000000000001 /* KMInterfaceInventory.m */; };
 		CA9012050000000000000001 /* KMInterfaceInventorySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */; };
+		CA9014010000000000000001 /* KMReport.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9014020000000000000001 /* KMReport.m */; };
+		CA9014030000000000000001 /* KMReportSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9014040000000000000001 /* KMReportSelfTest.m */; };
 		CA9013010000000000000001 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA9013020000000000000001 /* SystemConfiguration.framework */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
@@ -309,6 +311,10 @@
 		CA9012080000000000000001 /* KMInterfaceInventory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMInterfaceInventory.h; sourceTree = "<group>"; };
 		CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMInterfaceInventorySelfTest.m; sourceTree = "<group>"; };
 		CA9012090000000000000001 /* KMInterfaceInventorySelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMInterfaceInventorySelfTest.h; sourceTree = "<group>"; };
+		CA9014020000000000000001 /* KMReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMReport.m; sourceTree = "<group>"; };
+		CA9014050000000000000001 /* KMReport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMReport.h; sourceTree = "<group>"; };
+		CA9014040000000000000001 /* KMReportSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMReportSelfTest.m; sourceTree = "<group>"; };
+		CA9014060000000000000001 /* KMReportSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMReportSelfTest.h; sourceTree = "<group>"; };
 		CA9013020000000000000001 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
@@ -747,6 +753,18 @@
 			path = Sources/LAN;
 			sourceTree = "<group>";
 		};
+		CA9013000000000000000001 /* Reporting */ = {
+			isa = PBXGroup;
+			children = (
+				CA9014050000000000000001 /* KMReport.h */,
+				CA9014020000000000000001 /* KMReport.m */,
+				CA9014060000000000000001 /* KMReportSelfTest.h */,
+				CA9014040000000000000001 /* KMReportSelfTest.m */,
+			);
+			name = Reporting;
+			path = Sources/Reporting;
+			sourceTree = "<group>";
+		};
 		003533A406A5DD8500AB4577 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -998,6 +1016,7 @@
 				CA9008000000000000000001 /* Bluetooth */,
 				CA9010000000000000000001 /* HardwareInventory */,
 				CA9011000000000000000001 /* LAN */,
+				CA9013000000000000000001 /* Reporting */,
 				CA9004000000000000000001 /* Campaigns */,
 				CA9005000000000000000001 /* Safety */,
 				A57E64371607BC9700BE1BCA /* Crypto */,
@@ -1503,6 +1522,8 @@
 				CA9012010000000000000001 /* KMNetworkInterface.m in Sources */,
 				CA9012030000000000000001 /* KMInterfaceInventory.m in Sources */,
 				CA9012050000000000000001 /* KMInterfaceInventorySelfTest.m in Sources */,
+				CA9014010000000000000001 /* KMReport.m in Sources */,
+				CA9014030000000000000001 /* KMReportSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,
