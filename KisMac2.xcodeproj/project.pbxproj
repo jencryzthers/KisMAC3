@@ -56,6 +56,9 @@
 		CA9010050000000000000001 /* KMSerialDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9010060000000000000001 /* KMSerialDevice.m */; };
 		CA9010070000000000000001 /* KMHardwareInventory.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9010080000000000000001 /* KMHardwareInventory.m */; };
 		CA9010090000000000000001 /* KMHardwareInventorySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90100A0000000000000001 /* KMHardwareInventorySelfTest.m */; };
+		CA9011010000000000000001 /* KMLANService.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9011020000000000000001 /* KMLANService.m */; };
+		CA9011030000000000000001 /* KMLANDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9011040000000000000001 /* KMLANDiscovery.m */; };
+		CA9011050000000000000001 /* KMLANSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9011060000000000000001 /* KMLANSelfTest.m */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
 		CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001250000000000000001 /* proto_wpa3_sae.pcap */; };
@@ -294,6 +297,12 @@
 		CA90100E0000000000000001 /* KMHardwareInventory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareInventory.h; sourceTree = "<group>"; };
 		CA90100A0000000000000001 /* KMHardwareInventorySelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareInventorySelfTest.m; sourceTree = "<group>"; };
 		CA90100F0000000000000001 /* KMHardwareInventorySelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareInventorySelfTest.h; sourceTree = "<group>"; };
+		CA9011020000000000000001 /* KMLANService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLANService.m; sourceTree = "<group>"; };
+		CA9011070000000000000001 /* KMLANService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLANService.h; sourceTree = "<group>"; };
+		CA9011040000000000000001 /* KMLANDiscovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLANDiscovery.m; sourceTree = "<group>"; };
+		CA9011080000000000000001 /* KMLANDiscovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLANDiscovery.h; sourceTree = "<group>"; };
+		CA9011060000000000000001 /* KMLANSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLANSelfTest.m; sourceTree = "<group>"; };
+		CA9011090000000000000001 /* KMLANSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLANSelfTest.h; sourceTree = "<group>"; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001250000000000000001 /* proto_wpa3_sae.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa3_sae.pcap; path = Tests/Fixtures/proto_wpa3_sae.pcap; sourceTree = SOURCE_ROOT; };
@@ -718,6 +727,20 @@
 			path = Sources/HardwareInventory;
 			sourceTree = "<group>";
 		};
+		CA9011000000000000000001 /* LAN */ = {
+			isa = PBXGroup;
+			children = (
+				CA9011070000000000000001 /* KMLANService.h */,
+				CA9011020000000000000001 /* KMLANService.m */,
+				CA9011080000000000000001 /* KMLANDiscovery.h */,
+				CA9011040000000000000001 /* KMLANDiscovery.m */,
+				CA9011090000000000000001 /* KMLANSelfTest.h */,
+				CA9011060000000000000001 /* KMLANSelfTest.m */,
+			);
+			name = LAN;
+			path = Sources/LAN;
+			sourceTree = "<group>";
+		};
 		003533A406A5DD8500AB4577 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -972,6 +995,7 @@
 				CA9000060000000000000001 /* Capabilities */,
 				CA9008000000000000000001 /* Bluetooth */,
 				CA9010000000000000000001 /* HardwareInventory */,
+				CA9011000000000000000001 /* LAN */,
 				CA9004000000000000000001 /* Campaigns */,
 				CA9005000000000000000001 /* Safety */,
 				A57E64371607BC9700BE1BCA /* Crypto */,
@@ -1473,6 +1497,9 @@
 				CA9010050000000000000001 /* KMSerialDevice.m in Sources */,
 				CA9010070000000000000001 /* KMHardwareInventory.m in Sources */,
 				CA9010090000000000000001 /* KMHardwareInventorySelfTest.m in Sources */,
+				CA9011010000000000000001 /* KMLANService.m in Sources */,
+				CA9011030000000000000001 /* KMLANDiscovery.m in Sources */,
+				CA9011050000000000000001 /* KMLANSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,

@@ -71,6 +71,31 @@
 	<string>YES</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>KisMac uses Bluetooth to passively scan for nearby Bluetooth Low Energy (BLE) devices for authorized security auditing: it inventories advertised names, service UUIDs, manufacturer data, and signal strength, and — only for a device you explicitly select — enumerates its GATT services. KisMac never auto-connects and all data stays on your Mac.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>KisMac passively inventories the Bonjour / mDNS services that devices on your local network already advertise (printers, file shares, AirPlay receivers, SSH/web admin interfaces, etc.) for authorized security auditing. It only listens to these announcements — it never actively scans, port-scans, or pings any host. All data stays on your Mac.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_http._tcp</string>
+		<string>_https._tcp</string>
+		<string>_ssh._tcp</string>
+		<string>_sftp-ssh._tcp</string>
+		<string>_smb._tcp</string>
+		<string>_afpovertcp._tcp</string>
+		<string>_nfs._tcp</string>
+		<string>_ipp._tcp</string>
+		<string>_ipps._tcp</string>
+		<string>_printer._tcp</string>
+		<string>_pdl-datastream._tcp</string>
+		<string>_airplay._tcp</string>
+		<string>_raop._tcp</string>
+		<string>_companion-link._tcp</string>
+		<string>_rfb._tcp</string>
+		<string>_device-info._tcp</string>
+		<string>_homekit._tcp</string>
+		<string>_hap._tcp</string>
+		<string>_googlecast._tcp</string>
+		<string>_workstation._tcp</string>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>KisMac needs your location because modern macOS only reveals Wi-Fi network names (SSID) and access-point hardware addresses (BSSID) to apps that are authorized for Location. Without it, Wi-Fi recon results are hidden or redacted. Your location is used only to unlock this Wi-Fi scan data; it is not transmitted off your Mac.</string>
 	<key>NSMainNibFile</key>

@@ -413,12 +413,24 @@
             explanation:@"Read-only IOKit serial (BSD tty) enumeration (no permission required)."];
     }
 
+    // -------- LAN discovery / Bonjour inventory (S3.3 -- IMPLEMENTED) --------
+    // Passive Bonjour/DNS-SD service discovery via NWBrowser (KMLANDiscovery) is
+    // implemented. It only LISTENS to mDNS/DNS-SD announcements the OS already
+    // receives -- no active probe / port-scan / ping. Passive browsing is
+    // ALLOWED on macOS without a pre-grant (the user is prompted for the Local
+    // Network permission on first browse; if denied, the OS silently returns no
+    // results). macOS exposes no queryable Local-Network authorization API, so
+    // the static engine reports these AVAILABLE (the attempt is always permitted)
+    // and KMLANDiscovery surfaces the live permission posture at runtime via
+    // -localNetworkState (UI can show permissionMissing remediation when it
+    // observes a denied/blocked browser). No longer "not implemented (S3.x)".
     if ([featureKey isEqualToString:KMFeatureLANDiscovery] ||
         [featureKey isEqualToString:KMFeatureBonjourInventory]) {
-        return [KMCapability capabilityWithKey:featureKey
-            availability:KMCapabilityUnknownRequiresActiveProbe
-            reason:KMCapabilityReasonUnknownRequiresActiveProbe
-            explanation:@"Native surface not yet implemented (S3.x)."];
+        return [KMCapability availableCapabilityWithKey:featureKey
+            explanation:@"Passive Bonjour/DNS-SD service discovery (NWBrowser) is available. "
+                        @"It only listens to mDNS announcements (no active probe/ping). macOS "
+                        @"prompts for the Local Network permission on first browse; if denied, "
+                        @"results are silently empty (the manager surfaces that at runtime)."];
     }
 
     // -------- Modern protocol decoders: parser missing (S2.1) --------
@@ -591,8 +603,11 @@
     // Native surfaces.
     check(@"all-green", green, KMFeatureBLEScan,
           KMCapabilityUnavailable, KMCapabilityReasonPermissionMissing);
+    // S3.3: passive Bonjour/DNS-SD discovery is implemented -> available.
     check(@"all-green", green, KMFeatureLANDiscovery,
-          KMCapabilityUnknownRequiresActiveProbe, KMCapabilityReasonUnknownRequiresActiveProbe);
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"all-green", green, KMFeatureBonjourInventory,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
     // S3.2: read-only IOKit inventories are unconditionally available.
     check(@"all-green", green, KMFeatureUSBInventory,
           KMCapabilityAvailable, KMCapabilityReasonNone);

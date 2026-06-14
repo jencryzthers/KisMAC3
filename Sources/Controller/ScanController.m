@@ -62,6 +62,7 @@
 #import "../Bluetooth/KMBluetoothPermissionProvider.h"
 #import "../Bluetooth/KMBluetoothSelfTest.h"
 #import "../HardwareInventory/KMHardwareInventorySelfTest.h"
+#import "../LAN/KMLANSelfTest.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
 #import "../WaveDrivers/WaveDriverKismet.h"
@@ -1155,6 +1156,20 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // Sources/HardwareInventory/KMHardwareInventorySelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_USBINV_SELFTEST"] isEqualToString:@"1"]) {
         [KMHardwareInventorySelfTest runSelfTestLogging];
+    }
+
+    // S3.3 - LAN discovery (passive Bonjour/DNS-SD) self-test. Runs ONLY when
+    // KISMAC_LAN_SELFTEST=1 is set. Instantiates KMLANDiscovery, runs a brief
+    // (~3s) PASSIVE NWBrowser browse on THIS machine (mDNS/DNS-SD announcements
+    // only -- NO active probe / port-scan / ping), logs the discovered service
+    // count + a REDACTED sample, and asserts: the browser starts without
+    // crashing, the capability engine reports lanDiscovery/bonjourInventory
+    // available (or permissionMissing if Local Network is denied -- either is an
+    // honest PASS), hostnames/IPs are redactable, and NO active/stealth scanning
+    // occurred. Local Network permission may gate live results on a signed build.
+    // See Sources/LAN/KMLANSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_LAN_SELFTEST"] isEqualToString:@"1"]) {
+        [KMLANSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];
