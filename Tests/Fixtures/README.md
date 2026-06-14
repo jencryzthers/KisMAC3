@@ -135,8 +135,33 @@ KISMAC_PROTO_SELFTEST=1 .../KisMac2.app/Contents/MacOS/KisMac2
 It logs one PASS/FAIL line per fixture (actual vs expected) plus a summary, and
 explicitly proves the malformed fixture does not crash.
 
+## S7.1 — Authorized-lab management-frame fixture (`lab_mgmt.pcap`)
+
+A single small capture exercising the lab **event log** (`KMLabEventLog`). It
+contains exactly four 802.11 frames, in order:
+
+| # | Frame | Event type recorded | AP / client |
+|---|-------|---------------------|-------------|
+| 1 | probe-request (mgmt 0x4) | `probe-request` | client `AA:BB:CC:DD:EE:FF` |
+| 2 | association-request (mgmt 0x0) | `association-request` | → AP `00:11:22:33:44:55` |
+| 3 | deauthentication (mgmt 0xC) | `deauthentication` | AP `00:11:22:33:44:55` |
+| 4 | EAPOL-Key (data frame, WPA handshake msg) | `eapol-handshake` | client → AP |
+
+Pinned identities: AP `00:11:22:33:44:55`, client `AA:BB:CC:DD:EE:FF`,
+SSID `KISMAC-LAB-NET`. Expected: 4 events total, 1 of each type, handshake
+count 1.
+
+### Running the lab self-test (headless, no GUI, no radio)
+
+```sh
+# imports lab_mgmt.pcap, asserts the event log + filters + AP-profile scope
+# binding + the fail-closed KMLabWorkflow gate + the report lab section
+KISMAC_LAB_SELFTEST=1 .../KisMac2.app/Contents/MacOS/KisMac2
+```
+
 ## Safety
 
 This whole path is **offline / passive**. Importing a file routes only through
 `pcap_open_offline`; it never starts a live capture, opens a BPF device, enters
-monitor mode, switches channels, or injects/transmits.
+monitor mode, switches channels, or injects/transmits. The S7.1 lab event log is
+populated *only* by parsing these imported frames — it performs no radio I/O.

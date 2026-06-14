@@ -22,6 +22,16 @@
 #import "KMPrivacySettings.h"
 #import "KMReportSelfTest.h"
 
+// S7.1 campaign/lab section inputs.
+#import "../Lab/KMLabEvent.h"
+#import "../Lab/KMLabEventLog.h"
+#import "../Lab/KMLabAPProfile.h"
+#import "../Lab/KMLabWorkflow.h"   // KMLabScopeChecking
+#import "../Safety/KMCampaignManager.h"
+#import "../Safety/KMAuditLog.h"
+#import "../Campaigns/KMCampaign.h"
+#import "../Campaigns/KMCampaignScope.h"
+
 #ifndef DBNSLog
     #define DBNSLog NSLog
 #endif
@@ -309,6 +319,120 @@ NSString *KMStringFromEvidenceSource(KMEvidenceSource source) {
     [md appendString:@"\n"];
 }
 
+#pragma mark - Campaign / lab section (S7.1)
+
+// Renders the authorized-lab section: scope summary, lab event-log summary,
+// handshakes observed, AP-profile usability, the active-op attempts/refusals
+// drawn from the audit log, and an explicit LIMITATIONS block. Redaction-aware.
+// Emitted ONLY when there is some lab input (event log / profiles / manager).
+- (void)appendCampaignLab:(NSMutableString *)md {
+    BOOL haveLab = (self.labEventLog != nil) || (self.labAPProfiles.count > 0) ||
+                   (self.campaignManager != nil);
+    if (!haveLab) return;
+
+    KMRedactionSettings *r = [self effectiveRedaction];
+    [md appendString:@"## Authorized lab (campaign)\n\n"];
+
+    // --- Scope summary -----------------------------------------------------
+    [md appendString:@"### Scope summary\n\n"];
+    KMCampaign *camp = self.campaignManager.currentCampaign;
+    if (camp) {
+        [md appendFormat:@"- Campaign: **%@**\n", camp.label ?: @"(unnamed)"];
+        [md appendFormat:@"- Authorized: **%@**\n", camp.isAuthorized ? @"yes" : @"NO"];
+        [md appendFormat:@"- Active now: **%@**\n", [camp isActive] ? @"yes" : @"no"];
+        [md appendFormat:@"- Emergency stop: **%@**\n",
+            self.campaignManager.isEmergencyStopped ? @"ENGAGED" : @"not engaged"];
+        // contextSummary is counts + window only -- it does NOT dump raw lists.
+        [md appendFormat:@"- Scope: %@\n", [camp.scope contextSummary] ?: @"-"];
+        if (!camp.isActive && [camp inactiveReason].length)
+            [md appendFormat:@"- Inactive reason: %@\n", [camp inactiveReason]];
+    } else {
+        [md appendString:@"_No active campaign (active lab operations fail closed)._\n"];
+    }
+    [md appendString:@"\n"];
+
+    // --- Lab event-log summary --------------------------------------------
+    [md appendString:@"### Event log (passive, imported)\n\n"];
+    KMLabEventLog *log = self.labEventLog;
+    if (log && [log count] > 0) {
+        [md appendString:@"| Event type | Count |\n|------------|-------|\n"];
+        KMLabEventType order[] = {
+            KMLabEventTypeProbeRequest, KMLabEventTypeProbeResponse,
+            KMLabEventTypeAuthentication,
+            KMLabEventTypeAssociationRequest, KMLabEventTypeAssociationResponse,
+            KMLabEventTypeReassociationRequest, KMLabEventTypeReassociationResponse,
+            KMLabEventTypeDisassociation, KMLabEventTypeDeauthentication,
+            KMLabEventTypeEAPOLHandshake,
+        };
+        for (size_t i = 0; i < sizeof(order)/sizeof(order[0]); i++) {
+            NSUInteger n = [log countOfType:order[i]];
+            if (n) [md appendFormat:@"| %@ | %lu |\n", KMStringFromLabEventType(order[i]), (unsigned long)n];
+        }
+        [md appendFormat:@"\n_Total events: %lu — handshakes observed: %lu_\n\n",
+            (unsigned long)[log count], (unsigned long)[log handshakeCount]];
+    } else {
+        [md appendString:@"_No lab events (no imported management frames)._\n\n"];
+    }
+
+    // --- Lab AP profiles (owned test networks) ----------------------------
+    if (self.labAPProfiles.count) {
+        [md appendString:@"### Lab AP profiles (owned test networks)\n\n"];
+        [md appendString:@"| Profile | Usable (in scope) |\n|---------|-------------------|\n"];
+        for (KMLabAPProfile *p in self.labAPProfiles) {
+            BOOL usable = [p isUsableWithScopeProvider:self.labScopeProvider];
+            [md appendFormat:@"| %@ | %@ |\n",
+                [p redactedDescriptionWithSettings:r], usable ? @"yes" : @"no (out of scope)"];
+        }
+        [md appendString:@"\n"];
+    }
+
+    // --- Active-op attempts / refusals (from the audit log) ----------------
+    [md appendString:@"### Active-operation attempts (audit log)\n\n"];
+    NSArray<NSDictionary *> *entries = [self.campaignManager.auditLog readCurrentEntries];
+    NSUInteger permitted = 0, refused = 0;
+    NSMutableString *rows = [NSMutableString string];
+    for (NSDictionary *e in entries) {
+        if (![e[@"action"] isEqual:KMAuditActionActiveOperation]) continue;
+        id ctx = e[@"context"];
+        BOOL allowed = NO;
+        NSString *op = @"", *reason = @"";
+        if ([ctx isKindOfClass:[NSDictionary class]]) {
+            allowed = [ctx[@"allowed"] boolValue] || [ctx[@"inScope"] boolValue];
+            op = ctx[@"operation"] ?: @"";
+            reason = ctx[@"reason"] ?: @"";
+        }
+        if (allowed) permitted++; else refused++;
+        NSString *tsStr = [e[@"ts"] isKindOfClass:[NSString class]] ? e[@"ts"] : @"-";
+        [rows appendFormat:@"| %@ | %@ | %@ | %@ |\n",
+            tsStr,
+            op.length ? op : @"?", allowed ? @"permitted" : @"REFUSED",
+            reason.length ? reason : @"-"];
+    }
+    [md appendFormat:@"_Attempts: %lu — permitted: %lu — refused: %lu_\n\n",
+        (unsigned long)(permitted + refused), (unsigned long)permitted, (unsigned long)refused];
+    if (rows.length) {
+        [md appendString:@"| Time (UTC) | Operation | Decision | Reason |\n"];
+        [md appendString:@"|------------|-----------|----------|--------|\n"];
+        [md appendString:rows];
+        [md appendString:@"\n"];
+    }
+
+    // --- Limitations (explicit; what is unsupported / hardware-required) ----
+    [md appendString:@"### Limitations\n\n"];
+    [md appendString:
+        @"- **AP-simulation / evil-twin**: NOT implemented. No transmit/AP code exists on "
+        @"this build; requires external injection-capable hardware and a future consented "
+        @"active-probe. The workflow gates + audits the request, then refuses (fail-closed).\n"
+        @"- **Captive-portal hosting**: NOT implemented (same as above). Policy stub only.\n"
+        @"- **Deauthentication / frame injection**: gated + audited here, but EXECUTION still "
+        @"requires an external injection-capable adapter (built-in MacBook Wi-Fi cannot "
+        @"transmit) and an authorized, in-window campaign scope. Without those, every request "
+        @"is refused.\n"
+        @"- **Event log**: PASSIVE evidence parsed from IMPORTED captures only — no live radio, "
+        @"monitor mode, or channel switching is used to produce it.\n"
+        @"- **Lab UI / live visualization / module system**: deferred (S5.x / Milestone 13).\n\n"];
+}
+
 #pragma mark - Generation
 
 - (NSString *)generateMarkdown {
@@ -322,6 +446,7 @@ NSString *KMStringFromEvidenceSource(KMEvidenceSource source) {
     [self appendCaptureFiles:md];
     [self appendHardwareResult:md];
     [self appendCapabilities:md];
+    [self appendCampaignLab:md];   // S7.1 campaign/lab section + limitations
     [self appendEvidenceTimeline:md];
     return [md copy];
 }

@@ -31,6 +31,7 @@
 #import "ScanControllerScriptable.h"
 #import "WaveHelper.h"
 #import "../Capabilities/KMCapability.h"   // S4.2: feature keys for op-site gate
+#import "../Lab/KMLabEventLog.h"           // S7.1: passive lab event log (import-fed)
 #import "WaveNet.h"                          // S4.2: -BSSID for scope membership
 #import "WaveClient.h"                        // S4.2: -ID (client MAC) for scope
 #import "WaveDriver.h"
@@ -505,7 +506,12 @@
         
         if ([w parseFrame:frame] != NO)
         {
-            
+            // S7.1: passively record this IMPORTED frame's management-frame /
+            // handshake event into the lab event log. PASSIVE/OFFLINE only --
+            // this reads the already-parsed packet, never a radio. Non-event
+            // frames are ignored by -ingestImportedPacket:.
+            [[KMLabEventLog sharedLog] ingestImportedPacket:w];
+
             if ([_container addPacket:w liveCapture:NO] == NO)
             {
                 continue; // the packet shall be dropped

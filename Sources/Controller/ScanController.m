@@ -65,6 +65,7 @@
 #import "../LAN/KMInterfaceInventorySelfTest.h"
 #import "../Reporting/KMReport.h"
 #import "../Safety/KMProjectCrypto.h"
+#import "../Lab/KMLabWorkflow.h"   // S7.1 authorized-lab workflow self-test
 #import "WaveStorageController.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
@@ -1204,6 +1205,25 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_PROJCRYPTO_SELFTEST"] isEqualToString:@"1"]) {
         [KMProjectCrypto runSelfTestLogging];
         [WaveStorageController runProjectCryptoStorageSelfTestLogging];
+    }
+
+    // S7.1 - Authorized-lab workflow core self-test. Runs ONLY when
+    // KISMAC_LAB_SELFTEST=1 is set. Imports a bundled management-frame fixture
+    // (lab_mgmt.pcap) through the OFFLINE pipeline and asserts: the passive
+    // KMLabEventLog records the expected event types/counts (probe-req / assoc /
+    // deauth / EAPOL handshake) with redaction hiding identifiers when on; the
+    // KMLabFilter allow/deny matching (client + SSID); a KMLabAPProfile is usable
+    // ONLY when in the authorized campaign scope; the KMLabWorkflow gate fails
+    // closed (no adapter / no scope / out-of-scope / emergency-stop => every
+    // active op refused + audited; mock injection-capable adapter + authorized
+    // in-window scope => in-scope deauth/inject permitted+audited, out-of-scope
+    // refused, AP-sim/captive-portal still refused as unimplemented); and the
+    // campaign report includes the lab section + limitations with no raw
+    // identifiers when redaction is on. PASSIVE / OFFLINE / LOCAL-ONLY: imports a
+    // pcap, uses a throwaway audit dir + a MOCK adapter, never opens a radio. See
+    // Sources/Lab/KMLabSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_LAB_SELFTEST"] length] > 0) {
+        [KMLabWorkflow runSelfTestLogging];
     }
 
     // S0.4: the startup crash-reporter was REMOVED (privacy + dead endpoint).

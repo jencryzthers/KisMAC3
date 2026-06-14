@@ -303,6 +303,98 @@ def write_single_beacon_pcap(path, fix, index):
     return bssid
 
 
+# ===========================================================================
+# S7.1 — Authorized-lab MANAGEMENT-FRAME fixture (lab_mgmt.pcap).
+#
+# A small, deterministic capture exercising the KMLabEventLog: a probe-request,
+# an association-request, a deauthentication, and ONE EAPOL handshake message.
+# The in-app KISMAC_LAB_SELFTEST harness imports it and asserts the expected
+# event types + counts. OFFLINE TEST DATA ONLY — never produced by a radio.
+#
+# Lab fixture identities (also pinned in README.md / KMLabSelfTest):
+LAB_AP_BSSID   = b"\x00\x11\x22\x33\x44\x55"   # 00:11:22:33:44:55
+LAB_CLIENT_MAC = b"\xAA\xBB\xCC\xDD\xEE\xFF"   # AA:BB:CC:DD:EE:FF
+LAB_SSID       = "KISMAC-LAB-NET"
+
+
+def mgmt_frame(fc0, addr1, addr2, addr3, body=b""):
+    # 802.11 mgmt header (3-addr). fc0 = first frame-control byte (subtype|type).
+    fc = bytes([fc0, 0x00])
+    duration = b"\x00\x00"
+    seq = b"\x00\x00"
+    return fc + duration + addr1 + addr2 + addr3 + seq + body
+
+
+def probe_request(client, ssid):
+    # subtype 0x4 (probe req), type mgmt -> fc0 = 0x40. DA/BSSID = broadcast.
+    body = ie_ssid(ssid) + ie_rates()
+    return mgmt_frame(0x40, BROADCAST, client, BROADCAST, body)
+
+
+def assoc_request(client, bssid, ssid):
+    # subtype 0x0 (assoc req), type mgmt -> fc0 = 0x00. To the AP.
+    cap = struct.pack("<H", 0x0011)        # ESS + Privacy
+    listen = struct.pack("<H", 10)
+    body = cap + listen + ie_ssid(ssid) + ie_rates()
+    return mgmt_frame(0x00, bssid, client, bssid, body)
+
+
+def deauth_frame(client, bssid):
+    # subtype 0xC (deauth), type mgmt -> fc0 = 0xC0. AP -> client.
+    reason = struct.pack("<H", 7)          # class-3 frame from nonassociated STA
+    return mgmt_frame(0xC0, client, bssid, bssid, reason)
+
+
+def eapol_handshake(client, bssid):
+    # A DATA frame (ToDS=1, client->AP) carrying an EAPOL-Key message, so the
+    # parser flags it isWPAKeyPacket. Body = LLC/SNAP(8) + 802.1X key frame.
+    # Layout matches WavePacket: payload[0..7]=LLC, [8]=ver,[9]=type=3(key),
+    # [12]=descriptor type 254(WPA), [13..14]=key info (pairwise, not groupwise).
+    fc = b"\x08\x01"                       # data, ToDS
+    duration = b"\x00\x00"
+    hdr = fc + duration + bssid + client + bssid + b"\x00\x00"   # addr1=BSSID,addr2=SA,addr3=DA
+    llc = b"\xAA\xAA\x03\x00\x00\x00\x88\x8E"                    # SNAP + EAPOL ethertype
+    # 802.1X header: version=2, type=3 (EAPOL-Key), length.
+    x_ver = b"\x02"
+    x_type = b"\x03"
+    # Key descriptor: type(1)=254(WPA), key info(2), then nonces/IV/etc padded so
+    # the whole 802.11 payload is >= 99 bytes (parser requirement).
+    desc_type = b"\xFE"                     # 254 = WPA key descriptor
+    key_info = b"\x00\x08"                  # keytype=pairwise bit set (not groupwise)
+    key_len = b"\x00\x10"
+    replay = b"\x00" * 8
+    nonce = b"\x00" * 32
+    key_iv = b"\x00" * 16
+    rsc = b"\x00" * 8
+    key_id = b"\x00" * 8
+    mic = b"\x11" * 16
+    key_data_len = b"\x00\x00"
+    keyframe = desc_type + key_info + key_len + replay + nonce + key_iv + rsc + key_id + mic + key_data_len
+    x_len = struct.pack(">H", len(keyframe))
+    body = llc + x_ver + x_type + x_len + keyframe
+    return hdr + body
+
+
+def lab_frames():
+    return [
+        probe_request(LAB_CLIENT_MAC, LAB_SSID),
+        assoc_request(LAB_CLIENT_MAC, LAB_AP_BSSID, LAB_SSID),
+        deauth_frame(LAB_CLIENT_MAC, LAB_AP_BSSID),
+        eapol_handshake(LAB_CLIENT_MAC, LAB_AP_BSSID),
+    ]
+
+
+def write_lab_mgmt_pcap(path):
+    with open(path, "wb") as f:
+        f.write(struct.pack("<IHHiIII",
+                            0xa1b2c3d4, 2, 4, 0, 0, 65535, DLT_IEEE802_11_RADIO))
+        ts = 1700001000
+        for i, body in enumerate(lab_frames()):
+            pkt = radiotap_header() + body
+            f.write(struct.pack("<IIII", ts + i, 0, len(pkt), len(pkt)))
+            f.write(pkt)
+
+
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
     pcap_path = os.path.join(here, "golden.pcap")
@@ -322,6 +414,15 @@ def main():
         out = os.path.join(here, name + ".pcap")
         write_single_beacon_pcap(out, fix, idx)
         print("  %-26s sec=%-38s phy=%s" % (name + ".pcap", fix[5], fix[6]))
+
+    lab_path = os.path.join(here, "lab_mgmt.pcap")
+    write_lab_mgmt_pcap(lab_path)
+    print("\nS7.1 lab management-frame fixture:")
+    print("  %s (%d bytes)" % (lab_path, os.path.getsize(lab_path)))
+    print("  probe-request, association-request, deauthentication, 1 EAPOL handshake")
+    print("  AP=%s  client=%s  ssid=%s" % (
+        ":".join("%02X" % b for b in LAB_AP_BSSID),
+        ":".join("%02X" % b for b in LAB_CLIENT_MAC), LAB_SSID))
 
 
 if __name__ == "__main__":

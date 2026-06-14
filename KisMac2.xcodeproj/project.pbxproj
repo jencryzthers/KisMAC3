@@ -65,6 +65,14 @@
 		CA9014010000000000000001 /* KMReport.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9014020000000000000001 /* KMReport.m */; };
 		CA9015010000000000000001 /* KMProjectCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9015020000000000000001 /* KMProjectCrypto.m */; };
 		CA9014030000000000000001 /* KMReportSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9014040000000000000001 /* KMReportSelfTest.m */; };
+		CA9016010000000000000001 /* KMLabEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9016020000000000000001 /* KMLabEvent.m */; };
+		CA9016030000000000000001 /* KMLabEventLog.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9016040000000000000001 /* KMLabEventLog.m */; };
+		CA9016050000000000000001 /* KMLabFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9016060000000000000001 /* KMLabFilter.m */; };
+		CA9016070000000000000001 /* KMLabAPProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9016080000000000000001 /* KMLabAPProfile.m */; };
+		CA9016090000000000000001 /* KMLabAPProfileStore.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90160A0000000000000001 /* KMLabAPProfileStore.m */; };
+		CA90160B0000000000000001 /* KMLabWorkflow.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90160C0000000000000001 /* KMLabWorkflow.m */; };
+		CA90160D0000000000000001 /* KMLabSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90160E0000000000000001 /* KMLabSelfTest.m */; };
+		CA9016200000000000000001 /* lab_mgmt.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9016210000000000000001 /* lab_mgmt.pcap */; };
 		CA9013010000000000000001 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA9013020000000000000001 /* SystemConfiguration.framework */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
@@ -315,6 +323,21 @@
 		CA9014020000000000000001 /* KMReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMReport.m; sourceTree = "<group>"; };
 		CA9015020000000000000001 /* KMProjectCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMProjectCrypto.m; sourceTree = "<group>"; };
 		CA9015030000000000000001 /* KMProjectCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMProjectCrypto.h; sourceTree = "<group>"; };
+		CA9016020000000000000001 /* KMLabEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabEvent.m; sourceTree = "<group>"; };
+		CA90160F0000000000000001 /* KMLabEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabEvent.h; sourceTree = "<group>"; };
+		CA9016040000000000000001 /* KMLabEventLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabEventLog.m; sourceTree = "<group>"; };
+		CA9016100000000000000001 /* KMLabEventLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabEventLog.h; sourceTree = "<group>"; };
+		CA9016060000000000000001 /* KMLabFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabFilter.m; sourceTree = "<group>"; };
+		CA9016110000000000000001 /* KMLabFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabFilter.h; sourceTree = "<group>"; };
+		CA9016080000000000000001 /* KMLabAPProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabAPProfile.m; sourceTree = "<group>"; };
+		CA9016120000000000000001 /* KMLabAPProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabAPProfile.h; sourceTree = "<group>"; };
+		CA90160A0000000000000001 /* KMLabAPProfileStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabAPProfileStore.m; sourceTree = "<group>"; };
+		CA9016130000000000000001 /* KMLabAPProfileStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabAPProfileStore.h; sourceTree = "<group>"; };
+		CA90160C0000000000000001 /* KMLabWorkflow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabWorkflow.m; sourceTree = "<group>"; };
+		CA9016140000000000000001 /* KMLabWorkflow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabWorkflow.h; sourceTree = "<group>"; };
+		CA90160E0000000000000001 /* KMLabSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLabSelfTest.m; sourceTree = "<group>"; };
+		CA9016150000000000000001 /* KMLabSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLabSelfTest.h; sourceTree = "<group>"; };
+		CA9016210000000000000001 /* lab_mgmt.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = lab_mgmt.pcap; path = Tests/Fixtures/lab_mgmt.pcap; sourceTree = SOURCE_ROOT; };
 		CA9014050000000000000001 /* KMReport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMReport.h; sourceTree = "<group>"; };
 		CA9014040000000000000001 /* KMReportSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMReportSelfTest.m; sourceTree = "<group>"; };
 		CA9014060000000000000001 /* KMReportSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMReportSelfTest.h; sourceTree = "<group>"; };
@@ -770,6 +793,28 @@
 			path = Sources/Reporting;
 			sourceTree = "<group>";
 		};
+		CA9016000000000000000001 /* Lab */ = {
+			isa = PBXGroup;
+			children = (
+				CA90160F0000000000000001 /* KMLabEvent.h */,
+				CA9016020000000000000001 /* KMLabEvent.m */,
+				CA9016100000000000000001 /* KMLabEventLog.h */,
+				CA9016040000000000000001 /* KMLabEventLog.m */,
+				CA9016110000000000000001 /* KMLabFilter.h */,
+				CA9016060000000000000001 /* KMLabFilter.m */,
+				CA9016120000000000000001 /* KMLabAPProfile.h */,
+				CA9016080000000000000001 /* KMLabAPProfile.m */,
+				CA9016130000000000000001 /* KMLabAPProfileStore.h */,
+				CA90160A0000000000000001 /* KMLabAPProfileStore.m */,
+				CA9016140000000000000001 /* KMLabWorkflow.h */,
+				CA90160C0000000000000001 /* KMLabWorkflow.m */,
+				CA9016150000000000000001 /* KMLabSelfTest.h */,
+				CA90160E0000000000000001 /* KMLabSelfTest.m */,
+			);
+			name = Lab;
+			path = Sources/Lab;
+			sourceTree = "<group>";
+		};
 		003533A406A5DD8500AB4577 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -1022,6 +1067,7 @@
 				CA9010000000000000000001 /* HardwareInventory */,
 				CA9011000000000000000001 /* LAN */,
 				CA9013000000000000000001 /* Reporting */,
+				CA9016000000000000000001 /* Lab */,
 				CA9004000000000000000001 /* Campaigns */,
 				CA9005000000000000000001 /* Safety */,
 				A57E64371607BC9700BE1BCA /* Crypto */,
@@ -1385,6 +1431,7 @@
 				CA9001380000000000000001 /* proto_wifi6e.pcap in Resources */,
 				CA9001400000000000000001 /* proto_wifi7.pcap in Resources */,
 				CA9001420000000000000001 /* proto_malformed.pcap in Resources */,
+				CA9016200000000000000001 /* lab_mgmt.pcap in Resources */,
 				A529ADA21A20A4B400CD8E1E /* PrefsMap.xib in Resources */,
 				A5A2F5B019DDA55B0046299A /* NetworkWPA.tif in Resources */,
 				0035337D06A5DD5700AB4577 /* vendor.db in Resources */,
@@ -1530,6 +1577,13 @@
 				CA9014010000000000000001 /* KMReport.m in Sources */,
 				CA9015010000000000000001 /* KMProjectCrypto.m in Sources */,
 				CA9014030000000000000001 /* KMReportSelfTest.m in Sources */,
+				CA9016010000000000000001 /* KMLabEvent.m in Sources */,
+				CA9016030000000000000001 /* KMLabEventLog.m in Sources */,
+				CA9016050000000000000001 /* KMLabFilter.m in Sources */,
+				CA9016070000000000000001 /* KMLabAPProfile.m in Sources */,
+				CA9016090000000000000001 /* KMLabAPProfileStore.m in Sources */,
+				CA90160B0000000000000001 /* KMLabWorkflow.m in Sources */,
+				CA90160D0000000000000001 /* KMLabSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,

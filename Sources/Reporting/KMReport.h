@@ -47,6 +47,9 @@
 @class KMHardwareProbe;
 @class KMRedactionSettings;
 @class KMPrivacySettings;
+@class KMLabEventLog;        // S7.1
+@class KMCampaignManager;    // S7.1
+@protocol KMLabScopeChecking;// S7.1
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -121,6 +124,24 @@ extern NSString *KMStringFromEvidenceSource(KMEvidenceSource source);
 
 /// Optional report title.
 @property (nonatomic, copy, nullable) NSString *title;
+
+#pragma mark Campaign / lab inputs (S7.1)
+
+/// The passive lab event log (probes/assoc/deauth/handshakes parsed from
+/// imported captures). nil => no lab event section. Rendered redaction-aware.
+@property (nonatomic, strong, nullable) KMLabEventLog *labEventLog;
+
+/// Lab AP profiles (owned test networks). Rendered with their usable/in-scope
+/// status against `labScopeProvider`. Array of KMLabAPProfile.
+@property (nonatomic, copy, nullable) NSArray *labAPProfiles;
+
+/// The active scope provider used to evaluate AP-profile usability + the scope
+/// summary. Typically [KMCampaignManager sharedManager].scopeProvider.
+@property (nonatomic, strong, nullable) id<KMLabScopeChecking> labScopeProvider;
+
+/// The campaign manager, for the scope summary + the active-op attempts/refusals
+/// drawn from its audit log. nil => those are omitted.
+@property (nonatomic, strong, nullable) KMCampaignManager *campaignManager;
 
 #pragma mark Generation
 
