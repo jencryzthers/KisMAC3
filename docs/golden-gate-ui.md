@@ -7,21 +7,43 @@ Scan capsule, and a bottom status bar. Dark appearance only.
 
 ## Status
 
-**Stage 1 — shell + integration (this stage): DONE.**
+**Stage 1 — shell + integration: DONE.**
 
 - Design system, data model + seed + 1100ms scanning engine, shared atoms, the
   window shell (toolbar / segmented switcher / status bar), and stub content views.
 - Swift enabled in the `KisMac2` app target; the SwiftUI window is hosted in an
   AppKit `NSWindow` and opened from the existing Obj-C startup via a Window-menu item.
 
+**Stage 2 — Networks + Details views: DONE.**
+
+- `GGNetworksView` — scrolling table (`ScrollView` + `LazyVStack`) with a sticky
+  header, zebra striping, hover, accent selection (soft bg + inset accent bar),
+  and a "fresh" green flash when a row's `lastSeen` updates during a scan. SSID
+  cell shows a lock icon + hidden-italic styling; signal column animates
+  `GGSignalBars` + a dBm value; `GGEncPill` for encryption; packets/bytes are
+  right-aligned tabular; a live Ch/Re dot tracks `lastSeenLive`. Rows filter by
+  `state.searchQuery` (via `filteredNetworks`) and a tap sets `selectedID` +
+  switches to `.details`, matching the shell's routing.
+- `GGDetailsView` — split layout (inspector ~46%, min 360pt, via `GeometryReader`):
+  accent rounded-icon header + SSID title + mono BSSID sub; scrollable property
+  groups (Identity / Signal / Packets) of uppercased headings + `PropRow` k/v;
+  and a comment box (NSTextView-backed `GGCommentEditor`) bound through
+  `state.setComment`. Right side is the clients panel — a header count + a
+  clients table (MAC mono / vendor / `GGSignalBars` / sent / recv / IP / last)
+  or an empty-state when none.
+- Both reuse `GGSignalBars` / `GGEncPill` from `GGComponents`, the
+  `signalColor` / `dbm` mappers + ink/hairline/panel tokens from `GGTheme`, and
+  `GGFormat` (num / bytes / relTime). The two Stage-1 stubs were removed from
+  `GGStubViews.swift`.
+
 **Pending:**
 
-- Stage 2 — full Networks table, Details inspector + client list, Map radar.
+- Stage 2 (remaining) — Map radar.
 - Stage 3 — live Graph (bytes / packets over a rolling window).
 - Stage 4 — Preferences (General · Scanning · Filter · Driver · GPS · Sounds · Traffic).
 
-The four content views and Preferences are stubs that already read live state
-(filtered counts, selection, graph unit/window, GPS) so the shell is fully wired.
+Graph / Map and Preferences remain stubs that already read live state
+(graph unit/window, GPS) so the shell is fully wired.
 
 ## Files (`Sources/GoldenGate/`)
 
@@ -31,7 +53,9 @@ The four content views and Preferences are stubs that already read live state
 | `GGModel.swift` | `GGNetwork`/`GGClient` models, seed data, `GGAppState` (`ObservableObject`) + the 1100ms scan tick (signal jitter, channel hop, packet/byte growth). |
 | `GGComponents.swift` | Shared atoms: traffic lights, signal bars, encryption pill, segmented switcher, Scan capsule, icon buttons. |
 | `GGRootView.swift` | The window content: glass toolbar, contextual trailing controls, content router, status bar, prefs overlay. |
-| `GGStubViews.swift` | Stub Networks/Details/Graph/Map + Preferences content. |
+| `GGNetworksView.swift` | Networks table: sticky header, striping, hover, selection, fresh-row flash, search filtering; tap selects + routes to Details. |
+| `GGDetailsView.swift` | Details split: inspector (header + property groups + comment box) and clients panel (table or empty-state); `GGCommentEditor` NSTextView wrapper + UTC `fullTime` formatter. |
+| `GGStubViews.swift` | Stub Graph/Map + Preferences content (Networks/Details moved out in Stage 2). |
 | `GGWindowController.swift` | `@objc(KGGoldenGateWindowController)` AppKit hosting controller. |
 
 ## How to open

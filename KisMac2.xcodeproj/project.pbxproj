@@ -225,6 +225,8 @@
 		CA9020140000000000000001 /* GGRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020040000000000000001 /* GGRootView.swift */; };
 		CA9020150000000000000001 /* GGStubViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020050000000000000001 /* GGStubViews.swift */; };
 		CA9020160000000000000001 /* GGWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020060000000000000001 /* GGWindowController.swift */; };
+		CA9020170000000000000001 /* GGNetworksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020070000000000000001 /* GGNetworksView.swift */; };
+		CA9020180000000000000001 /* GGDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020080000000000000001 /* GGDetailsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -258,6 +260,8 @@
 		CA9020040000000000000001 /* GGRootView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGRootView.swift; sourceTree = "<group>"; };
 		CA9020050000000000000001 /* GGStubViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGStubViews.swift; sourceTree = "<group>"; };
 		CA9020060000000000000001 /* GGWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGWindowController.swift; sourceTree = "<group>"; };
+		CA9020070000000000000001 /* GGNetworksView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGNetworksView.swift; sourceTree = "<group>"; };
+		CA9020080000000000000001 /* GGDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGDetailsView.swift; sourceTree = "<group>"; };
 		CA9000000000000000000001 /* KMHardwareCapability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareCapability.h; sourceTree = "<group>"; };
 		CA9000020000000000000001 /* KMHardwareCapability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareCapability.m; sourceTree = "<group>"; };
 		CA9000010000000000000001 /* KMHardwareProbe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareProbe.h; sourceTree = "<group>"; };
@@ -640,6 +644,8 @@
 				CA9020040000000000000001 /* GGRootView.swift */,
 				CA9020050000000000000001 /* GGStubViews.swift */,
 				CA9020060000000000000001 /* GGWindowController.swift */,
+				CA9020070000000000000001 /* GGNetworksView.swift */,
+				CA9020080000000000000001 /* GGDetailsView.swift */,
 			);
 			name = GoldenGate;
 			path = Sources/GoldenGate;
@@ -1687,6 +1693,8 @@
 				CA9020140000000000000001 /* GGRootView.swift in Sources */,
 				CA9020150000000000000001 /* GGStubViews.swift in Sources */,
 				CA9020160000000000000001 /* GGWindowController.swift in Sources */,
+				CA9020170000000000000001 /* GGNetworksView.swift in Sources */,
+				CA9020180000000000000001 /* GGDetailsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

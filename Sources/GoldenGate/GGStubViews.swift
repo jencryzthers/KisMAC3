@@ -4,33 +4,13 @@
 //
 //  Placeholder content views. The shell routes between them and they will be
 //  replaced with the full implementations in later stages:
-//    - Networks / Details / Map  → Stage 2
-//    - Graph                     → Stage 3
-//    - Preferences               → Stage 4
+//    - Networks / Details         → Stage 2 (now in GGNetworksView/GGDetailsView)
+//    - Map                        → Stage 2
+//    - Graph                      → Stage 3
+//    - Preferences                → Stage 4
 //
 
 import SwiftUI
-
-@available(macOS 12.0, *)
-struct GGNetworksView: View {
-    @ObservedObject var state: GGAppState
-    var body: some View {
-        GGStubView(title: "Networks",
-                   stage: "\(state.filteredNetworks.count) of \(state.networks.count) networks · full sortable table coming in stage 2",
-                   symbol: "wifi")
-    }
-}
-
-@available(macOS 12.0, *)
-struct GGDetailsView: View {
-    @ObservedObject var state: GGAppState
-    var body: some View {
-        let name = state.selectedNetwork?.displaySSID ?? "—"
-        GGStubView(title: "Details",
-                   stage: "Selected: \(name) · inspector + client list coming in stage 2",
-                   symbol: "magnifyingglass.circle")
-    }
-}
 
 @available(macOS 12.0, *)
 struct GGGraphView: View {
