@@ -25,9 +25,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#import <Growl/Growl.h>
+#import <Foundation/Foundation.h>
 
-@interface GrowlController : NSObject<GrowlApplicationBridgeDelegate>
+@interface GrowlController : NSObject
 {
 }
 

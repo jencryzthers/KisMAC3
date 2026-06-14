@@ -183,7 +183,6 @@
 			files = (
 				A505CE421B271A410095C7A0 /* BIGL.framework in CopyFiles */,
 				A505CE451B271A410095C7A0 /* BIGeneric.framework in CopyFiles */,
-				6C03D77309B547F6005B2316 /* Growl.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,7 +443,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C03D77009B547F2005B2316 /* Growl.framework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				00F57BD306A881210035AE2F /* AppleScriptKit.framework in Frameworks */,
 				0093E65506B2A1F300B3357A /* AddressBook.framework in Frameworks */,
@@ -776,7 +774,6 @@
 			children = (
 				6CF938C310A7DFDF00B32F94 /* CoreWLAN.framework */,
 				6C32713312CFC4070033A649 /* CoreLocation.framework */,
-				6C03D76F09B547F2005B2316 /* Growl.framework */,
 				6CA3BCCA09B2A58F00DCB407 /* Accelerate.framework */,
 				00F9C64E06DB37E200E357F0 /* Carbon.framework */,
 				00F9C64F06DB37E200E357F0 /* IOKit.framework */,
@@ -1155,10 +1152,11 @@
 			);
 			name = "Update vendors.db";
 			outputPaths = (
+				"$(PROJECT_DIR)/Resources/Generic/vendor.db",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "python \"$PROJECT_DIR/Resources/Generic/OUItoVendorDB.py\"";
+			shellScript = "cd \"$PROJECT_DIR\"\npython3 \"$PROJECT_DIR/Resources/Generic/OUItoVendorDB.py\"";
 		};
 		6910302B0F9E313700C4E466 /* Create DMG */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1509,7 +1507,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Info.plist;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wall";
@@ -1539,7 +1537,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "Info-Release.plist";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wall";
 			};

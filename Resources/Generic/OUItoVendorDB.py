@@ -1,21 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import sys
 import os
-from os import walk
-import json
-import urllib
-import urllib2
+import urllib.request
 import time
-import shutil
 
 
-kOUIWebFilePath = 'http://standards-oui.ieee.org/oui.txt'
+kOUIWebFilePath = 'https://standards-oui.ieee.org/oui.txt'
 kOUITempFilePath = '/tmp/OUI.txt'
 kOUILocalFileName = 'Resources/Generic/vendor.db'
 kPlistTemplateFileName = 'Resources/Generic/plistTemplate.tmp'
 
 def xcodePrint(string):
-	print string
+	print(string)
 	sys.stdout.flush()
 
 def needForce(filename):
@@ -32,12 +28,11 @@ def needForce(filename):
 	return False
 
 def downloadFile(fileurl, filename):
-	request = urllib2.Request(fileurl)
-	response = urllib2.urlopen(request)
+	request = urllib.request.Request(fileurl)
+	response = urllib.request.urlopen(request, timeout=30)
 	# Retrieve file size
 	metainfo = response.info()
-	filesize =  int(metainfo.getheaders("Content-Length")[0])
-	#print metainfo
+	filesize = int(metainfo.get("Content-Length", "0"))
 	xcodePrint('Downloading file: %s Size: %s' % (filename, filesize))
 
 	fileBundle = open(filename, 'wb')
@@ -51,38 +46,19 @@ def downloadFile(fileurl, filename):
 
 		downloaded += len(buffer)
 
-		# show progress each 10% completed
-		progress = int((downloaded * 100.0 / filesize) / 10)
-		if (latest_progress != progress):
-			latest_progress = progress
-			xcodePrint('%s%%' % (progress * 10))
+			if filesize:
+				# show progress each 10% completed
+				progress = int((downloaded * 100.0 / filesize) / 10)
+				if (latest_progress != progress):
+					latest_progress = progress
+					xcodePrint('%s%%' % (progress * 10))
 
 		fileBundle.write(buffer)
 
 	fileBundle.close()
 	# check downloaded size
 	statinfo = os.stat(filename)
-	return (filesize == statinfo.st_size)
-
-def retrieveBundleUrl(configuration):
-	xcodePrint("Generate bundle")
-	
-	configuration.Dump()
-	request = urllib2.Request(configuration.host, configuration.Payload())
-
-	dataResponse = {}
-	dataResponse["status"] = "fail"
-	try:
-		response = urllib2.urlopen(request)
-		data = response.read()
-
-		dataResponse = json.loads(data)
-	except Exception, e:
-		xcodePrint("========================\nError: %s" % (data))
-	else:
-		xcodePrint("Response: %s" % (dataResponse))
-
-	return dataResponse
+	return (filesize == 0 or filesize == statinfo.st_size)
 
 def parseVendors(srcName, dstName):
 	inputfile = open(srcName, 'r')
@@ -99,7 +75,7 @@ def parseVendors(srcName, dstName):
 	d = {}
 	for entry in entries:
 		parts = entry.split("\n")[0].split("\t")
-		print parts[0]
+		print(parts[0])
 		company_id = parts[0].split()[0]
 		company_id = company_id.replace('-', ':')
 		company_name = parts[-1]
@@ -110,15 +86,32 @@ def parseVendors(srcName, dstName):
 
 	outputfile.write('\n</dict>\n</plist>\n')
 
+def writeEmptyVendorDB(dstName):
+	plistTemplateFile = open(kPlistTemplateFileName, 'r')
+	outputfile = open(dstName, 'w')
+	outputfile.write(plistTemplateFile.read())
+	outputfile.write('\n</dict>\n</plist>\n')
+	outputfile.close()
+	plistTemplateFile.close()
+
 def main():
 	if (not needForce(kOUILocalFileName) and os.path.exists(kOUILocalFileName)):
 		xcodePrint('Vendor Database exists, skip downloading')
 		sys.exit(0)
 		return
 
-	success = downloadFile(kOUIWebFilePath, kOUITempFilePath)
+	try:
+		success = downloadFile(kOUIWebFilePath, kOUITempFilePath)
+	except Exception as e:
+		xcodePrint('Vendor database download failed: %s' % e)
+		success = False
+
 	if (success):
 		parseVendors(kOUITempFilePath, kOUILocalFileName)
+	elif not os.path.exists(kOUILocalFileName):
+		xcodePrint('Creating an empty vendor database so the app can build offline')
+		writeEmptyVendorDB(kOUILocalFileName)
+		success = True
 
 	sys.exit(not success)
 

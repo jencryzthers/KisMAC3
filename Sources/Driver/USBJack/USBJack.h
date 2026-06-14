@@ -84,7 +84,7 @@ protected:
     
     BOOL    _matchingDone;
     
-    typedef NS_ENUM(NSUInteger, deviceTypes)
+    enum deviceTypes
     {
         intersil = 1,
         zydas,

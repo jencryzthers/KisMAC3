@@ -1123,9 +1123,10 @@ NSInteger lengthSort(id string1, id string2, void *context)
 	 kCWSecurityWPA2Enterprise       = 9,
 	 kCWSecurityEnterprise           = 10,
 	 kCWSecurityUnknown              = NSIntegerMax,*/
-	CWSecurity sm = kCWSecurityNone;
+	CWSecurity sm = kCWSecurityUnknown;
 	
-	for (; sm <= kCWSecurityEnterprise; ++sm) {
+	for (NSInteger securityMode = kCWSecurityNone; securityMode <= kCWSecurityEnterprise; ++securityMode) {
+		sm = (CWSecurity)securityMode;
 		if ([info supportsSecurity:sm])
 			break;
 	}

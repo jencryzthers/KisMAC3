@@ -37,15 +37,15 @@
 
 - (void)registerGrowl
 {
-	NSBundle *myBundle = [NSBundle bundleForClass:[GrowlController class]];
-	NSString *growlPath = [[myBundle privateFrameworksPath]
-	stringByAppendingPathComponent:@"Growl.framework"];
-	NSBundle *growlBundle = [NSBundle bundleWithPath:growlPath];
-	if (growlBundle && [growlBundle load]) {
-		[GrowlApplicationBridge setGrowlDelegate:self];
-	} else {
-		DBNSLog(@"Could not load Growl.framework");
-	}
+	DBNSLog(@"Using native macOS notifications");
+}
+
++ (void)postNotificationWithTitle:(NSString *)title description:(NSString *)description
+{
+    NSUserNotification *notification = [[NSUserNotification alloc] init];
+    notification.title = title;
+    notification.informativeText = description;
+    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
 }
 
 #pragma mark Growl Notifications
@@ -81,34 +81,12 @@
 
 + (void)notifyGrowlStartScan
 {
-    NSData * iconData = nil;
-    NSImage * image = [NSImage imageNamed:@"NSApplicationIcon"];
-                       
-    if(image != nil)
-    {
-        iconData = [image TIFFRepresentation];
-    }
-    
-	[GrowlApplicationBridge
-	notifyWithTitle:@"KisMAC"
-		description:@"Starting Scan..."
-   notificationName:@"Scan Started/Stopped"
-		   iconData:iconData
-		   priority:0
-		   isSticky:NO
-	   clickContext:nil];
+    [self postNotificationWithTitle:@"KisMAC" description:@"Starting Scan..."];
 }
 
 + (void)notifyGrowlStopScan
 {
-	[GrowlApplicationBridge
-	notifyWithTitle:@"KisMAC"
-		description:@"Stopping Scan..."
-   notificationName:@"Scan Started/Stopped"
-		   iconData:[NSData dataWithData:[[NSImage imageNamed:@"NSApplicationIcon"] TIFFRepresentation]]
-		   priority:0
-		   isSticky:NO
-	   clickContext:nil];
+    [self postNotificationWithTitle:@"KisMAC" description:@"Stopping Scan..."];
 }
 
 + (void)notifyGrowlWPAChallenge:(NSString *)notname mac:(NSString *)mac bssid:(NSString *)bssid
@@ -128,15 +106,4 @@
 
 #pragma mark Growl Methods
 
-- (NSString *)applicationNameForGrowl {
-	return @"KisMAC";
-}
-
-- (NSDictionary *)registrationDictionaryForGrowl {
-	NSArray *allNotifications = @[@"Scan Started/Stopped",@"Open Network Found",@"Closed Network Found",@"Probe Request Received",@"WPA Challenge/Response",@"Hidden SSID Revealed"];
-	NSArray *defaultNotifications = @[@"Scan Started/Stopped",@"Open Network Found",@"Closed Network Found",@"WPA Challenge/Response",@"Hidden SSID Revealed"];
-	NSDictionary *registrationDict = @{GROWL_NOTIFICATIONS_ALL: allNotifications, GROWL_NOTIFICATIONS_DEFAULT: defaultNotifications};
-	return registrationDict;
-}
-	
 @end
