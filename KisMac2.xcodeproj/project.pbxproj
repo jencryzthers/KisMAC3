@@ -51,6 +51,11 @@
 		CA9008150000000000000001 /* KMBluetoothScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9008160000000000000001 /* KMBluetoothScanner.m */; };
 		CA9008170000000000000001 /* KMBluetoothPermissionProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9008180000000000000001 /* KMBluetoothPermissionProvider.m */; };
 		CA9008190000000000000001 /* KMBluetoothSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90081A0000000000000001 /* KMBluetoothSelfTest.m */; };
+		CA9010010000000000000001 /* KMUSBDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9010020000000000000001 /* KMUSBDevice.m */; };
+		CA9010030000000000000001 /* KMHIDDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9010040000000000000001 /* KMHIDDevice.m */; };
+		CA9010050000000000000001 /* KMSerialDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9010060000000000000001 /* KMSerialDevice.m */; };
+		CA9010070000000000000001 /* KMHardwareInventory.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9010080000000000000001 /* KMHardwareInventory.m */; };
+		CA9010090000000000000001 /* KMHardwareInventorySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA90100A0000000000000001 /* KMHardwareInventorySelfTest.m */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
 		CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001250000000000000001 /* proto_wpa3_sae.pcap */; };
@@ -279,6 +284,16 @@
 		CA9008240000000000000001 /* KMBluetoothPermissionProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMBluetoothPermissionProvider.h; sourceTree = "<group>"; };
 		CA90081A0000000000000001 /* KMBluetoothSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMBluetoothSelfTest.m; sourceTree = "<group>"; };
 		CA9008250000000000000001 /* KMBluetoothSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMBluetoothSelfTest.h; sourceTree = "<group>"; };
+		CA9010020000000000000001 /* KMUSBDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMUSBDevice.m; sourceTree = "<group>"; };
+		CA90100B0000000000000001 /* KMUSBDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMUSBDevice.h; sourceTree = "<group>"; };
+		CA9010040000000000000001 /* KMHIDDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHIDDevice.m; sourceTree = "<group>"; };
+		CA90100C0000000000000001 /* KMHIDDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHIDDevice.h; sourceTree = "<group>"; };
+		CA9010060000000000000001 /* KMSerialDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMSerialDevice.m; sourceTree = "<group>"; };
+		CA90100D0000000000000001 /* KMSerialDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMSerialDevice.h; sourceTree = "<group>"; };
+		CA9010080000000000000001 /* KMHardwareInventory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareInventory.m; sourceTree = "<group>"; };
+		CA90100E0000000000000001 /* KMHardwareInventory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareInventory.h; sourceTree = "<group>"; };
+		CA90100A0000000000000001 /* KMHardwareInventorySelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareInventorySelfTest.m; sourceTree = "<group>"; };
+		CA90100F0000000000000001 /* KMHardwareInventorySelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareInventorySelfTest.h; sourceTree = "<group>"; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001250000000000000001 /* proto_wpa3_sae.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa3_sae.pcap; path = Tests/Fixtures/proto_wpa3_sae.pcap; sourceTree = SOURCE_ROOT; };
@@ -685,6 +700,24 @@
 			path = Sources/Bluetooth;
 			sourceTree = "<group>";
 		};
+		CA9010000000000000000001 /* HardwareInventory */ = {
+			isa = PBXGroup;
+			children = (
+				CA90100B0000000000000001 /* KMUSBDevice.h */,
+				CA9010020000000000000001 /* KMUSBDevice.m */,
+				CA90100C0000000000000001 /* KMHIDDevice.h */,
+				CA9010040000000000000001 /* KMHIDDevice.m */,
+				CA90100D0000000000000001 /* KMSerialDevice.h */,
+				CA9010060000000000000001 /* KMSerialDevice.m */,
+				CA90100E0000000000000001 /* KMHardwareInventory.h */,
+				CA9010080000000000000001 /* KMHardwareInventory.m */,
+				CA90100F0000000000000001 /* KMHardwareInventorySelfTest.h */,
+				CA90100A0000000000000001 /* KMHardwareInventorySelfTest.m */,
+			);
+			name = HardwareInventory;
+			path = Sources/HardwareInventory;
+			sourceTree = "<group>";
+		};
 		003533A406A5DD8500AB4577 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -938,6 +971,7 @@
 			children = (
 				CA9000060000000000000001 /* Capabilities */,
 				CA9008000000000000000001 /* Bluetooth */,
+				CA9010000000000000000001 /* HardwareInventory */,
 				CA9004000000000000000001 /* Campaigns */,
 				CA9005000000000000000001 /* Safety */,
 				A57E64371607BC9700BE1BCA /* Crypto */,
@@ -1434,6 +1468,11 @@
 				CA9008150000000000000001 /* KMBluetoothScanner.m in Sources */,
 				CA9008170000000000000001 /* KMBluetoothPermissionProvider.m in Sources */,
 				CA9008190000000000000001 /* KMBluetoothSelfTest.m in Sources */,
+				CA9010010000000000000001 /* KMUSBDevice.m in Sources */,
+				CA9010030000000000000001 /* KMHIDDevice.m in Sources */,
+				CA9010050000000000000001 /* KMSerialDevice.m in Sources */,
+				CA9010070000000000000001 /* KMHardwareInventory.m in Sources */,
+				CA9010090000000000000001 /* KMHardwareInventorySelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,

@@ -396,11 +396,25 @@
             reason:KMCapabilityReasonPermissionMissing
             explanation:@"Bluetooth access is not authorized. Grant it in System Settings > Privacy & Security > Bluetooth (a scan will prompt if it has never been requested)."];
     }
+    // -------- USB / HID / serial inventory (S3.2 -- IMPLEMENTED) --------
+    // Read-only IOKit registry enumeration (KMHardwareInventory) needs NO
+    // permission/authorization on macOS, so these are unconditionally AVAILABLE.
+    // The collector NEVER opens/claims/writes a device -- pure diagnostics.
+    if ([featureKey isEqualToString:KMFeatureUSBInventory]) {
+        return [KMCapability availableCapabilityWithKey:featureKey
+            explanation:@"Read-only IOKit USB enumeration (no permission required)."];
+    }
+    if ([featureKey isEqualToString:KMFeatureHIDInventory]) {
+        return [KMCapability availableCapabilityWithKey:featureKey
+            explanation:@"Read-only IOKit HID enumeration (no permission required)."];
+    }
+    if ([featureKey isEqualToString:KMFeatureSerialInventory]) {
+        return [KMCapability availableCapabilityWithKey:featureKey
+            explanation:@"Read-only IOKit serial (BSD tty) enumeration (no permission required)."];
+    }
+
     if ([featureKey isEqualToString:KMFeatureLANDiscovery] ||
-        [featureKey isEqualToString:KMFeatureBonjourInventory] ||
-        [featureKey isEqualToString:KMFeatureUSBInventory] ||
-        [featureKey isEqualToString:KMFeatureHIDInventory] ||
-        [featureKey isEqualToString:KMFeatureSerialInventory]) {
+        [featureKey isEqualToString:KMFeatureBonjourInventory]) {
         return [KMCapability capabilityWithKey:featureKey
             availability:KMCapabilityUnknownRequiresActiveProbe
             reason:KMCapabilityReasonUnknownRequiresActiveProbe
@@ -579,6 +593,13 @@
           KMCapabilityUnavailable, KMCapabilityReasonPermissionMissing);
     check(@"all-green", green, KMFeatureLANDiscovery,
           KMCapabilityUnknownRequiresActiveProbe, KMCapabilityReasonUnknownRequiresActiveProbe);
+    // S3.2: read-only IOKit inventories are unconditionally available.
+    check(@"all-green", green, KMFeatureUSBInventory,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"all-green", green, KMFeatureHIDInventory,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    check(@"all-green", green, KMFeatureSerialInventory,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
 
     // Scenario B: Location granted + bpf DENIED.
     KMCapabilityEngine *bpfDenied =
