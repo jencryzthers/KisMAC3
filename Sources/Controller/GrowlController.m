@@ -35,11 +35,6 @@
 }
 
 
-- (void)registerGrowl
-{
-	DBNSLog(@"Using native macOS notifications");
-}
-
 + (void)postNotificationWithTitle:(NSString *)title description:(NSString *)description
 {
     NSUserNotification *notification = [[NSUserNotification alloc] init];

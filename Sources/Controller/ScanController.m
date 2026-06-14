@@ -290,10 +290,8 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
             NSAppKitVersionNumber);
     
     [sets setObject:[[[NSBundle mainBundle] bundlePath] stringByAbbreviatingWithTildeInPath] forKey:@"KisMACHomeDir"];
-    DBNSLog(@"Registering with Growl");
     aGrowlController = [[GrowlController alloc] init];
-    [aGrowlController registerGrowl];
-    
+
     IONotificationPortRef  notifyPortRef;   // notification port allocated by IORegisterForSystemPower
     io_object_t            notifierObject;  // notifier object, used to deregister later
     

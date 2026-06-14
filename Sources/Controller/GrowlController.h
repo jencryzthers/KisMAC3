@@ -31,8 +31,6 @@
 {
 }
 
-- (void)registerGrowl;
-
 + (void)notifyGrowlOpenNetwork:(NSString *)notname
                           SSID:(NSString *)SSID
                          BSSID:(NSString *)BSSID
