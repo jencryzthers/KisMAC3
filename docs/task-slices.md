@@ -21,10 +21,23 @@ land first.
 These get the project compiling and observable on current Xcode before any feature
 work. They unblock everything else.
 
-### S0.1 — Compile baseline: inventory & triage build failures
+> **Wave 0 build invocation (env note from S0.1):** this machine has no `DMP42GVPJ3`
+> dev signing cert (iCloud-hosted repo), so default `xcodebuild` fails at provisioning.
+> For all Wave 0 builds, disable signing —
+> `CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""` — or set a
+> local team. Signing itself is owned by **S8.x** (tracked as ENV-1 in `docs/build-triage.md`).
+> Toolchain observed: Xcode 26.5, macOS 27.0, arm64, SDK 26.5, deployment target 13.0.
+
+### S0.1 — Compile baseline: inventory & triage build failures — ✅ DONE (`b34b732`)
 - **Milestone:** 4 · **Impl:** legacy-objc-porting-agent · **Rev:** objc-appkit-reviewer · **Val:** xcode-build-validator · **Deps:** —
 - **Scope:** Attempt a clean build of `KisMac2.xcworkspace` on current Xcode (after `git submodule update --init --recursive`). Catalogue every error/warning into a triage list; do **not** fix yet. Confirm submodules (`BIGeneric`, `BIGL`, `polarssl`) build.
 - **Acceptance:** A committed `docs/build-triage.md` listing each failure with file:line and a proposed owner slice. `xcode-build-validator` confirms the error list is reproducible.
+- **Outcome:** `docs/build-triage.md` committed. BIGL/BIGeneric subprojects build (123 warnings, all OpenGL/Carbon deprecation → S5.x). The KisMac2 target aborts at its **first** phase (`Update vendors.db` run-script) due to a Python `IndentationError` introduced by the pre-existing WIP commit `9372017` — so the S0.3/S0.4 compile-breakers are real-in-source but **not yet build-confirmed** (masked behind the script failure). This spawned **S0.6**. **S0.1 must be RE-RUN after S0.6 + S0.2 land** to capture the build-confirmed compiler errors.
+
+### S0.6 — Fix the `OUItoVendorDB.py` "Update vendors.db" build-script phase
+- **Milestone:** 4 · **Impl:** legacy-objc-porting-agent · **Rev:** objc-appkit-reviewer · **Val:** xcode-build-validator · **Deps:** S0.1
+- **Scope:** Repair the Python `IndentationError` at `Resources/Generic/OUItoVendorDB.py:49` (de-indent the `if filesize:` progress block to sit inside the `while` download loop). This is the **first** build phase of the KisMac2 target, so it must pass before any source compiles — the true first build-unblocker. (Root cause: the WIP commit `9372017` added an over-indented line; verify the rest of that WIP Python change is sound while here.)
+- **Acceptance:** `python3 -m py_compile Resources/Generic/OUItoVendorDB.py` clean; the `Update vendors.db` phase succeeds (or is confirmed to fetch/skip correctly offline); the KisMac2 build proceeds past it to the compile phase. `xcode-build-validator` confirms the build now reaches source compilation.
 
 ### S0.2 — Remove dead bundled Growl framework
 - **Milestone:** 4 · **Impl:** legacy-objc-porting-agent · **Rev:** release-reviewer · **Val:** xcode-build-validator · **Deps:** S0.1
@@ -42,7 +55,7 @@ work. They unblock everything else.
 - **Acceptance:** Builds clean; menu items for removed features are gone or disabled with a reason; no dead-endpoint network calls remain. `security-abuse-reviewer` confirms the crash-upload privacy path is gone.
 
 ### S0.5 — Clean Debug + Release build green
-- **Milestone:** 4 · **Impl:** legacy-objc-porting-agent · **Rev:** objc-appkit-reviewer · **Val:** xcode-build-validator · **Deps:** S0.2, S0.3, S0.4
+- **Milestone:** 4 · **Impl:** legacy-objc-porting-agent · **Rev:** objc-appkit-reviewer · **Val:** xcode-build-validator · **Deps:** S0.6, S0.2, S0.3, S0.4
 - **Scope:** Resolve remaining triage items to reach a warning-summarized clean build for both configurations; confirm Apple Silicon + Intel (or document which is unavailable).
 - **Acceptance:** `xcode-build-validator`: clean Debug **and** Release build, product is the expected architecture, app launches outside Xcode (unsigned dev run). This is the **compile-baseline gate** for all later waves.
 
@@ -135,7 +148,8 @@ Outlined (expanded into slices when their dependencies are near):
 ## Dependency summary
 
 ```
-S0.1 → S0.2,S0.3,S0.4 → S0.5 ─┬─→ S1.1 ─┬─→ S1.3 ─┬─→ S1.4
+S0.1 → S0.6 → S0.2,S0.3,S0.4 → S0.5 ─┬─→ S1.1 ─┬─→ S1.3 ─┬─→ S1.4
+       (re-run S0.1 after S0.6+S0.2)  │         │         │
                               │         │         ├─→ S2.1, S2.2, S2.4
                               ├─→ S1.2  │         ├─→ S3.1..S3.4
                               │         │         └─→ S4.1 ─→ S4.2 ─→ S7.x
