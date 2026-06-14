@@ -63,6 +63,7 @@
 #import "../Bluetooth/KMBluetoothSelfTest.h"
 #import "../HardwareInventory/KMHardwareInventorySelfTest.h"
 #import "../LAN/KMLANSelfTest.h"
+#import "../LAN/KMInterfaceInventorySelfTest.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
 #import "../WaveDrivers/WaveDriverKismet.h"
@@ -1170,6 +1171,19 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // See Sources/LAN/KMLANSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_LAN_SELFTEST"] isEqualToString:@"1"]) {
         [KMLANSelfTest runSelfTestLogging];
+    }
+
+    // S3.4 - Local interface inventory self-test. Runs ONLY when
+    // KISMAC_IFACE_SELFTEST=1 is set. Enumerates THIS machine's interfaces via
+    // getifaddrs(3) (no permission needed), logs a REDACTED summary
+    // (name/type/up/has-IP, MAC/IP masked), and asserts: enumeration doesn't
+    // crash, lo0 is present + classified loopback, at least one en* is present,
+    // primary status is consistent with SystemConfiguration, and the coalesced
+    // name set matches the getifaddrs ground truth. READ-ONLY / LOCAL-ONLY: no
+    // interface is configured and no traffic is sent. See
+    // Sources/LAN/KMInterfaceInventorySelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_IFACE_SELFTEST"] isEqualToString:@"1"]) {
+        [KMInterfaceInventorySelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

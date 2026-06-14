@@ -59,6 +59,10 @@
 		CA9011010000000000000001 /* KMLANService.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9011020000000000000001 /* KMLANService.m */; };
 		CA9011030000000000000001 /* KMLANDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9011040000000000000001 /* KMLANDiscovery.m */; };
 		CA9011050000000000000001 /* KMLANSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9011060000000000000001 /* KMLANSelfTest.m */; };
+		CA9012010000000000000001 /* KMNetworkInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012020000000000000001 /* KMNetworkInterface.m */; };
+		CA9012030000000000000001 /* KMInterfaceInventory.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012040000000000000001 /* KMInterfaceInventory.m */; };
+		CA9012050000000000000001 /* KMInterfaceInventorySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */; };
+		CA9013010000000000000001 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA9013020000000000000001 /* SystemConfiguration.framework */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
 		CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001250000000000000001 /* proto_wpa3_sae.pcap */; };
@@ -303,6 +307,13 @@
 		CA9011080000000000000001 /* KMLANDiscovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLANDiscovery.h; sourceTree = "<group>"; };
 		CA9011060000000000000001 /* KMLANSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMLANSelfTest.m; sourceTree = "<group>"; };
 		CA9011090000000000000001 /* KMLANSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMLANSelfTest.h; sourceTree = "<group>"; };
+		CA9012020000000000000001 /* KMNetworkInterface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMNetworkInterface.m; sourceTree = "<group>"; };
+		CA9012070000000000000001 /* KMNetworkInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMNetworkInterface.h; sourceTree = "<group>"; };
+		CA9012040000000000000001 /* KMInterfaceInventory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMInterfaceInventory.m; sourceTree = "<group>"; };
+		CA9012080000000000000001 /* KMInterfaceInventory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMInterfaceInventory.h; sourceTree = "<group>"; };
+		CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMInterfaceInventorySelfTest.m; sourceTree = "<group>"; };
+		CA9012090000000000000001 /* KMInterfaceInventorySelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMInterfaceInventorySelfTest.h; sourceTree = "<group>"; };
+		CA9013020000000000000001 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001250000000000000001 /* proto_wpa3_sae.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa3_sae.pcap; path = Tests/Fixtures/proto_wpa3_sae.pcap; sourceTree = SOURCE_ROOT; };
@@ -581,6 +592,7 @@
 				6C32713412CFC4070033A649 /* CoreLocation.framework in Frameworks */,
 				CA9003090000000000000001 /* Network.framework in Frameworks */,
 				CA9008010000000000000001 /* CoreBluetooth.framework in Frameworks */,
+				CA9013010000000000000001 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -736,6 +748,12 @@
 				CA9011040000000000000001 /* KMLANDiscovery.m */,
 				CA9011090000000000000001 /* KMLANSelfTest.h */,
 				CA9011060000000000000001 /* KMLANSelfTest.m */,
+				CA9012070000000000000001 /* KMNetworkInterface.h */,
+				CA9012020000000000000001 /* KMNetworkInterface.m */,
+				CA9012080000000000000001 /* KMInterfaceInventory.h */,
+				CA9012040000000000000001 /* KMInterfaceInventory.m */,
+				CA9012090000000000000001 /* KMInterfaceInventorySelfTest.h */,
+				CA9012060000000000000001 /* KMInterfaceInventorySelfTest.m */,
 			);
 			name = LAN;
 			path = Sources/LAN;
@@ -1028,6 +1046,7 @@
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				CA90030A0000000000000001 /* Network.framework */,
 				CA9008020000000000000001 /* CoreBluetooth.framework */,
+				CA9013020000000000000001 /* SystemConfiguration.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -1500,6 +1519,9 @@
 				CA9011010000000000000001 /* KMLANService.m in Sources */,
 				CA9011030000000000000001 /* KMLANDiscovery.m in Sources */,
 				CA9011050000000000000001 /* KMLANSelfTest.m in Sources */,
+				CA9012010000000000000001 /* KMNetworkInterface.m in Sources */,
+				CA9012030000000000000001 /* KMInterfaceInventory.m in Sources */,
+				CA9012050000000000000001 /* KMInterfaceInventorySelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,
