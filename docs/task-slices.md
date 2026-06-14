@@ -63,10 +63,11 @@ work. They unblock everything else.
 
 ## Wave 1 — Capability foundation (the spine of the port)
 
-### S1.1 — MacBook hardware capability probe **[blocked: S0.5]**
-- **Milestone:** 1 · **Impl:** macbook-capability-agent · **Rev:** macos-api-reviewer · **Val:** macbook-hardware-validation-agent · **Deps:** S0.5
+### S1.1 — MacBook hardware capability probe — ✅ DONE (Apple Silicon) / partial validation (`2a96c99`)
+- **Milestone:** 1 · **Impl:** macbook-capability-agent · **Rev:** macos-api-reviewer · **Val:** macbook-hardware-validation-agent · **Deps:** S0.5 (proceeded on the already-green **Debug** baseline post-S0.6; full S0.5 not required to compile)
 - **Scope:** Implement the probe from Milestone 1: Apple Wi-Fi interface visibility, Location-permission state, CoreWLAN scan support, 2.4/5/6 GHz visibility, pcap open, monitor-like capture, datalink, channel switching, AP/SoftAP, frame injection, exposed PHY/security metadata. Persist results per Mac model + OS version. New `Sources/Capabilities/*`, `Sources/WaveDrivers/WaveDriverAirport*`, `Sources/Core/WaveHelper.m`, `Resources/Info.plist`.
 - **Acceptance:** Runs on real Intel + Apple Silicon MacBooks and emits a persisted capability report with **no guessed status** (`macbook-hardware-validation-agent`). This report is what resolves every 🔍 `needs-probe` row in the parity matrix.
+- **Outcome:** Implemented `Sources/Capabilities/KMHardwareProbe.{h,m}` + `KMHardwareCapability.{h,m}` (non-disruptive only, per safety), `NSLocationWhenInUseUsageDescription` added, probe runs async at launch and persists `~/Library/Application Support/KisMac3/hardware-probe-<model>-<os>.json`. Build green, app launches, report verified. **Scope decisions:** disruptive ops (monitor/channel-switch/AP/injection) are **reported `unknownRequiresActiveProbe`, not executed** (would drop the Wi-Fi link); did not touch `WaveDriverAirport*`/`WaveHelper.m` (the standalone probe didn't need them). **On Mac15,8 / macOS 27 / arm64:** Wi-Fi iface ✓, Location `permissionMissing` (NotDetermined → S1.2), CoreWLAN scan API-available (Location-gated), **2.4/5/6 GHz all supported**, PHY metadata ✓, **`pcap.open` permissionMissing (`/dev/bpf0` denied)** — live capture is BPF-permission-gated, not impossible. **Remaining:** Intel-MacBook validation + a future *consented active probe* to resolve the disruptive 🔍 rows (monitor/channel/AP/injection still `unknownRequiresActiveProbe`). Minor: `kCLAuthorizationStatusAuthorizedWhenInUse` macOS handling to confirm in S1.2.
 
 ### S1.2 — Info.plist permission strings + Location auth flow **[blocked: S0.5]**
 - **Milestone:** 1/2 · **Impl:** macbook-capability-agent · **Rev:** macos-api-reviewer · **Val:** macbook-native-validation-agent · **Deps:** S0.5
