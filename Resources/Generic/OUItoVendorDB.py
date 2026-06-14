@@ -46,12 +46,12 @@ def downloadFile(fileurl, filename):
 
 		downloaded += len(buffer)
 
-			if filesize:
-				# show progress each 10% completed
-				progress = int((downloaded * 100.0 / filesize) / 10)
-				if (latest_progress != progress):
-					latest_progress = progress
-					xcodePrint('%s%%' % (progress * 10))
+		if filesize:
+			# show progress each 10% completed
+			progress = int((downloaded * 100.0 / filesize) / 10)
+			if (latest_progress != progress):
+				latest_progress = progress
+				xcodePrint('%s%%' % (progress * 10))
 
 		fileBundle.write(buffer)
 
