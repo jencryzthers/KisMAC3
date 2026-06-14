@@ -36,3 +36,4 @@ extern NSString *const KisMACNetworkAdded;
 extern NSString *const KisMACUserDefaultsChanged;
 extern NSString *const KisMACTryToSave;
 extern NSString *const KisMACGPSStatusChanged;
+extern NSString *const KisMACLocationAuthorizationChanged;

@@ -57,6 +57,7 @@ struct termios ttyset;
 @interface GPSController(PrivateExtension)
 
 - (void)setStatus:(NSString*)status;
+- (void)surfaceLocationDenialRemediationForStatus:(CLAuthorizationStatus)status;
 
 @end
 
@@ -75,7 +76,8 @@ struct termios ttyset;
     _linesRead      = 0;
     
     clManager = nil;
-    
+    _locationDenialAlertShown = NO;
+
     [self setStatus:NSLocalizedString(@"GPS subsystem initialized but not running.", @"GPS status")];
     
     return self;
@@ -130,6 +132,17 @@ struct termios ttyset;
         {
             clManager = [[CLLocationManager alloc] init];
             clManager.delegate = self;
+
+            // Authorization trigger (S1.2): request Location authorization at the
+            // moment the CoreLocation GPS source is actually started -- i.e. when
+            // the user opts into the Location-backed position feature -- NOT
+            // blindly at every launch. -requestWhenInUseAuthorization is the
+            // modern, non-deprecated request API; on macOS a grant yields
+            // kCLAuthorizationStatusAuthorizedWhenInUse or ...AuthorizedAlways.
+            // If status is already determined, -locationManagerDidChangeAuthorization:
+            // fires immediately so denial remediation still surfaces.
+            [clManager requestWhenInUseAuthorization];
+
             [clManager startUpdatingLocation];
             [self setStatus:NSLocalizedString(@"CoreLocation initialized.", @"GPS status")];
         }
@@ -1381,37 +1394,156 @@ NSInteger ss(char* inp, char* outp)
     return validLocation;
 }
 
-- (void)locationManager:(CLLocationManager *)manager
-    didUpdateToLocation:(CLLocation *)newLocation
-           fromLocation:(CLLocation *)oldLocation
+#pragma mark - Authorization (modern API)
+
+- (CLAuthorizationStatus)locationAuthorizationStatus
 {
+    // Instance authorizationStatus (macOS 11+); avoids the deprecated class
+    // method. Reading it (or constructing a manager) does NOT request auth.
+    CLLocationManager *lm = clManager ?: [[CLLocationManager alloc] init];
+    return [lm authorizationStatus];
+}
+
+- (BOOL)isLocationAuthorized
+{
+    CLAuthorizationStatus s = [self locationAuthorizationStatus];
+    // On macOS, -requestWhenInUseAuthorization yields WhenInUse OR Always; both
+    // count as granted. (The legacy kCLAuthorizationStatusAuthorized alias maps
+    // to AuthorizedAlways, so it is covered.) The SDK marks
+    // kCLAuthorizationStatusAuthorizedWhenInUse "unavailable on macOS" as a
+    // symbol, but the system still returns its raw value (4), so compare numerically.
+    static const int kKMAuthWhenInUseRawValue = 4; // kCLAuthorizationStatusAuthorizedWhenInUse
+    return (s == kCLAuthorizationStatusAuthorizedAlways ||
+            (int)s == kKMAuthWhenInUseRawValue);
+}
+
+// Modern (macOS 11+) authorization-change delegate. Fires once right after the
+// delegate is set with the current status, and again on every grant/deny/
+// restricted/notDetermined transition. Replaces the deprecated
+// -locationManager:didChangeAuthorizationStatus:.
+- (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager
+{
+    CLAuthorizationStatus status = [manager authorizationStatus];
+    DBNSLog(@"CoreLocation authorization changed: status=%d", (int)status);
+
+    // kCLAuthorizationStatusAuthorizedWhenInUse is "unavailable on macOS" as a
+    // symbol (cannot be a case label) but its raw value (4) is still returned
+    // for a WhenInUse grant; treat Always OR WhenInUse as granted via -isLocationAuthorized.
+    if ([self isLocationAuthorized])
+    {
+        // Granted: a one-time denial alert (if any) is no longer relevant;
+        // re-arm it in case authorization is later revoked.
+        _locationDenialAlertShown = NO;
+        // Resume location updates now that we are allowed.
+        [manager startUpdatingLocation];
+        [self setStatus:nil];
+    }
+    else
+    {
+        switch (status)
+        {
+            case kCLAuthorizationStatusDenied:
+            case kCLAuthorizationStatusRestricted:
+                _reliable = NO;
+                [self setStatus:NSLocalizedString(@"Location access denied. CoreLocation GPS is unavailable until you enable Location for KisMac.", @"GPS status")];
+                [self surfaceLocationDenialRemediationForStatus:status];
+                break;
+
+            case kCLAuthorizationStatusNotDetermined:
+            default:
+                // Awaiting the user's decision on the request; nothing to surface.
+                break;
+        }
+    }
+
+    // Make the new auth state observable to the capability layer (S1.1 probe /
+    // S1.3 engine) without rewiring the engine itself. Object carries the raw
+    // CLAuthorizationStatus boxed as an NSNumber.
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:KisMACLocationAuthorizationChanged
+                      object:@((int)status)];
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:KisMACGPSStatusChanged
+                      object:[self status]];
+}
+
+// One-time, non-nagging remediation. Uses NSAlert (NOT the deprecated
+// NSRunAlertPanel / NSBeginAlertSheet). Surfaced only when the user has actually
+// tried to use the Location-backed GPS source and it is denied/restricted.
+- (void)surfaceLocationDenialRemediationForStatus:(CLAuthorizationStatus)status
+{
+    if (_locationDenialAlertShown) return;
+    _locationDenialAlertShown = YES;
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleWarning];
+        [alert setMessageText:NSLocalizedString(@"KisMac needs Location access for GPS", @"Location denial alert title")];
+        [alert setInformativeText:NSLocalizedString(
+            @"macOS is blocking the CoreLocation GPS source for KisMac. To enable it:\n\n"
+            @"1. Open System Settings > Privacy & Security > Location Services.\n"
+            @"2. Make sure Location Services is turned ON.\n"
+            @"3. Find KisMac in the list and turn it ON.\n"
+            @"4. Restart the scan / GPS so KisMac can pick up the new permission.\n\n"
+            @"Without Location, the CoreLocation position source cannot report a fix, and macOS also hides Wi-Fi SSID/BSSID in scans.",
+            @"Location denial alert body")];
+        [alert addButtonWithTitle:NSLocalizedString(@"Open Location Settings", @"Location denial alert button")];
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Location denial alert button")];
+
+        NSModalResponse resp = [alert runModal];
+        if (resp == NSAlertFirstButtonReturn) {
+            NSURL *url = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices"];
+            if (url) {
+                [[NSWorkspace sharedWorkspace] openURL:url];
+            }
+        }
+    });
+}
+
+#pragma mark - Location updates (modern delegate)
+
+// Modern replacement for the deprecated
+// -locationManager:didUpdateToLocation:fromLocation:. The last object in
+// -locations is the most recent fix.
+- (void)locationManager:(CLLocationManager *)manager
+     didUpdateLocations:(NSArray<CLLocation *> *)locations
+{
+    CLLocation *newLocation = [locations lastObject];
+    if (newLocation == nil) return;
+
     DBNSLog(@"Got location update!");
-    //CFShow(newLocation);
     if([GPSController isValidLocation: newLocation])
     {
-        [self setCurrentPointNS: newLocation.coordinate.latitude 
+        [self setCurrentPointNS: newLocation.coordinate.latitude
                              EW: newLocation.coordinate.longitude
                             ELV: newLocation.altitude];
         [self setStatus:nil];
         _reliable = YES;
-        [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged 
+        [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged
                                                             object:[self status]];
     }
     else
     {
         _reliable = NO;
-        [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged 
+        [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged
                                                             object:[self status]];
     }
-    
 }
 
 - (void)locationManager:(CLLocationManager *)manager
        didFailWithError:(NSError *)error
 {
-    CFShow((__bridge CFTypeRef)(error));
+    DBNSLog(@"CoreLocation failed: %@", error);
     _reliable = NO;
-    [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged 
+
+    // kCLErrorDenied (kCLErrorDomain Code=1) means the user/system denied
+    // Location; surface remediation rather than failing silently.
+    if ([error.domain isEqualToString:kCLErrorDomain] && error.code == kCLErrorDenied)
+    {
+        [self surfaceLocationDenialRemediationForStatus:[self locationAuthorizationStatus]];
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged
                                                         object:[self status]];
 }
 

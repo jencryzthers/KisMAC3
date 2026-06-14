@@ -67,6 +67,7 @@ struct _position
     NSString * _status;
     
     CLLocationManager * clManager;
+    BOOL      _locationDenialAlertShown;  // one-time, non-nagging remediation alert
 }
 
 - (BOOL)startForDevice:(NSString*) device;
@@ -85,6 +86,14 @@ struct _position
 
 - (waypoint)currentPoint;
 - (void)stop;
+
+// Current CoreLocation authorization status for this process. Read-only;
+// constructing the manager does NOT request authorization. Exposed so the
+// capability layer (S1.1 probe / S1.3 engine) can query the live auth state
+// after a -locationManagerDidChangeAuthorization: transition.
+- (CLAuthorizationStatus)locationAuthorizationStatus;
+// YES iff the current status is a granted state (WhenInUse or Always on macOS).
+- (BOOL)isLocationAuthorized;
 
 - (void)writeDebugOutput:(BOOL)enable;
 

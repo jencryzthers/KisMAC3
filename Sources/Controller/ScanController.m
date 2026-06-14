@@ -63,6 +63,7 @@ NSString *const KisMACNetworkAdded          = @"KisMACNetworkAdded";
 NSString *const KisMACUserDefaultsChanged   = @"KisMACUserDefaultsChanged";
 NSString *const KisMACTryToSave             = @"KisMACTryToSave";
 NSString *const KisMACGPSStatusChanged      = @"KisMACGPSStatusChanged";
+NSString *const KisMACLocationAuthorizationChanged = @"KisMACLocationAuthorizationChanged";
 
 static io_connect_t  root_port;    // a reference to the Root Power Domain IOService
 

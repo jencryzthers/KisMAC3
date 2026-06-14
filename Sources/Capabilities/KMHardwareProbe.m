@@ -130,31 +130,38 @@ static NSString *KMSysctlString(const char *name) {
                                 @"enable Location Services, and allow KisMac. Without it macOS hides "
                                 @"SSID/BSSID in Wi-Fi scans.";
 
+        // S1.2 follow-up: on macOS, -requestWhenInUseAuthorization yields EITHER
+        // AuthorizedWhenInUse OR AuthorizedAlways. The SDK marks the symbol
+        // kCLAuthorizationStatusAuthorizedWhenInUse *unavailable on macOS* (it
+        // cannot be used as a case label here without a compile error), but the
+        // system still RETURNS its raw value (4) for a WhenInUse grant. So we
+        // recognize "granted" by raw value -- covering Always (legacy Authorized
+        // == Always == 3) AND WhenInUse (4) -- before switching on the rest.
+        // Previously the WhenInUse case was compiled out under !TARGET_OS_OSX,
+        // which would misreport a valid macOS WhenInUse grant as permissionMissing.
+        static const int kKMAuthWhenInUseRawValue = 4; // kCLAuthorizationStatusAuthorizedWhenInUse
+        BOOL granted = (authStatus == kCLAuthorizationStatusAuthorizedAlways) ||
+                       ((int)authStatus == kKMAuthWhenInUseRawValue);
+
         if (!servicesEnabled) {
             [caps addObject:[KMHardwareCapability
                 capabilityWithKey:KMCapLocationAuthorization
                            status:KMCapabilityStatusPermissionMissing
                            reason:@"System Location Services are OFF; Wi-Fi scans will not reveal SSID/BSSID."
                       remediation:remediation]];
+        } else if (granted) {
+            locationAuthorized = YES;
+            [caps addObject:[KMHardwareCapability
+                capabilityWithKey:KMCapLocationAuthorization
+                           status:KMCapabilityStatusSupported
+                           reason:@"Location authorization granted (WhenInUse or Always); SSID/BSSID visibility available to scans."]];
         } else {
             switch (authStatus) {
-                case kCLAuthorizationStatusAuthorizedAlways:
-#if !TARGET_OS_OSX
-                // kCLAuthorizationStatusAuthorizedWhenInUse is unavailable on macOS;
-                // on macOS the granted states are Always (and the legacy Authorized).
-                case kCLAuthorizationStatusAuthorizedWhenInUse:
-#endif
-                    locationAuthorized = YES;
-                    [caps addObject:[KMHardwareCapability
-                        capabilityWithKey:KMCapLocationAuthorization
-                                   status:KMCapabilityStatusSupported
-                                   reason:@"Location authorization granted; SSID/BSSID visibility available to scans."]];
-                    break;
                 case kCLAuthorizationStatusNotDetermined:
                     [caps addObject:[KMHardwareCapability
                         capabilityWithKey:KMCapLocationAuthorization
                                    status:KMCapabilityStatusPermissionMissing
-                                   reason:@"Location authorization not yet requested (kCLAuthorizationStatusNotDetermined). The auth flow is owned by a later slice; until granted macOS hides SSID/BSSID."
+                                   reason:@"Location authorization not yet requested (kCLAuthorizationStatusNotDetermined). KisMac requests it when the CoreLocation GPS source starts (S1.2); until granted macOS hides SSID/BSSID."
                               remediation:remediation]];
                     break;
                 case kCLAuthorizationStatusDenied:
