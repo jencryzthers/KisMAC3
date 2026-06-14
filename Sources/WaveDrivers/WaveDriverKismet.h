@@ -32,21 +32,17 @@
  */
 
 #import "WaveDriver.h"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
+@class KMKismetTransport;
 
+// S2.4: the legacy raw BSD-socket members (sockd/serv_name/hostent/inet_addr)
+// were replaced by a Network.framework transport (KMKismetTransport). The
+// transport is plaintext TCP by design -- legacy Kismet's *NETWORK: line
+// protocol (~2006) is plaintext. See KMKismetTransport.h.
 @interface WaveDriverKismet : WaveDriver {
-	NSInteger fd;
-	int sockd;
-    struct sockaddr_in serv_name;
-    NSInteger status;
-    struct hostent *hp;
-    UInt32 ip;
+	KMKismetTransport *_transport;
 	NSInteger port;
-	const char *hostname;
+	NSString *hostname;
 }
 
 + (NSInteger) kismetInstanceCount;

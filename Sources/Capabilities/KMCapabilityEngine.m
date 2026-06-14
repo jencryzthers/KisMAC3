@@ -248,11 +248,21 @@
     }
 
     // -------- Kismet remote capture --------
+    // S2.4: the remote Kismet/drone transport is modernized onto
+    // Network.framework (plaintext TCP). The backend depends on NO local
+    // MacBook radio/permission -- it ingests networks from a user-supplied
+    // remote server -- so it is AVAILABLE as a user-initiated remote source.
+    // The actual connect is attempted only when the user starts the driver and
+    // fails CLOSED with a clear reason if the server is unreachable (no silent
+    // failure). HONESTY: this speaks the LEGACY (~2006) *NETWORK:/drone binary
+    // protocol only; it does NOT talk to modern Kismet 3.x (REST/websocket/JSON
+    // over TLS) -- that adapter is a separate future slice needing a live
+    // server to validate.
     if ([featureKey isEqualToString:KMFeatureKismetRemoteCapture]) {
-        return [KMCapability capabilityWithKey:featureKey
-            availability:KMCapabilityUnknownRequiresActiveProbe
-            reason:KMCapabilityReasonUnknownRequiresActiveProbe
-            explanation:@"Remote Kismet/drone backend is not yet modernized (S2.4)."];
+        return [KMCapability availableCapabilityWithKey:featureKey
+            explanation:@"Remote Kismet backend (legacy plaintext protocol) available; "
+                        @"connection is user-initiated and fails closed if the server is unreachable. "
+                        @"Modern Kismet 3.x is not supported (separate future slice)."];
     }
 
     // -------- GPS / map plotting: data path exists --------
@@ -426,6 +436,12 @@
           KMCapabilityUnknownRequiresActiveProbe, KMCapabilityReasonUnknownRequiresActiveProbe);
     check(@"all-green", green, KMFeatureHandshakeCapture,
           KMCapabilityUnknownRequiresActiveProbe, KMCapabilityReasonUnknownRequiresActiveProbe);
+    // S2.4: remote Kismet backend is a user-initiated remote source -- available
+    // independent of local radio/permission (legacy protocol only).
+    check(@"all-green", green, KMFeatureKismetRemoteCapture,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    // ...and still available even with NO Wi-Fi interface (it's remote).
+    // (asserted again in the no-wifi scenario below)
     // Data paths.
     check(@"all-green", green, KMFeatureGPS,
           KMCapabilityAvailable, KMCapabilityReasonNone);
@@ -456,6 +472,9 @@
           KMCapabilityUnavailable, KMCapabilityReasonUnsupportedMacBookHardware);
     // Offline still works with no radio at all.
     check(@"no-wifi", noWifi, KMFeaturePcapImport,
+          KMCapabilityAvailable, KMCapabilityReasonNone);
+    // S2.4: remote Kismet is independent of local radio -> still available.
+    check(@"no-wifi", noWifi, KMFeatureKismetRemoteCapture,
           KMCapabilityAvailable, KMCapabilityReasonNone);
 
     // Scenario D: prove the scope gate flips when scope IS present + a parser

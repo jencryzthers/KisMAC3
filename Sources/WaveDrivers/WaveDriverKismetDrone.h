@@ -33,10 +33,9 @@
 
 #import "WaveDriver.h"
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include <sys/time.h>
+
+@class KMKismetTransport;
 
 #define STREAM_DRONE_VERSION 9
 
@@ -414,8 +413,9 @@ typedef struct {
 
 @interface WaveDriverKismetDrone : WaveDriver
 {
-    struct sockaddr_in drone_sock, local_sock;
-	int drone_fd;
+    // S2.4: replaced raw BSD socket (drone_fd/sockaddr_in/bind/connect) with a
+    // Network.framework transport. The binary drone stream is plaintext.
+    KMKismetTransport *_transport;
 	NSInteger valid;
     NSInteger resyncs;	
     NSUInteger resyncing;

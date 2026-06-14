@@ -52,6 +52,7 @@
 #import "../Capabilities/KMPcapImportSelfTest.h"
 #import "../Capabilities/KMProtocolSelfTest.h"
 #import "../Capabilities/KMCryptoSelfTest.h"
+#import "../Capabilities/KMKismetSelfTest.h"
 #import "../Capabilities/KMCapability.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
@@ -946,6 +947,18 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // CPU-only / PASSIVE: no radio, no monitor mode. See KMCryptoSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_CRYPTO_SELFTEST"] isEqualToString:@"1"]) {
         [KMCryptoSelfTest runSelfTestLogging];
+    }
+
+    // S2.4 - Kismet remote backend self-test. Runs ONLY when
+    // KISMAC_KISMET_SELFTEST=1 is set. Launches a LOCAL MOCK Kismet server
+    // (Tests/Fixtures/mock_kismet_server.py) speaking the legacy plaintext
+    // *NETWORK: protocol on 127.0.0.1, and asserts the modernized
+    // Network.framework transport (1) connects + ingests the known fixture
+    // networks via WaveDriverKismet, and (2) fails CLOSED with a clear reason on
+    // a refused connection (no silent failure / no hang). PASSIVE / LOOPBACK:
+    // no live radio, monitor mode, or channel switching. See KMKismetSelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_KISMET_SELFTEST"] isEqualToString:@"1"]) {
+        [KMKismetSelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

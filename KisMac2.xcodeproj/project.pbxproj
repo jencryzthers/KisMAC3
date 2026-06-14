@@ -32,6 +32,10 @@
 		CA9001010000000000000001 /* KMProtocolMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9001020000000000000001 /* KMProtocolMetadata.m */; };
 		CA9001040000000000000001 /* KMProtocolSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9001050000000000000001 /* KMProtocolSelfTest.m */; };
 		CA9002010000000000000001 /* KMCryptoSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9002020000000000000001 /* KMCryptoSelfTest.m */; };
+		CA9003010000000000000001 /* KMKismetTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9003020000000000000001 /* KMKismetTransport.m */; };
+		CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9003050000000000000001 /* KMKismetSelfTest.m */; };
+		CA9003070000000000000001 /* mock_kismet_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CA9003080000000000000001 /* mock_kismet_server.py */; };
+		CA9003090000000000000001 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA90030A0000000000000001 /* Network.framework */; };
 		CA9001200000000000000001 /* proto_wep.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001210000000000000001 /* proto_wep.pcap */; };
 		CA9001220000000000000001 /* proto_wpa2.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001230000000000000001 /* proto_wpa2.pcap */; };
 		CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */ = {isa = PBXBuildFile; fileRef = CA9001250000000000000001 /* proto_wpa3_sae.pcap */; };
@@ -225,6 +229,12 @@
 		CA9001060000000000000001 /* KMProtocolSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMProtocolSelfTest.h; sourceTree = "<group>"; };
 		CA9002020000000000000001 /* KMCryptoSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCryptoSelfTest.m; sourceTree = "<group>"; };
 		CA9002030000000000000001 /* KMCryptoSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCryptoSelfTest.h; sourceTree = "<group>"; };
+		CA9003020000000000000001 /* KMKismetTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMKismetTransport.m; sourceTree = "<group>"; };
+		CA9003030000000000000001 /* KMKismetTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMKismetTransport.h; sourceTree = "<group>"; };
+		CA9003050000000000000001 /* KMKismetSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMKismetSelfTest.m; sourceTree = "<group>"; };
+		CA9003060000000000000001 /* KMKismetSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMKismetSelfTest.h; sourceTree = "<group>"; };
+		CA9003080000000000000001 /* mock_kismet_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = mock_kismet_server.py; path = Tests/Fixtures/mock_kismet_server.py; sourceTree = "<group>"; };
+		CA90030A0000000000000001 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
 		CA9001210000000000000001 /* proto_wep.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wep.pcap; path = Tests/Fixtures/proto_wep.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001230000000000000001 /* proto_wpa2.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa2.pcap; path = Tests/Fixtures/proto_wpa2.pcap; sourceTree = SOURCE_ROOT; };
 		CA9001250000000000000001 /* proto_wpa3_sae.pcap */ = {isa = PBXFileReference; lastKnownFileType = file; name = proto_wpa3_sae.pcap; path = Tests/Fixtures/proto_wpa3_sae.pcap; sourceTree = SOURCE_ROOT; };
@@ -501,6 +511,7 @@
 				6CA3BCCB09B2A58F00DCB407 /* Accelerate.framework in Frameworks */,
 				6CF938C410A7DFDF00B32F94 /* CoreWLAN.framework in Frameworks */,
 				6C32713412CFC4070033A649 /* CoreLocation.framework in Frameworks */,
+				CA9003090000000000000001 /* Network.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -570,6 +581,8 @@
 				CA9001050000000000000001 /* KMProtocolSelfTest.m */,
 				CA9002030000000000000001 /* KMCryptoSelfTest.h */,
 				CA9002020000000000000001 /* KMCryptoSelfTest.m */,
+				CA9003060000000000000001 /* KMKismetSelfTest.h */,
+				CA9003050000000000000001 /* KMKismetSelfTest.m */,
 			);
 			name = Capabilities;
 			path = Sources/Capabilities;
@@ -738,6 +751,8 @@
 				69AF118F0E4B29C500B1D770 /* WaveDriverUSBRealtekRTL8187.mm */,
 				6CF9EE6C0B6E9D2A00F54524 /* WaveDriverKismet.h */,
 				6CF9EE6D0B6E9D2A00F54524 /* WaveDriverKismet.m */,
+				CA9003030000000000000001 /* KMKismetTransport.h */,
+				CA9003020000000000000001 /* KMKismetTransport.m */,
 				0035340F06A5DD8500AB4577 /* WaveDriver.h */,
 				0035341006A5DD8500AB4577 /* WaveDriver.m */,
 				0035341306A5DD8500AB4577 /* WaveDriverAirport.h */,
@@ -853,6 +868,7 @@
 				0093E65306B2A1F300B3357A /* AddressBook.framework */,
 				00F57BD206A881210035AE2F /* AppleScriptKit.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+				CA90030A0000000000000001 /* Network.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -1173,6 +1189,7 @@
 			files = (
 				0035337A06A5DD5700AB4577 /* example.dump in Resources */,
 				CA9000130000000000000001 /* golden.pcap in Resources */,
+				CA9003070000000000000001 /* mock_kismet_server.py in Resources */,
 				CA9001200000000000000001 /* proto_wep.pcap in Resources */,
 				CA9001220000000000000001 /* proto_wpa2.pcap in Resources */,
 				CA9001240000000000000001 /* proto_wpa3_sae.pcap in Resources */,
@@ -1300,6 +1317,8 @@
 				CA9001010000000000000001 /* KMProtocolMetadata.m in Sources */,
 				CA9001040000000000000001 /* KMProtocolSelfTest.m in Sources */,
 				CA9002010000000000000001 /* KMCryptoSelfTest.m in Sources */,
+				CA9003010000000000000001 /* KMKismetTransport.m in Sources */,
+				CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,
 				0035345A06A5DD8500AB4577 /* PrefsClient.m in Sources */,
 				0035345C06A5DD8500AB4577 /* PrefsDriver.m in Sources */,

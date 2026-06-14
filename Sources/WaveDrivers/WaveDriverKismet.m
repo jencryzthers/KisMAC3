@@ -33,15 +33,27 @@
 
 #import "WaveDriverKismet.h"
 #import "WaveHelper.h"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/uio.h>
-#include <unistd.h>
+#import "KMKismetTransport.h"
+#import <Cocoa/Cocoa.h>
 #include "80211b.h"
 
 static NSInteger KismetInstances = 0;
+
+// S2.4: surface a connection failure as a modern NSAlert instead of the
+// deprecated NSRunCriticalAlertPanel, and ALWAYS log it (no silent failure).
+static void KMKismetShowError(NSString *title, NSString *detail) {
+    DBNSLog(@"[Kismet] %@: %@", title, detail);
+    dispatch_block_t showBlock = ^{
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.alertStyle = NSAlertStyleCritical;
+        alert.messageText = title;
+        alert.informativeText = detail;
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", "")];
+        [alert runModal];
+    };
+    if ([NSThread isMainThread]) showBlock();
+    else dispatch_async(dispatch_get_main_queue(), showBlock);
+}
 
 @implementation WaveDriverKismet
 
@@ -89,72 +101,64 @@ static NSInteger KismetInstances = 0;
 #pragma mark -
 
 - (BOOL) startedScanning {
-	NSUserDefaults *defs;
-    defs = [NSUserDefaults standardUserDefaults];
-	
-	char* initstr = "!0 ENABLE NETWORK bssid,type,wep,signal,maxrate,channel,ssid\n";
-	
-	sockd  = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockd == -1) { 
-		DBNSLog(@"Socket creation failed!"); 
-			NSRunCriticalAlertPanel(
-            NSLocalizedString(@"Could not connect to the Kismet server", "Error dialog title"),
-            NSLocalizedString(@"Socket creation failed! This really shouldn't happen!", "LONG desc"),
-            OK, nil, nil);
-		return NO;
-	}
-	
-	NSInteger foundhostname=0;
-	NSInteger foundport=0;
-	
-	NSArray *a;
-	a = [defs objectForKey:@"ActiveDrivers"];
-	NSEnumerator *e = [a objectEnumerator];
-	NSDictionary *drvr;
-	@try {
-		while ( (drvr = [e nextObject]) ) {
+	NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+
+	// The legacy *NETWORK: text protocol's subscribe command. Plaintext.
+	const char *initstr = "!0 ENABLE NETWORK bssid,type,wep,signal,maxrate,channel,ssid\n";
+
+	BOOL foundhostname = NO;
+	BOOL foundport = NO;
+
+	NSArray *a = [defs objectForKey:@"ActiveDrivers"];
+	for (NSDictionary *drvr in a) {
+		@try {
 			if ([drvr[@"driverID"] isEqualToString:@"WaveDriverKismet"]) {
-				hostname = [drvr[@"kismetserverhost"] UTF8String];
-				foundhostname = 1;
+				hostname = [drvr[@"kismetserverhost"] copy];
+				if (hostname.length) foundhostname = YES;
 				port = [drvr[@"kismetserverport"] intValue];
-				foundport = 1;
+				if (port > 0) foundport = YES;
 			}
 		}
-	}
-	@catch (NSException * ex) {
-		DBNSLog(@"Exception getting the hostname and port from plist...");
+		@catch (NSException * ex) {
+			DBNSLog(@"Exception getting the hostname and port from plist...");
+		}
 	}
 
-	if (foundhostname + foundport < 2) {
-		DBNSLog(@"Error getting the hostname and port from plist...");
-	}	
-	
-	ip = inet_addr(hostname);
-		
-	serv_name.sin_addr.s_addr = ip;
-	serv_name.sin_family = AF_INET;
-	serv_name.sin_port = htons(port); // option as well
-	
-	status = connect(sockd, (struct sockaddr*)&serv_name, sizeof(serv_name));
-		
-	if (status == -1)
-    {
-		DBNSLog(@"Could not connect to %s port %@", hostname, @(port));
-        
-        NSRunCriticalAlertPanel(NSLocalizedString(@"Could not connect to the Kismet server", "Error dialog title"),
-                                @"KisMac could not connect to the Kismet server at %s port %@. Check the IP address and port.",
-                                OK, nil, nil, hostname, @(port));
-
+	if (!foundhostname || !foundport) {
+		KMKismetShowError(NSLocalizedString(@"No host/port set to connect to!", "Error dialog title"),
+		                  NSLocalizedString(@"Check that a Kismet server host and port are set in the preferences.", "LONG desc"));
 		return NO;
 	}
-		
-	write(sockd, initstr, strlen(initstr));
-	
+
+	// S2.4: Network.framework transport (plaintext TCP). Replaces the raw
+	// socket()/connect()/blocking read(); supports IPv4 + IPv6 (was inet_addr
+	// IPv4-only); a refused/unreachable/timed-out connect surfaces a clear
+	// reason rather than hanging or producing nothing.
+	_transport = [[KMKismetTransport alloc] initWithHost:hostname port:(uint16_t)port];
+	if (![_transport connectWithTimeout:10.0]) {
+		KMKismetShowError(NSLocalizedString(@"Could not connect to the Kismet server", "Error dialog title"),
+		                  [NSString stringWithFormat:
+		                   NSLocalizedString(@"KisMac could not connect to the Kismet server at %@ port %ld. %@", "LONG desc"),
+		                   hostname, (long)port, [_transport lastErrorReason]]);
+		[_transport close];
+		_transport = nil;
+		return NO;
+	}
+
+	if (![_transport sendBytes:initstr length:strlen(initstr)]) {
+		KMKismetShowError(NSLocalizedString(@"Could not connect to the Kismet server", "Error dialog title"),
+		                  NSLocalizedString(@"Failed to send the protocol subscription command.", "LONG desc"));
+		[_transport close];
+		_transport = nil;
+		return NO;
+	}
+
 	return YES;
 }
 
 - (BOOL) stopCapture {
-	close(sockd);
+	[_transport close];
+	_transport = nil;
 	return YES;
 }
 
@@ -172,11 +176,20 @@ static NSInteger KismetInstances = 0;
 	NSData *bssid;
 	NSNumber *signal,*noise,*channel,*capability,*isWPA;
 		
-	if((len = read(sockd, &netbuf[0], 2048)) < 0) { // read it in
-		DBNSLog(@"Kismet Server read failed"); // we can't read in!
-		return NO;
+	// S2.4: pull from the Network.framework transport instead of a blocking
+	// read(). A short timeout keeps the scan loop responsive; 0 bytes simply
+	// means "nothing this poll" (return nil, loop again). -1 means the
+	// connection failed/closed -> surface it and stop, never hang silently.
+	len = [_transport readUpTo:(sizeof(netbuf) - 1) into:netbuf timeout:1.0];
+	if (len < 0) {
+		KMKismetShowError(NSLocalizedString(@"Lost connection to the Kismet server", "Error dialog title"),
+		                  [_transport lastErrorReason]);
+		return nil;
 	}
-	
+	if (len == 0) {
+		return nil; // no data this poll; not an error
+	}
+
 	netarray = @[];
     //NULL terminate
     netbuf[len] = 0;
@@ -248,7 +261,8 @@ static NSInteger KismetInstances = 0;
 
 -(void) dealloc {
     KismetInstances--;
-    close(sockd);
+    [_transport close];
+    _transport = nil;
 }
 
 @end
