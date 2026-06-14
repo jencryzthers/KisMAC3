@@ -1536,11 +1536,18 @@ NSInteger ss(char* inp, char* outp)
     DBNSLog(@"CoreLocation failed: %@", error);
     _reliable = NO;
 
-    // kCLErrorDenied (kCLErrorDomain Code=1) means the user/system denied
-    // Location; surface remediation rather than failing silently.
-    if ([error.domain isEqualToString:kCLErrorDomain] && error.code == kCLErrorDenied)
+    // kCLErrorDenied (kCLErrorDomain Code=1) can fire at launch even while the
+    // authorization is still *notDetermined* (CoreLocation reports a denied
+    // failure for the very first fix before the user has decided). Surfacing a
+    // "you denied Location" remediation modal in that case would be an
+    // unconditional nag at launch. Only surface remediation when the status is
+    // GENUINELY denied/restricted -- i.e. the user actively has to act -- so the
+    // alert appears on real, actively-used denial, never blindly at startup.
+    CLAuthorizationStatus authStatus = [self locationAuthorizationStatus];
+    if ([error.domain isEqualToString:kCLErrorDomain] && error.code == kCLErrorDenied &&
+        (authStatus == kCLAuthorizationStatusDenied || authStatus == kCLAuthorizationStatusRestricted))
     {
-        [self surfaceLocationDenialRemediationForStatus:[self locationAuthorizationStatus]];
+        [self surfaceLocationDenialRemediationForStatus:authStatus];
     }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:KisMACGPSStatusChanged

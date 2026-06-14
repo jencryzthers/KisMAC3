@@ -141,7 +141,7 @@ void USBJack::startMatching()
     _numDevices = -1;
     
     // first create a master_port for my task
-    kr = IOMasterPort(MACH_PORT_NULL, &masterPort);
+    kr = IOMainPort(MACH_PORT_NULL, &masterPort);
     if (kr || !masterPort) {
         DBNSLog(@"ERR: Couldn't create a master IOKit Port(%08x)\n", kr);
         return;

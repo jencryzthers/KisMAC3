@@ -84,19 +84,17 @@
     
     if (!mac)
     {
-        NSRunAlertPanel(NSLocalizedString(@"Invalid MAC Address", "for Filter PrefPane"),
-            NSLocalizedString(@"Invalid MAC Address description", "LONG description how a MAC looks like"),
+        [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"Invalid MAC Address", "for Filter PrefPane")
+                                            message:NSLocalizedString(@"Invalid MAC Address description", "LONG description how a MAC looks like")];
             //@"You specified an illegal MAC address. MAC addresses consist of 6 hexvalues seperated by colons.",
-            OK, nil, nil);
         
         return;
     }
     else if ([temp indexOfObject:mac] != NSNotFound)
     {
-        NSRunAlertPanel(NSLocalizedString(@"MAC Address exsist", "for Filter PrefPane"), 
-            NSLocalizedString(@"MAC Address exsist description", "LONG description"),
+        [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"MAC Address exsist", "for Filter PrefPane")
+                                            message:NSLocalizedString(@"MAC Address exsist description", "LONG description")];
             //@"You specified a MAC address, which already exists in the list."
-            OK, nil, nil);
         
         return;
     }

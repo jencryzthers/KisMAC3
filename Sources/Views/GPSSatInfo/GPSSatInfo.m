@@ -35,7 +35,7 @@
     if (self) {
 		NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [style setLineBreakMode:NSLineBreakByWordWrapping];
-        [style setAlignment:NSCenterTextAlignment];
+        [style setAlignment:NSTextAlignmentCenter];
         attr = [[NSDictionary alloc] initWithObjectsAndKeys:style, NSParagraphStyleAttributeName, [NSColor greenColor], NSForegroundColorAttributeName, nil];
     }
     return self;

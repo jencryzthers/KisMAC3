@@ -108,7 +108,15 @@ def main():
 
 	if (success):
 		parseVendors(kOUITempFilePath, kOUILocalFileName)
-	elif not os.path.exists(kOUILocalFileName):
+	elif os.path.exists(kOUILocalFileName):
+		# The download failed (offline, timeout, or the IEEE server rejected us
+		# e.g. HTTP 418/429), but a previously-built vendor.db is already present.
+		# Keep the existing database and let the build succeed rather than abort.
+		xcodePrint('Vendor database download failed; keeping the existing vendor.db so the build can proceed')
+		success = True
+	else:
+		# No existing database and the download failed: emit a valid empty plist
+		# so the app can still build (and link) offline.
 		xcodePrint('Creating an empty vendor database so the app can build offline')
 		writeEmptyVendorDB(kOUILocalFileName)
 		success = True

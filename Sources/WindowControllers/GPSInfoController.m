@@ -181,7 +181,7 @@
 {
     // Set up our timer to periodically call the fade: method.
     [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(fade:) userInfo:nil repeats:YES];
-    [_showMenu setState:NSOffState];
+    [_showMenu setState:NSControlStateValueOff];
     return NO;
 }
 

@@ -83,10 +83,9 @@
     
     if (![w allowsInjection])
     {
-        NSRunAlertPanel(NSLocalizedString(@"Invalid Injection Option.", "No injection driver title"),
-                        NSLocalizedString(@"Invalid Injection Option description", "LONG description of the error"),
+        [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"Invalid Injection Option.", "No injection driver title")
+                                            message:NSLocalizedString(@"Invalid Injection Option description", "LONG description of the error")];
                         //@"None of the drivers selected are able to send raw frames. Currently only PrismII based device are able to perform this task."
-                        OK, nil, nil);
         
         return nil;
     }
@@ -464,8 +463,9 @@
             return;
         }
         //opens output
-        aPath = [[NSDate date] descriptionWithCalendarFormat:[aDumpFile stringByExpandingTildeInPath]
-                                                    timeZone:nil locale:nil];
+        aPath = [WaveHelper stringFromDate:[NSDate date]
+                             strftimeFormat:[aDumpFile stringByExpandingTildeInPath]
+                                   timeZone:nil];
         f = pcap_dump_open(p, [aPath UTF8String]);
         if (f == NULL)
         {

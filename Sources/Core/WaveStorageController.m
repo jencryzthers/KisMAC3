@@ -324,7 +324,7 @@ struct pointCoords {
     //this is the header
     [output appendString:@"# $Creator: KisMAC wardriving export version 0.3\n"];
     [output appendString:@"# Latitude\tLongitude\tSSID\tType\tBSSID\tEncryption\tLastSeenDate\tKey\tcrc\n"];
-    [output appendString:[[NSDate date] descriptionWithCalendarFormat:@"# $DateGMT: %Y-%m-%d\n" timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"] locale:nil]];
+    [output appendString:[WaveHelper stringFromDate:[NSDate date] strftimeFormat:@"# $DateGMT: %Y-%m-%d\n" timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]]];
     
     for (i=0; i<[container count]; ++i) {
         net = [container netAtIndex:i];
@@ -474,7 +474,7 @@ struct pointCoords {
     fprintf(fd,"# $Creator: KisMAC NS export version 0.2\r\n");
     fprintf(fd,"# $Format: wi-scan with extensions\r\n");
     fprintf(fd,"# Latitude\tLongitude\t( SSID )	Type\t( BSSID )\tTime (GMT)\t[ SNR Sig Noise ]\t# ( Name )\tFlags\tChannelbits\tBcnIntvl\r\n");
-    fprintf(fd, "%s", [[[NSDate date] descriptionWithCalendarFormat:@"# $DateGMT: %Y-%m-%d\r\n" timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"] locale:nil] UTF8String]);
+    fprintf(fd, "%s", [[WaveHelper stringFromDate:[NSDate date] strftimeFormat:@"# $DateGMT: %Y-%m-%d\r\n" timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]] UTF8String]);
     
 	[im setMax:[container count]];
     for (i=0; i<[container count]; ++i) {
@@ -510,10 +510,9 @@ struct pointCoords {
                 NSAssert(NO, @"Invalid network type");
         }
         fprintf(fd, "\t( %s )\t", [[net BSSID] UTF8String]);
-        fprintf(fd, "%s", [[[net lastSeenDate]
-                            descriptionWithCalendarFormat:@"%H:%M:%S (GMT)\t" 
-                            timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"] 
-                            locale:nil] UTF8String]);
+        fprintf(fd, "%s", [[WaveHelper stringFromDate:[net lastSeenDate]
+                            strftimeFormat:@"%H:%M:%S (GMT)\t"
+                            timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]] UTF8String]);
         fprintf(fd, "[ %ld %ld %d ]\t# ( %s )\t00%s%s\t0000\t0\r\n", (long)[net maxSignal],
                 [net maxSignal], 0, [[net getVendor] UTF8String],[net wep] > encryptionTypeNone ? "1": "0",
                 ([net type] == networkTypeAdHoc) ? "2": ([net type] == networkTypeManaged) ? "1" : "0");
@@ -712,7 +711,7 @@ struct pointCoords {
 				fprintf(fd,"<br><b>BSSID:</b> %s",[[net BSSID] UTF8String]);
 				fprintf(fd,"<br><b>Vendor:</b> %s",[[net getVendor] UTF8String]);
 			}
-			fprintf(fd,"<br><b>Time seen:</b> %s",[[[net lastSeenDate] descriptionWithCalendarFormat:@"%H:%M:%S (GMT)\t" timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"] locale:nil] UTF8String]);
+			fprintf(fd,"<br><b>Time seen:</b> %s",[[WaveHelper stringFromDate:[net lastSeenDate] strftimeFormat:@"%H:%M:%S (GMT)\t" timeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]] UTF8String]);
 			fprintf(fd,"]]></description>\n");
 			fprintf(fd,"		<open>0</open>\n");
 			fprintf(fd,"		<styleUrl>#net_");

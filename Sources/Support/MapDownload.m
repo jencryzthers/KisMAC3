@@ -27,6 +27,7 @@
  */
 
 #import "MapDownload.h"
+#import "WaveHelper.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -78,10 +79,10 @@
         if (cookiestore) {
             if ([cookiestore cookieAcceptPolicy]==NSHTTPCookieAcceptPolicyNever) {
                 DBNSLog(@"Error: Cookies disabled!");
-                NSBeginAlertSheet(@"Cookies disabled.",nil,nil,nil,[self window],nil,nil,nil,nil,
-                @"The Expedia server requires cookies to be enabled! Since KisMAC uses the same sub-system as Safari, you will need to open it and enable cookies. \
+                [WaveHelper showInformationalAlertWithTitle:@"Cookies disabled."
+                    message:@"The Expedia server requires cookies to be enabled! Since KisMAC uses the same sub-system as Safari, you will need to open it and enable cookies. \
 You can also select another server, which does not require cookies. You can also select the \"accept cookies from the site you navigate to\" option \
-in Safari.");
+in Safari."];
                 NS_VOIDRETURN;
             }
             dic = [NSDictionary dictionaryWithObjectsAndKeys:@"http://www.expedia.com/", NSHTTPCookieOriginURL, @"jscript", NSHTTPCookieName, @"1", NSHTTPCookieValue, nil];
@@ -90,8 +91,8 @@ in Safari.");
             else DBNSLog(@"Critical Error: Could not create cookie!");
         } else {
             DBNSLog(@"Error: Cookie Storage unavailable. Operating System needs to be 10.2.6 with Safari 1.0 intalled!");
-            NSBeginAlertSheet(@"Invalid Operating System.",nil,nil,nil,[self window],nil,nil,nil,nil,
-            @"The Expedia server requires a complete browser system in order to send maps. KisMAC can provide this, however you will need at least a MacOS X 10.2.6 installation, with Safari 1.0 or higher installed!");
+            [WaveHelper showInformationalAlertWithTitle:@"Invalid Operating System."
+                message:@"The Expedia server requires a complete browser system in order to send maps. KisMAC can provide this, however you will need at least a MacOS X 10.2.6 installation, with Safari 1.0 or higher installed!"];
             NS_VOIDRETURN;
         }
     NS_HANDLER

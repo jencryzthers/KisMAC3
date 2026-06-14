@@ -101,9 +101,9 @@
     BOOL found;
     
     [aGPSSel removeAllItems];
-    [_tripmateMode setState: [[controller objectForKey:@"GPSTripmate"] boolValue] ? NSOnState : NSOffState];
+    [_tripmateMode setState: [[controller objectForKey:@"GPSTripmate"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff];
     
-    kernResult = IOMasterPort(0, &masterPort);
+    kernResult = IOMainPort(0, &masterPort);
     if (KERN_SUCCESS == kernResult)
     {
         classesToMatch = IOServiceMatching (kIOSerialBSDServiceValue);
@@ -207,7 +207,7 @@
                    forKey:@"GPSNoFix"];
     [controller setObject:@([_traceOp indexOfSelectedItem])
                    forKey:@"GPSTrace"];
-    [controller setObject:@([_tripmateMode state] == NSOnState)
+    [controller setObject:@([_tripmateMode state] == NSControlStateValueOn)
                    forKey:@"GPSTripmate"];
     [controller setObject:@([_gpsdPort intValue])
                    forKey:@"GPSDaemonPort"];
@@ -235,7 +235,7 @@
     }
     else if (sender == _tripmateMode)
     {
-        [controller setObject:[NSNumber numberWithBool:[_tripmateMode state]==NSOnState] forKey:@"GPSTripmate"];
+        [controller setObject:[NSNumber numberWithBool:[_tripmateMode state]==NSControlStateValueOn] forKey:@"GPSTripmate"];
     }
     else if (sender == _gpsdPort)
     {

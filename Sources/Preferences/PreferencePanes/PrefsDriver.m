@@ -170,7 +170,7 @@
     {
         for (y = 0 ; y < Chanel24Column ; ++y)
         {
-            [[_channelSel cellAtRow:y column:x] setState:NSOffState];
+            [[_channelSel cellAtRow:y column:x] setState:NSControlStateValueOff];
         }
     }
     
@@ -191,7 +191,7 @@
             NSInteger column = (useChannelVal - 1) / Chanel24Column;
             NSInteger row = (useChannelVal - 1) % Chanel24Column;
             
-            [[_channelSel cellAtRow:row column:column] setState:NSOnState];
+            [[_channelSel cellAtRow:row column:column] setState:NSControlStateValueOn];
         }
     }
     else
@@ -202,11 +202,11 @@
     BOOL use24GHzChannels = [d[@"use24GHzChannels"] boolValue];
     BOOL use50GHzChannels = [d[@"use50GHzChannels"] boolValue];
     
-    [_use24GHzChannels setState:use24GHzChannels ? NSOnState : NSOffState];
-    [_use50GHzChannels setState:use50GHzChannels ? NSOnState : NSOffState];
+    [_use24GHzChannels setState:use24GHzChannels ? NSControlStateValueOn : NSControlStateValueOff];
+    [_use50GHzChannels setState:use50GHzChannels ? NSControlStateValueOn : NSControlStateValueOff];
     
-    [_useAll50GHzChannels setState:[d[@"useAll50GHzChannels"] boolValue] ? NSOnState : NSOffState];
-    [_useRange50GHzChannels setState:[d[@"useRange50GHzChannels"] boolValue] ? NSOnState : NSOffState];
+    [_useAll50GHzChannels setState:[d[@"useAll50GHzChannels"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff];
+    [_useRange50GHzChannels setState:[d[@"useRange50GHzChannels"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff];
     [_useRange50GHzChannels setStringValue:d[@"range50GHzChannels"] ?: @""];
     
     if (enableInjection)
@@ -215,7 +215,7 @@
     }
     else
     {
-        [_injectionDevice setState: NSOffState];
+        [_injectionDevice setState: NSControlStateValueOff];
     }
     
     if (enableDumping)
@@ -261,7 +261,7 @@
         {
             for (y = 0 ; y < Chanel24Column ; ++y)
             {
-                if ([[_channelSel cellAtRow:y column:x] state] == NSOnState)
+                if ([[_channelSel cellAtRow:y column:x] state] == NSControlStateValueOn)
                 {
                     [useChannel addObject:@(Chanel24Column*x+y+1)];
                 }
@@ -288,11 +288,10 @@
         
         if (warn && !startCorrect)
         {
-            NSRunAlertPanel(NSLocalizedString(@"Invalid Option", "Invalid channel selection failure title"),
-                            NSLocalizedString(@"Invalid channel selection failure title", "LONG Error description"),
+            [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"Invalid Option", "Invalid channel selection failure title")
+                                                message:NSLocalizedString(@"Invalid channel selection failure title", "LONG Error description")];
                             //@"You have to select at least one channel, otherwise scanning makes no sense. Also please make sure that you have selected "
                             //"a valid start channel.",
-                            OK,nil,nil);
             return NO;
         }
     }
@@ -472,7 +471,7 @@ static NSSet *GetValid5GHzChannels()
     NSMutableSet *Channels = [NSMutableSet set];
     NSSet *ValidChannels = GetValid5GHzChannels();
 
-    if ([_useAll50GHzChannels state] == NSOnState)
+    if ([_useAll50GHzChannels state] == NSControlStateValueOn)
     {
         for (NSUInteger i = Max24GhzChannels + 1; i <= Max50GhzChannels; ++i)
         {
@@ -480,7 +479,7 @@ static NSSet *GetValid5GHzChannels()
                 [Channels addObject:@(i)];
         }
     }
-    if ([_useRange50GHzChannels state] == NSOnState)
+    if ([_useRange50GHzChannels state] == NSControlStateValueOn)
     {
         NSArray *components = [_range50GHzChannels.stringValue componentsSeparatedByString:@","];
         for (NSString *component in components)

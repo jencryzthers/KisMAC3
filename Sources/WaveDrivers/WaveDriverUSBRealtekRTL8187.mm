@@ -63,7 +63,7 @@
     if(_driver->_init() != kIOReturnSuccess)
         return NO;
     
-	_errors = 0;
+    _errors = 0;
     
     return YES;
 }

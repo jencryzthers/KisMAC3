@@ -128,7 +128,7 @@
     [data writeToFile:[mapName stringByAppendingPathComponent:@"map.pdf"] atomically:NO];
 #else
     data = [_orgImage TIFFRepresentation];
-	data = [[NSBitmapImageRep imageRepWithData:data] representationUsingType:NSPNGFileType
+	data = [[NSBitmapImageRep imageRepWithData:data] representationUsingType:NSBitmapImageFileTypePNG
                                                                   properties:[NSDictionary dictionary]];
     [data writeToFile:[mapName stringByAppendingPathComponent:@"map.png"] atomically:NO];
 #endif
@@ -234,7 +234,7 @@
 
     map = [[NSImage alloc] initWithSize:frame.size];
     [map lockFocus];
-    [_mapImage drawInRect:NSMakeRect(0, 0, [_mapImage size].width * _zoomFact, [_mapImage size].height * _zoomFact) fromRect:NSMakeRect(0, 0, [_mapImage size].width, [_mapImage size].height) operation:NSCompositeCopy fraction:1.0];
+    [_mapImage drawInRect:NSMakeRect(0, 0, [_mapImage size].width * _zoomFact, [_mapImage size].height * _zoomFact) fromRect:NSMakeRect(0, 0, [_mapImage size].width, [_mapImage size].height) operation:NSCompositingOperationCopy fraction:1.0];
     [map unlockFocus];
     
     imgView = [[BIImageView alloc] initWithImage:map];
@@ -367,7 +367,7 @@
 
 - (void)drawRectSub:(NSRect)rect { 
     NSRect bounds = [self bounds];
-    [_mapImage drawInRect:rect fromRect:NSMakeRect(_center.x + ((rect.origin.x - (bounds.size.width / 2)) / _zoomFact), _center.y + ((rect.origin.y - (bounds.size.height / 2)) / _zoomFact), rect.size.width / _zoomFact, rect.size.height / _zoomFact) operation:NSCompositeCopy fraction:1.0];
+    [_mapImage drawInRect:rect fromRect:NSMakeRect(_center.x + ((rect.origin.x - (bounds.size.width / 2)) / _zoomFact), _center.y + ((rect.origin.y - (bounds.size.height / 2)) / _zoomFact), rect.size.width / _zoomFact, rect.size.height / _zoomFact) operation:NSCompositingOperationCopy fraction:1.0];
 }
 
 #pragma mark -
@@ -446,7 +446,7 @@
     _old = _point[_selmode];
     
     while (keepOn) {
-        theEvent = [[self window] nextEventMatchingMask: NSLeftMouseUpMask | NSLeftMouseDraggedMask];
+        theEvent = [[self window] nextEventMatchingMask: NSEventMaskLeftMouseUp | NSEventMaskLeftMouseDragged];
         p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
         p.x -= [_moveContainer location].x;
         p.y -= [_moveContainer location].y;
@@ -454,7 +454,7 @@
         p.y /= _zoomFact;
         
         switch ([theEvent type]) {
-        case NSLeftMouseUp:
+        case NSEventTypeLeftMouseUp:
             keepOn = NO;
             
             if (_selmode == selCurPos)
@@ -479,7 +479,7 @@
             [_wayPoint setPoint:p];
             [_wayPoint showWindow:self];
             p = _old;
-        case NSLeftMouseDragged:
+        case NSEventTypeLeftMouseDragged:
             _point[_selmode] = p;
             [self _alignWayPoint];
             [self setNeedsDisplay:YES];
@@ -493,16 +493,16 @@
 #pragma mark -
 
 - (IBAction)autoCenter:(id)sender {
-	if ([sender state] == NSOffState) {
+	if ([sender state] == NSControlStateValueOff) {
 		_autoCenter = YES;
 		[_controlPanel setRestrictedMode:YES];
-		[sender setState:NSOnState];
+		[sender setState:NSControlStateValueOn];
 		[[WaveHelper mainWindow] invalidateCursorRectsForView:self]; 
         [self _centerCurPos];
 	} else {
 		_autoCenter = NO;
 		[_controlPanel setRestrictedMode:NO];
-		[sender setState:NSOffState];
+		[sender setState:NSControlStateValueOff];
 		[[WaveHelper mainWindow] invalidateCursorRectsForView:self];	
 	}
 }
@@ -565,48 +565,48 @@
 }
 
 - (void)disableAll {
-    [_setWayPoint1 setState:NSOffState];
-    [_setWayPoint2 setState:NSOffState];
-    [_setCurrentPoint setState:NSOffState];
-    [_showCurrentPoint setState:NSOffState];
+    [_setWayPoint1 setState:NSControlStateValueOff];
+    [_setWayPoint2 setState:NSControlStateValueOff];
+    [_setCurrentPoint setState:NSControlStateValueOff];
+    [_showCurrentPoint setState:NSControlStateValueOff];
     [_pView setVisible:NO];
     _selmode = selInvalid;
 }
 
 - (IBAction)setWaypoint1:(id)sender {
-    if ([sender state] == NSOnState) {
+    if ([sender state] == NSControlStateValueOn) {
         [self disableAll];
         return;
     }
 
     [self disableAll];
-    [_setWayPoint1 setState:NSOnState];
+    [_setWayPoint1 setState:NSControlStateValueOn];
     _selmode = selWaypoint1;
     [_pView setWayPointMode:YES];
     [self _alignWayPoint];
     [self setNeedsDisplay:YES];
 }
 - (IBAction)setWaypoint2:(id)sender {
-    if ([sender state] == NSOnState) {
+    if ([sender state] == NSControlStateValueOn) {
         [self disableAll];
         return;
     }
 
     [self disableAll];
-    [_setWayPoint2 setState:NSOnState];
+    [_setWayPoint2 setState:NSControlStateValueOn];
     _selmode = selWaypoint2;
     [_pView setWayPointMode:YES];
     [self _alignWayPoint];
     [self setNeedsDisplay:YES];
 }
 - (IBAction)setCurrentPosition:(id)sender {
-    if ([sender state] == NSOnState) {
+    if ([sender state] == NSControlStateValueOn) {
         [self disableAll];
         return;
     }
 
     [self disableAll];
-    [_setCurrentPoint setState:NSOnState];
+    [_setCurrentPoint setState:NSControlStateValueOn];
     _selmode = selCurPos;
     [_pView setWayPointMode:NO];
     [self _alignCurrentPos];
@@ -614,13 +614,13 @@
 }
 
 - (IBAction)setShowCurrentPosition:(id)sender {
-    if ([sender state] == NSOnState) {
+    if ([sender state] == NSControlStateValueOn) {
         [self disableAll];
         return;
     }
 
     [self disableAll];
-    [_showCurrentPoint setState:NSOnState];
+    [_showCurrentPoint setState:NSControlStateValueOn];
     _selmode = selShowCurPos;
     [_pView setWayPointMode:NO];
     [self _alignCurrentPos];
@@ -635,13 +635,13 @@
 	}
 	
 	[_netContainer setVisible:show];
-    [_showNetworks setState:(show ? NSOnState : NSOffState)];
+    [_showNetworks setState:(show ? NSControlStateValueOn : NSControlStateValueOff)];
     [self setNeedsDisplay:YES];
 }
 
 - (void)setShowTrace:(BOOL)show {
     [_trace setVisible:show];
-    [_showTrace setState:(show ? NSOnState : NSOffState)];
+    [_showTrace setState:(show ? NSControlStateValueOn : NSControlStateValueOff)];
     [self setNeedsDisplay:YES];
 }
 

@@ -111,7 +111,7 @@ static GPSInfoController *_gc;
 //converts a string to an url encoded string
 + (NSString*) urlEncodeString:(NSString*)string
 {
-    return [string stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+    return [string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 }
 
 #pragma mark -
@@ -226,7 +226,7 @@ static GPSInfoController *_gc;
     io_iterator_t iterator;
     io_object_t sdev;
     
-    if (IOMasterPort(MACH_PORT_NULL, &masterPort) != KERN_SUCCESS) {
+    if (IOMainPort(MACH_PORT_NULL, &masterPort) != KERN_SUCCESS) {
         return NO; // REV/FIX: throw.
     }
     
@@ -345,10 +345,8 @@ static GPSInfoController *_gc;
             }
             else
             {
-                NSRunCriticalAlertPanel(NSLocalizedString(@"Could not instantiate Driver.", "Driver init failed"),
-                                        NSLocalizedString (@"Instantiation Failure Description", @"LONG description of what might have gone wrong"),
-                                        name,
-                                        OK, nil, nil);
+                [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Could not instantiate Driver.", "Driver init failed")
+                                               message:[NSString stringWithFormat:NSLocalizedString (@"Instantiation Failure Description", @"LONG description of what might have gone wrong"), name]];
                 
                 DBNSLog(@"Error could not instantiate driver %@", interfaceName);
                 return NO;
@@ -562,12 +560,14 @@ static GPSInfoController *_gc;
      "\t4. You are using a 3rd party card and you are having another driver for the card installed, which could not be unloaded by KisMAC."
      "If you have the sourceforge wireless driver, please install the patch, provided with KisMAC.\n"*/
     
-    return NSRunCriticalAlertPanel(
-                                   NSLocalizedString(@"Could not instaniciate Driver.", "Error title"),
-                                   warning, driverName,
-                                   NSLocalizedString(@"Retry", "Retry button"),
-                                   NSLocalizedString(@"Abort", "Abort button"),
-                                   nil);
+    NSModalResponse r = [WaveHelper showModalAlertWithTitle:NSLocalizedString(@"Could not instaniciate Driver.", "Error title")
+                                                    message:[NSString stringWithFormat:warning, driverName]
+                                                      style:NSAlertStyleCritical
+                                                    buttons:@[NSLocalizedString(@"Retry", "Retry button"),
+                                                              NSLocalizedString(@"Abort", "Abort button")]];
+    // Preserve the legacy NSRunCriticalAlertPanel contract: Retry (default) == 1,
+    // Abort == 0. The caller loops while the return value == 1.
+    return (r == NSAlertFirstButtonReturn) ? 1 : 0;
 }
 
 #pragma mark -
@@ -702,6 +702,68 @@ static GPSInfoController *_gc;
         }
         fprintf(stderr, "\n");
     }
+}
+
++ (NSString*)stringFromDate:(NSDate*)date strftimeFormat:(NSString*)format timeZone:(NSTimeZone*)tz
+{
+    if (date == nil) date = [NSDate date];
+    if (format == nil) return @"";
+
+    time_t t = (time_t)[date timeIntervalSince1970];
+    struct tm tmv;
+    if (tz != nil)
+    {
+        // strftime works in local time via localtime_r; honour an explicit GMT/UTC zone.
+        t += (time_t)[tz secondsFromGMTForDate:date];
+        gmtime_r(&t, &tmv);
+    }
+    else
+    {
+        localtime_r(&t, &tmv);
+    }
+
+    char buf[1024];
+    size_t n = strftime(buf, sizeof(buf), [format UTF8String], &tmv);
+    if (n == 0)
+    {
+        // Either the formatted result is empty, or it overflowed the buffer.
+        // Return the format with no substitution rather than truncated garbage.
+        if ([format length] == 0) return @"";
+    }
+    return [NSString stringWithUTF8String:buf];
+}
+
++ (NSModalResponse)showModalAlertWithTitle:(NSString*)title
+                                   message:(NSString*)message
+                                     style:(NSAlertStyle)style
+                                   buttons:(NSArray<NSString*>*)buttonTitles
+{
+    __block NSModalResponse response = NSAlertFirstButtonReturn;
+    dispatch_block_t showBlock = ^{
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.alertStyle = style;
+        alert.messageText = title ?: @"";
+        if (message) alert.informativeText = message;
+        if (buttonTitles.count == 0) {
+            [alert addButtonWithTitle:NSLocalizedString(@"OK", "")];
+        } else {
+            for (NSString *t in buttonTitles) [alert addButtonWithTitle:t];
+        }
+        response = [alert runModal];
+    };
+    if ([NSThread isMainThread]) showBlock();
+    else dispatch_sync(dispatch_get_main_queue(), showBlock);
+    return response;
+}
+
++ (void)showInformationalAlertWithTitle:(NSString*)title message:(NSString*)message
+{
+    [self showModalAlertWithTitle:title message:message style:NSAlertStyleInformational buttons:nil];
+}
+
++ (void)showCriticalAlertWithTitle:(NSString*)title message:(NSString*)message
+{
+    [self showModalAlertWithTitle:title message:message style:NSAlertStyleCritical buttons:nil];
 }
 
 @end

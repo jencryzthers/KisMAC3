@@ -144,6 +144,40 @@ expected network fetch was therefore **not** exercised in this run.
 
 ---
 
+## Update — post-S0.3 + S0.5 (warning burn-down)
+
+> **S0.3 + S0.5 landed (done together, same files).** The numbers below are the
+> original post-S0.6 S0.1 re-run baseline. After the S0.3/S0.5 migrations, on a
+> **fresh clean Debug build** (Xcode 26.5 / macOS 27 / arm64, signing disabled),
+> **deduplicated unique** warnings dropped:
+>
+> | Scope | Baseline (post-S0.6) | After S0.3+S0.5 | Δ |
+> |---|---|---|---|
+> | Whole-build unique warnings | 449 | **248** | −201 |
+> | KisMac2 `Sources/` unique | 315 | **115** | −200 |
+> | `Sources/` `-Wdeprecated-declarations` | 248 | **54** | −194 |
+> | `Sources/` `-Wmisleading-indentation` | 6 | **0** | −6 |
+>
+> **Fully cleared symbols** (now 0 in `Sources/`): `NSOnState`/`NSOffState`,
+> `NSFileHandlingPanelOKButton`, the whole `NSBeginAlertSheet`/`NSBeginCriticalAlertSheet`/
+> `NSRunAlertPanel`/`NSRunCriticalAlertPanel`/`NSRunInformationalAlertPanel` alert
+> family (→ `NSAlert`), `descriptionWithCalendarFormat:` (→ `strftime`/`WaveHelper`
+> helper), `NSAlertDefault/Alternate/OtherReturn` (→ `NSAlertFirst/Second/Third`),
+> `IOMasterPort` (→ `IOMainPort`), `NSCompositeSourceOver`/`Copy`, `NSPNG/JPEGFileType`,
+> `NSCenterTextAlignment`, `NSWarningAlertStyle`, `NSLeftMouseUp(Mask)`/`Dragged(Mask)`,
+> `NSTexturedBackgroundWindowMask`, `stringByAddingPercentEscapesUsingEncoding:`.
+>
+> **Remaining `Sources/` deprecated floor (54), by owner:** `NSDrawer` 17 + sheet/
+> `NSUserNotification`/Carbon-Speech/`setMin/MaxSize:` (S5.x); `setAllowedFileTypes:`
+> 15 + `imageFileTypes` 1 (UTType — kept, framework not linked, S5.x/S8.x);
+> plist `propertyListFromData:`/`dataFromPropertyList:` 8 + `unarchiveObjectWith*` 2 +
+> `dateWith*`/`CFPropertyListCreateFromXMLData` (S6.x/parse); CoreWLAN
+> `interfaceNames`/`interfaceWithName:` 8 (S1.x). **Release build:** also green; product
+> is **universal x86_64+arm64**. Fixed `OUItoVendorDB.py` so an HTTP-418/offline OUI
+> download keeps the existing `vendor.db` and the Release build still passes. Fixed the
+> S1.2 Location-denial modal so it never nags at launch on `notDetermined`. Full detail:
+> `docs/task-slices.md` S0.3 + S0.5.
+
 ## Result summary
 
 **`** CLEAN SUCCEEDED **` then `** BUILD SUCCEEDED **`.**

@@ -174,11 +174,10 @@
 
     if (!f) {
         //there was a driver error, usb device is probably gone
-        NSRunCriticalAlertPanel(NSLocalizedString(@"USB device error", "Error box title"),
-                                NSLocalizedString(@"USB device error description", "LONG Error description"),
+        [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"USB device error", "Error box title")
+                                       message:NSLocalizedString(@"USB device error description", "LONG Error description")];
                                 //@"A driver error occured with your USB device, make sure it is properly connected. Scanning will "
                                 //"be canceled. Errors may have be printed to console.log."
-                                OK, nil, nil);
     }
     else
     {

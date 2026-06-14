@@ -242,12 +242,12 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         
         if ([networkTableFieldsVisibility[[tableColumn identifier]] boolValue])
         {
-            [menuItem setState:NSOnState];
+            [menuItem setState:NSControlStateValueOn];
         }
         else
         {
             [colsToRemove addObject:tableColumn];
-            [menuItem setState:NSOffState];
+            [menuItem setState:NSControlStateValueOff];
         }
         
         [menuItem setTarget:self];
@@ -744,7 +744,7 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         [_netHierarchDrawer close];
     }
     aNetHierarchVisible =! aNetHierarchVisible;
-    [_showHierarch setState: aNetHierarchVisible ? NSOnState : NSOffState];
+    [_showHierarch setState: aNetHierarchVisible ? NSControlStateValueOn : NSControlStateValueOff];
 }
 
 - (IBAction)changeSearchValue:(id)sender
@@ -765,7 +765,7 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
         [alert addButtonWithTitle:@"Save filtered nets"];
         [alert setMessageText:@"You are filtering the list of networks."];
         [alert setInformativeText:@"Do you want to save just the filtered networks, or all the networks?"];
-        [alert setAlertStyle:NSWarningAlertStyle];
+        [alert setAlertStyle:NSAlertStyleWarning];
         if([alert runModal] == NSAlertFirstButtonReturn){
             [_container setFilterString:@""];
             _saveFilteredOnly = NO;
@@ -1027,12 +1027,12 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 {
     [self menuSetEnabled:YES menu:[NSApp mainMenu]];
     switch (returnCode) {
-        case NSAlertOtherReturn:
+        case NSAlertThirdButtonReturn:
             [NSApp replyToApplicationShouldTerminate:NO];
             break;
-        case NSAlertDefaultReturn:
+        case NSAlertFirstButtonReturn:
             [NSNotificationCenter postNotification:KisMACTryToSave];
-        case NSAlertAlternateReturn:
+        case NSAlertSecondButtonReturn:
         default:
             [NSApp replyToApplicationShouldTerminate:YES];
     }
@@ -1248,11 +1248,11 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     [self menuSetEnabled:YES menu:[NSApp mainMenu]];
     switch (returnCode)
     {
-        case NSAlertDefaultReturn:
+        case NSAlertFirstButtonReturn:
             [NSNotificationCenter postNotification:KisMACTryToSave];
-        case NSAlertOtherReturn:
+        case NSAlertThirdButtonReturn:
             break;
-        case NSAlertAlternateReturn:
+        case NSAlertSecondButtonReturn:
         default:
             [_window setDocumentEdited:NO];
             [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(fade:) userInfo:nil repeats:YES];
@@ -1299,13 +1299,13 @@ void NotifySleep( void * refCon, io_service_t service,
 
 - (void)selectedTableContextMenuItem:(id)sender
 {
-    if ([sender state] == NSOnState) {
+    if ([sender state] == NSControlStateValueOn) {
         [_networkTable removeTableColumn:[sender representedObject]];
-        [sender setState:NSOffState];
+        [sender setState:NSControlStateValueOff];
     }
     else {
         [_networkTable addTableColumn:[sender representedObject]];
-        [sender setState:NSOnState];
+        [sender setState:NSControlStateValueOn];
     }
 }
 

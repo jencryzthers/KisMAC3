@@ -57,15 +57,15 @@
         i = 1;
         
         //opens output
-        path = [[NSDate date] descriptionWithCalendarFormat:[dumpDestination stringByExpandingTildeInPath]
-												   timeZone:nil
-													 locale:nil];
-        while ([[NSFileManager defaultManager] fileExistsAtPath: path]) 
+        path = [WaveHelper stringFromDate:[NSDate date]
+                            strftimeFormat:[dumpDestination stringByExpandingTildeInPath]
+                                  timeZone:nil];
+        while ([[NSFileManager defaultManager] fileExistsAtPath: path])
         {
             path = [[NSString stringWithFormat:@"%@.%@", dumpDestination, @(i)] stringByExpandingTildeInPath];
-            path = [[NSDate date] descriptionWithCalendarFormat:path
-													   timeZone:nil
-														 locale:nil];
+            path = [WaveHelper stringFromDate:[NSDate date]
+                                strftimeFormat:path
+                                      timeZone:nil];
             ++i;
         }
         
@@ -74,11 +74,9 @@
     
     //error
     if(_p == NULL || _f == NULL) {
-        NSBeginAlertSheet(ERROR_TITLE, 
-                          OK, NULL, NULL, [WaveHelper mainWindow], self, NULL, NULL, NULL, 
-                          NSLocalizedString(@"Could not create dump", "LONG error description with possible causes."),
-                          //@"Could not create dump file %@. Are you sure that the permissions are set correctly?" 
-                          path);
+        [WaveHelper showCriticalAlertWithTitle:ERROR_TITLE
+                                       message:[NSString stringWithFormat:NSLocalizedString(@"Could not create dump", "LONG error description with possible causes."), path]];
+                          //@"Could not create dump file %@. Are you sure that the permissions are set correctly?"
         if (_p) {
             pcap_close(_p);
             _p = NULL;

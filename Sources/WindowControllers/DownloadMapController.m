@@ -91,12 +91,9 @@
     } else if ([[_server titleOfSelectedItem] isEqualToString:NSLocalizedString(@"Census Bureau Maps (United States)", "menu item, needs to be like in DownloadMap.nib")]) {
         server = @"Census Bureau Maps (United States)";
     } else {
-        NSRunCriticalAlertPanel(
-            NSLocalizedString(@"No server selected.", "Download Map error title"),
-            NSLocalizedString(@"No server selected. description", "LONG error description"),
+        [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"No server selected.", "Download Map error title")
+                                       message:NSLocalizedString(@"No server selected. description", "LONG error description")];
             //@"KisMAC needs the name of a server from where it can load the map. Depending on your region and the look of the map you should find one in the pop-up menu. If you know how-to obtain a map from another server, please drop me a mail.",
-            OK, nil, nil
-            );
         return;
     }
     

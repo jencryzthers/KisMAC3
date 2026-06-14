@@ -76,24 +76,29 @@
 
 - (void)showWantToSaveDialog:(SEL)overrideFunction
 {
-	NSBeginAlertSheet(
-        NSLocalizedString(@"Save Changes?", "Save changes dialog title"),
-        NSLocalizedString(@"Save", "Save changes dialog button"),
-        NSLocalizedString(@"Don't Save", "Save changes dialog button"),
-        CANCEL, [WaveHelper mainWindow], self, NULL, @selector(saveDialogDone:returnCode:contextInfo:), overrideFunction, 
-        NSLocalizedString(@"Save changes dialog text", "LONG dialog text")
-        );
+	NSAlert *alert = [[NSAlert alloc] init];
+	alert.messageText = NSLocalizedString(@"Save Changes?", "Save changes dialog title");
+	alert.informativeText = NSLocalizedString(@"Save changes dialog text", "LONG dialog text");
+	[alert addButtonWithTitle:NSLocalizedString(@"Save", "Save changes dialog button")];        // NSAlertFirstButtonReturn
+	[alert addButtonWithTitle:NSLocalizedString(@"Don't Save", "Save changes dialog button")];  // NSAlertSecondButtonReturn
+	[alert addButtonWithTitle:CANCEL];                                                          // NSAlertThirdButtonReturn
+	// saveDialogDone:returnCode:contextInfo: already switches on the modern
+	// NSAlertFirst/Second/ThirdButtonReturn codes; forward them unchanged.
+	__weak typeof(self) weakSelf = self;
+	[alert beginSheetModalForWindow:[WaveHelper mainWindow] completionHandler:^(NSModalResponse returnCode) {
+		[weakSelf saveDialogDone:nil returnCode:returnCode contextInfo:overrideFunction];
+	}];
 }
 
 - (void)saveDialogDone:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(SEL)overrideFunction
 {
     switch (returnCode)
     {
-    case NSAlertDefaultReturn:
+    case NSAlertFirstButtonReturn:
         [self saveKisMACFileAs:nil];
-    case NSAlertOtherReturn:
+    case NSAlertThirdButtonReturn:
         break;
-    case NSAlertAlternateReturn:
+    case NSAlertSecondButtonReturn:
     default:
 		{
 			NSMethodSignature *methodSignature = [self methodSignatureForSelector:overrideFunction];
@@ -198,7 +203,7 @@
 	[op setAllowedFileTypes:@[@"kismac"]];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
              [self performSelector:@selector(openPath:) withObject:[[op URL] path] afterDelay:0.1];
              [op close];
@@ -215,7 +220,7 @@
 	[op setAllowedFileTypes:@[@"kismap"]];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
              [self performSelector:@selector(openPath:) withObject:[[op URL] path] afterDelay:0.1];
              [op close];
@@ -240,7 +245,7 @@
 	[op setAllowedFileTypes:@[@"kismac"]];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -260,7 +265,7 @@
 	[op setAllowedFileTypes:[NSImage imageFileTypes]];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
              [self.scanController importImageForMap:[[op URL] path]];
 		 }
@@ -289,7 +294,7 @@
 
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -323,7 +328,7 @@
     [sp setTreatsFilePackagesAsDirectories:NO];
 	[sp beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
              if (![self.scanController saveAs:[[sp URL] path]])
              {
@@ -341,7 +346,7 @@
     [sp setTreatsFilePackagesAsDirectories:NO];
 	[sp beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 if (![self.scanController save:[[sp URL] path]])
              {
@@ -436,7 +441,7 @@
     [op setCanChooseDirectories:NO];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -460,7 +465,7 @@
     [op setCanChooseDirectories:NO];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -484,7 +489,7 @@
     [op setCanChooseDirectories:NO];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -534,7 +539,7 @@
     [op setCanChooseDirectories:NO];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -574,7 +579,7 @@
     [op setCanChooseDirectories:NO];
 	[op beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 for (NSInteger i = 0; i < [[op URLs] count]; ++i)
              {
@@ -621,14 +626,14 @@
 
 - (IBAction)showNetworksInMap:(id)sender
 {
-    BOOL show = ([sender state] == NSOffState);
+    BOOL show = ([sender state] == NSControlStateValueOff);
     
     [[WaveHelper mapView] setShowNetworks:show];
 }
 
 - (IBAction)showTraceInMap:(id)sender
 {
-    BOOL show = ([sender state] == NSOffState);
+    BOOL show = ([sender state] == NSControlStateValueOff);
     
     [[WaveHelper mapView] setShowTrace:show];
 }

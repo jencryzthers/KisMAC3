@@ -43,7 +43,7 @@
 	[ac_ff setIntValue:2];
 	[bf_interval setFloatValue:0.1];
 	[pr_interval setIntValue:100];
-	[show_debugmenu setState:NSOffState];
+	[show_debugmenu setState:NSControlStateValueOff];
 }
 
 @end

@@ -177,8 +177,8 @@
     {
         if ([[WaveHelper getWaveDrivers] count] == 0)
         {
-            NSBeginAlertSheet(@"No driver selected.", NULL, NULL, NULL, _window,
-                              self, NULL, NULL, NULL, @"Please select a WiFi Driver in the Preferences Window!");
+            [WaveHelper showInformationalAlertWithTitle:@"No driver selected."
+                                                message:@"Please select a WiFi Driver in the Preferences Window!"];
             return NO;
         }
         
@@ -460,12 +460,9 @@
     
     if (failure)
     {
-        NSBeginCriticalAlertSheet(
-                                  NSLocalizedString(@"Import failed", "Import failure dialog title"),
-                                  OK, NULL, NULL, _window, self, NULL, NULL, NULL,
-                                  NSLocalizedString(@"Import failure description", "LONG description. Maybe no internet?")
+        [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Import failed", "Import failure dialog title")
+                                       message:NSLocalizedString(@"Import failure description", "LONG description. Maybe no internet?")];
                                   //"KisMAC was unable to complete the import. Are you sure that you have a valid internet connection?"
-                                  );
     }
     else {
         [self showMap];

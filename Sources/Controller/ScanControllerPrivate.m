@@ -99,7 +99,7 @@
             ++_activeDriversCount;
             if ([[wd deviceName] isEqualToString: whichDriver])
 			{
-                [mi setState:NSOnState];
+                [mi setState:NSControlStateValueOn];
                 actWD = wd;
             }
         }
@@ -121,8 +121,8 @@
            if (![mi isSeparatorItem]) [mi setEnabled:[actWD allowsChannelHopping]];
         }
         
-        [[aChannelMenu itemAtIndex:_activeDriversCount+4] setState: [actWD ETSI] ? NSOnState : NSOffState];
-        [[aChannelMenu itemAtIndex:_activeDriversCount+3] setState: [actWD FCC]  ? NSOnState : NSOffState];
+        [[aChannelMenu itemAtIndex:_activeDriversCount+4] setState: [actWD ETSI] ? NSControlStateValueOn : NSControlStateValueOff];
+        [[aChannelMenu itemAtIndex:_activeDriversCount+3] setState: [actWD FCC]  ? NSControlStateValueOn : NSControlStateValueOff];
         
         config = [actWD configuration];
         
@@ -137,12 +137,12 @@
         
         for (x = 1; x <= 14; ++x)
         {
-            [[aChannelMenu itemAtIndex:x + 5 + _activeDriversCount] setState:((c == 1 && lc == x) ? NSOnState : NSOffState)];
+            [[aChannelMenu itemAtIndex:x + 5 + _activeDriversCount] setState:((c == 1 && lc == x) ? NSControlStateValueOn : NSControlStateValueOff)];
         }
         
         NSMenuItem *menuItem = [aChannelMenu itemAtIndex:(x + 1) + 5 + _activeDriversCount];
-        [menuItem setState:((c == 1 && lc > 14) ? NSOnState : NSOffState)];
-        if (menuItem.state == NSOnState)
+        [menuItem setState:((c == 1 && lc > 14) ? NSControlStateValueOn : NSControlStateValueOff)];
+        if (menuItem.state == NSControlStateValueOn)
         {
             menuItem.title = [NSString stringWithFormat:@"Custom Channel (%@)", @(lc)];
         }
@@ -150,7 +150,7 @@
         {
             menuItem.title = @"Custom Channel";
         }
-        [[aChannelMenu itemAtIndex: _activeDriversCount + 1] setState:([actWD autoAdjustTimer]? NSOnState : NSOffState)];
+        [[aChannelMenu itemAtIndex: _activeDriversCount + 1] setState:([actWD autoAdjustTimer]? NSControlStateValueOn : NSControlStateValueOff)];
 
         //just make sure the driver knows about its configuration
         [actWD setConfiguration: [actWD configuration]];
@@ -256,10 +256,10 @@
         });
     }
 
-    [_showNetworks      setState: tab == tabNetworks ? NSOnState : NSOffState];
-    [_showTraffic       setState: tab == tabTraffic  ? NSOnState : NSOffState];
-    [_showMap           setState: tab == tabMap      ? NSOnState : NSOffState];
-    [_showDetails       setState: tab == tabDetails  ? NSOnState : NSOffState];
+    [_showNetworks      setState: tab == tabNetworks ? NSControlStateValueOn : NSControlStateValueOff];
+    [_showTraffic       setState: tab == tabTraffic  ? NSControlStateValueOn : NSControlStateValueOff];
+    [_showMap           setState: tab == tabMap      ? NSControlStateValueOn : NSControlStateValueOff];
+    [_showDetails       setState: tab == tabDetails  ? NSControlStateValueOn : NSControlStateValueOff];
     [_searchField       setHidden: tab != tabNetworks && tab != tabMap];
 	[_searchTypeMenu    setHidden: tab != tabNetworks && tab != tabMap]; 
     [_trafficTimePopUp  setHidden: tab != tabTraffic];
@@ -323,44 +323,34 @@
 		
 		switch(_crackType) {
         case 1:
-            NSBeginAlertSheet(NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            NSLocalizedString(@"Cracking unsuccessful description for weak scheduling attack", "LONG description with possible causes"));
+            [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks")
+                                           message:NSLocalizedString(@"Cracking unsuccessful description for weak scheduling attack", "LONG description with possible causes")];
             break;
         case 2:
-            NSBeginAlertSheet(NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            NSLocalizedString(@"Cracking unsuccessful description for brutforce", "LONG description with possible causes")
-            );
+            [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks")
+                                           message:NSLocalizedString(@"Cracking unsuccessful description for brutforce", "LONG description with possible causes")];
             break;
         case 3:
-            NSBeginAlertSheet(NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            [NSString stringWithFormat:
+            [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks")
+                                           message:[NSString stringWithFormat:
                 NSLocalizedString(@"The WPA key could not be recovered, because for the following reason: %@.", "description why WPA crack failed"),
-                [_curNet crackError]], nil
-            );
+                [_curNet crackError]]];
             break;
         case 4:
-            NSBeginAlertSheet(NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            [NSString stringWithFormat:
+            [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks")
+                                           message:[NSString stringWithFormat:
                 NSLocalizedString(@"The LEAP key could not be recovered, because for the following reason: %@.", "description why LEAP crack failed"),
-                [_curNet crackError]], nil
-            );
+                [_curNet crackError]]];
         case 5:
-            NSBeginAlertSheet(NSLocalizedString(@"Reinjection unsuccessful", "Error dialog title"),
-                OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
+            [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Reinjection unsuccessful", "Error dialog title")
+                                           message:[NSString stringWithFormat:
                 NSLocalizedString(@"KisMAC was unable to start a reinjection attack, because: %@", "text about what might have gone wrong with the injection"),
-                [_curNet crackError]
-                );
+                [_curNet crackError]]];
             [self stopActiveAttacks];
             break;
 		case 6:
-            NSBeginAlertSheet(NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            NSLocalizedString(@"Cracking unsuccessful description for newsham", "LONG description with possible causes")
-            );
+            [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Cracking unsuccessful", "Error box title for WEP attacks")
+                                           message:NSLocalizedString(@"Cracking unsuccessful description for newsham", "LONG description with possible causes")];
             break;
         default:
             break;
@@ -370,7 +360,7 @@
 	{
         if (_crackType == 5)
 		{
-            [aInjPacketsMenu setState:NSOnState];
+            [aInjPacketsMenu setState:NSControlStateValueOn];
             [aInjPacketsMenu setTitle:[NSLocalizedString(@"Reinjecting into ", "menu item") stringByAppendingString:[_curNet BSSID]]];
         } else {
 			defs = [NSUserDefaults standardUserDefaults];
@@ -382,11 +372,10 @@
 					sleep(1);
 				}
 			}
-			NSBeginAlertSheet(NSLocalizedString(@"Cracking successful", "Crack dialog title"),
-                OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
+			[WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"Cracking successful", "Crack dialog title")
+                message:[NSString stringWithFormat:
                 NSLocalizedString(@"KisMAC was able to recover the key of the selected network. It is: %@", "crack dialog"),
-                [_curNet key]
-                );
+                [_curNet key]]];
 		}
     }
 
@@ -428,11 +417,9 @@
     WaveDriver *wd;
     
     if (_curNet == nil) {
-        NSBeginAlertSheet(NSLocalizedString(@"No network selected.", "Error box title for active attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            NSLocalizedString(@"No network selected failure description", "LONG description")
+        [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"No network selected.", "Error box title for active attacks")
+            message:NSLocalizedString(@"No network selected failure description", "LONG description")];
             //@"You will have to select a network, which you wish to attack!"
-            );
         return NO;
     }
     
@@ -442,21 +429,17 @@
     wd = [WaveHelper injectionDriver];
     if (!wd)
 	{
-         NSBeginAlertSheet(NSLocalizedString(@"No injection driver.", "Error box title for active attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            NSLocalizedString(@"No injection driver failure description", "LONG text about where you can enable it")
+         [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"No injection driver.", "Error box title for active attacks")
+            message:NSLocalizedString(@"No injection driver failure description", "LONG text about where you can enable it")];
             //@"You have no primary injection driver chosen, please select one in the preferences dialog."
-            );
         return NO;
     }
     
     if ([wd hopping])
 	{
-        NSBeginAlertSheet(NSLocalizedString(@"Channel hopping enabled.", "Error box title for active attacks"),
-            OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-            NSLocalizedString(@"Channel hopping enabled failure description", "LONG text about why this does not work with active attacks")
+        [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"Channel hopping enabled.", "Error box title for active attacks")
+            message:NSLocalizedString(@"Channel hopping enabled failure description", "LONG text about why this does not work with active attacks")];
             //@"You have channel hopping enabled! In order to send frames correctly you will need to disable it and select a channel, where you can receive the network correctly."
-            );
         return NO;
     }
     
@@ -475,12 +458,12 @@
     [scanner stopSendingFrames];
 	[scanner setDeauthingAll:NO];
     
-    [_deauthAllMenu		setState: NSOffState];
-    [_deauthMenu		setState: NSOffState];
+    [_deauthAllMenu		setState: NSControlStateValueOff];
+    [_deauthMenu		setState: NSControlStateValueOff];
     [_deauthMenu		setTitle: NSLocalizedString(@"Deauthenticate", "menu item. description must be the same as in MainMenu.nib!")];
-    [_authFloodMenu		setState: NSOffState];
+    [_authFloodMenu		setState: NSControlStateValueOff];
     [_authFloodMenu		setTitle: NSLocalizedString(@"Authentication Flood", "menu item. description must be the same as in MainMenu.nib!")];
-    [aInjPacketsMenu	setState: NSOffState];
+    [aInjPacketsMenu	setState: NSControlStateValueOff];
     [aInjPacketsMenu	setTitle: NSLocalizedString(@"Reinject Packets", "menu item. description must be the same as in MainMenu.nib!")];
 }
 
@@ -492,8 +475,8 @@
     [_mappingView clearAreaNet];
 	
     [_showNetInMap		setTitle: NSLocalizedString(@"Show Net Area", "menu item. description must be the same as in MainMenu.nib!")];
-    [_showNetInMap		setState: NSOffState];
-    [_showAllNetsInMap	setState: NSOffState];
+    [_showNetInMap		setState: NSControlStateValueOff];
+    [_showAllNetsInMap	setState: NSControlStateValueOff];
 }
 
 - (void)advNetViewInvalid:(NSNotification*)note
@@ -642,76 +625,78 @@
 {
     [self menuSetEnabled:NO
 					menu:[NSApp mainMenu]];
-    NSBeginAlertSheet(
-        NSLocalizedString(@"Save Changes?", "Save changes dialog title"),
-        NSLocalizedString(@"Save", "Save changes dialog button"),
-        NSLocalizedString(@"Don't Save", "Save changes dialog button"),
-        CANCEL, _window, self, NULL, overrideFunction, (__bridge void *)(self), 
-        NSLocalizedString(@"Save changes dialog text", "LONG dialog text")
-        //@"You have been scanning since your last save. Do you want to save your results?"
-        );
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = NSLocalizedString(@"Save Changes?", "Save changes dialog title");
+    alert.informativeText = NSLocalizedString(@"Save changes dialog text", "LONG dialog text");
+    [alert addButtonWithTitle:NSLocalizedString(@"Save", "Save changes dialog button")];        // NSAlertFirstButtonReturn
+    [alert addButtonWithTitle:NSLocalizedString(@"Don't Save", "Save changes dialog button")];  // NSAlertSecondButtonReturn
+    [alert addButtonWithTitle:CANCEL];                                                          // NSAlertThirdButtonReturn
+    // The didEnd handlers (reallyQuitDidEnd:/reallyCloseDidEnd:) already switch on the
+    // modern NSAlertFirst/Second/ThirdButtonReturn codes, so forward them unchanged.
+    __weak typeof(self) weakSelf = self;
+    SEL endSel = overrideFunction;
+    [alert beginSheetModalForWindow:_window completionHandler:^(NSModalResponse returnCode) {
+        typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nil || endSel == NULL) return;
+        NSMethodSignature *sig = [strongSelf methodSignatureForSelector:endSel];
+        if (sig == nil) return;
+        NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+        [inv setTarget:strongSelf];
+        [inv setSelector:endSel];
+        NSWindow *sheet = strongSelf->_window;
+        void *ctx = (__bridge void *)strongSelf;
+        NSInteger code = returnCode;
+        if (sig.numberOfArguments >= 3) [inv setArgument:&sheet atIndex:2];
+        if (sig.numberOfArguments >= 4) [inv setArgument:&code atIndex:3];
+        if (sig.numberOfArguments >= 5) [inv setArgument:&ctx atIndex:4];
+        [inv invoke];
+    }];
 }
 
 - (void)showExportFailureDialog
 {
-    NSBeginCriticalAlertSheet(
-        NSLocalizedString(@"Export failed", "Export failure dialog title"),
-        OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-        NSLocalizedString(@"Export failure description", "LONG Export failure dialog text. Permissions?!")
+    [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Export failed", "Export failure dialog title")
+                                   message:NSLocalizedString(@"Export failure description", "LONG Export failure dialog text. Permissions?!")];
         //@"KisMAC was unable to complete the export, because of an I/O error. Are permissions correct?"
-        );
 }
 
 - (void)showSavingFailureDialog
 {
-    NSBeginCriticalAlertSheet(
-        NSLocalizedString(@"Saving failed", "Saving failure dialog title"),
-        OK, NULL, NULL, _window, self, NULL, NULL, NULL, 
-        NSLocalizedString(@"Saving failure description", "LONG Saving failure dialog text. Permissions?!")
+    [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"Saving failed", "Saving failure dialog title")
+                                   message:NSLocalizedString(@"Saving failure description", "LONG Saving failure dialog text. Permissions?!")];
         //@"KisMAC was unable to complete the saving process, because of an I/O error. Are permissions correct?"
-        );
 }
 
 - (void)showAlreadyCrackedDialog
 {
-    NSBeginAlertSheet(ERROR_TITLE, 
-        OK, NULL, NULL, [WaveHelper mainWindow], self, NULL, NULL, NULL,
-        NSLocalizedString(@"KisMAC did already reveal the password.", @"Error description for cracking.")
-        );
+    [WaveHelper showInformationalAlertWithTitle:ERROR_TITLE
+        message:NSLocalizedString(@"KisMAC did already reveal the password.", @"Error description for cracking.")];
 }
 
 - (void)showWrongEncryptionType
 {
-    NSBeginAlertSheet(ERROR_TITLE, 
-        OK, NULL, NULL, [WaveHelper mainWindow], self, NULL, NULL, NULL,
-        NSLocalizedString(@"The encryption of the selected network does not work with this attack.", @"Error description for cracking.")
-        );
+    [WaveHelper showInformationalAlertWithTitle:ERROR_TITLE
+        message:NSLocalizedString(@"The encryption of the selected network does not work with this attack.", @"Error description for cracking.")];
 }
 
 - (void)showNeedMorePacketsDialog
 {
-    NSBeginAlertSheet(ERROR_TITLE, 
-        OK, NULL, NULL, [WaveHelper mainWindow], self, NULL, NULL, NULL,
-        NSLocalizedString(@"Need more packets description", "LONG dialog text. The user needs more packets. active scanners are not able to do this")
+    [WaveHelper showInformationalAlertWithTitle:ERROR_TITLE
+        message:NSLocalizedString(@"Need more packets description", "LONG dialog text. The user needs more packets. active scanners are not able to do this")];
         //@"You have not collected enough data packets to perform this attack. Please capture some more traffic"
-        );
 }
 
 - (void)showNeedMoreWeakPacketsDialog
 {
-    NSBeginAlertSheet(ERROR_TITLE,
-        OK, NULL, NULL, [WaveHelper mainWindow], self, NULL, NULL, NULL,
-        NSLocalizedString(@"Need more weak packets description", "LONG dialog text. The user needs more weak packets. explain")
+    [WaveHelper showInformationalAlertWithTitle:ERROR_TITLE
+        message:NSLocalizedString(@"Need more weak packets description", "LONG dialog text. The user needs more weak packets. explain")];
         //@"KisMAC cannot recover your WEP key, using this method. The weak scheduling attack requires a lot of weak keys. Please see the help file for more details."
-        );
 }
 
 - (void)showNeedToRevealSSID
 {
-    NSBeginAlertSheet(ERROR_TITLE, 
-        OK, NULL, NULL, [WaveHelper mainWindow], self, NULL, NULL, NULL,
-        NSLocalizedString(@"You will need to reveal a valid SSID before you are able to attack this network. The SSID is a vital part of the WPA encryption process", "Explain")
-        );
+    [WaveHelper showInformationalAlertWithTitle:ERROR_TITLE
+        message:NSLocalizedString(@"You will need to reveal a valid SSID before you are able to attack this network. The SSID is a vital part of the WPA encryption process", "Explain")];
 }
         
 @end

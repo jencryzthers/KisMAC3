@@ -25,6 +25,8 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#import <CoreFoundation/CoreFoundation.h>   // UInt8/UInt16/UInt32 (MacTypes)
+
 enum {
     KMRate1     = 0,
     KMRate2     = 1,

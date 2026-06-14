@@ -113,4 +113,19 @@ void WirelessCryptMD5(char const *str, unsigned char *key);
 + (NSString*)frameControlToString:(UInt16)fc;
 + (void)dumpKFrame:(KFrame *)f;
 
+/* date utilities — strftime-style formatting (replaces the removed
+   -[NSDate descriptionWithCalendarFormat:timeZone:locale:]). The format is a
+   classic strftime(3) pattern, e.g. @"%Y-%m-%d". Pass nil tz for local time. */
++ (NSString*)stringFromDate:(NSDate*)date strftimeFormat:(NSString*)format timeZone:(NSTimeZone*)tz;
+
+/* alert utilities — modern NSAlert replacements for the removed
+   NSRunAlertPanel / NSBeginAlertSheet family. Always run on the main thread.
+   -showModalAlert… returns the clicked button (NSAlertFirstButtonReturn …). */
++ (void)showInformationalAlertWithTitle:(NSString*)title message:(NSString*)message;
++ (void)showCriticalAlertWithTitle:(NSString*)title message:(NSString*)message;
++ (NSModalResponse)showModalAlertWithTitle:(NSString*)title
+                                   message:(NSString*)message
+                                     style:(NSAlertStyle)style
+                                   buttons:(NSArray<NSString*>*)buttonTitles;
+
 @end

@@ -250,7 +250,7 @@
     if ([packet type] != IEEE80211_TYPE_DATA)
         return WavePluginPacketResponseContinue;
     
-	BOOL isBrokenData = false;
+    BOOL isBrokenData = false;
     if (aPacketType == 0) {        //do rst handling here
         if ((payloadLength == TCPRST_SIZE) && 
             IS_EQUAL_MACADDR([packet addr1], _addr1) && 

@@ -93,7 +93,7 @@
 	
 	[aOP beginWithCompletionHandler:^(NSInteger result)
 	 {
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 [self stopActiveAttacks];
 			 [self stopScan];
@@ -146,7 +146,7 @@
 	
 	[aOP beginWithCompletionHandler:^(NSInteger result)
 	{
-		 if (result == NSFileHandlingPanelOKButton)
+		 if (result == NSModalResponseOK)
 		 {
 			 [self stopActiveAttacks];
 			 [self stopScan];
@@ -187,7 +187,7 @@
     [aSP setCanSelectHiddenExtension:YES];
     [aSP setTreatsFilePackagesAsDirectories:NO];
     
-	if ([aSP runModal] == NSFileHandlingPanelOKButton)
+	if ([aSP runModal] == NSModalResponseOK)
 	{
         [self showBusy:@selector(performExportNS:)
 			   withArg:[[aSP URL] path]];
@@ -228,7 +228,7 @@
     [aSP setCanSelectHiddenExtension:YES];
     [aSP setTreatsFilePackagesAsDirectories:NO];
 	
-    if ([aSP runModal] == NSFileHandlingPanelOKButton)
+    if ([aSP runModal] == NSModalResponseOK)
     {
         [self showBusy:@selector(performExportKML:)
 			   withArg:[[aSP URL] path]];
@@ -242,7 +242,7 @@
     [aSP setCanSelectHiddenExtension:YES];
     [aSP setTreatsFilePackagesAsDirectories:NO];
     
-	if ([aSP runModal] == NSFileHandlingPanelOKButton)
+	if ([aSP runModal] == NSModalResponseOK)
 	{
         [self showBusy:@selector(performExportWarD:)
 			   withArg:[[aSP URL] path]];
@@ -275,7 +275,7 @@
     [aSP setCanSelectHiddenExtension:YES];
     [aSP setTreatsFilePackagesAsDirectories:NO];
     
-	if ([aSP runModal] == NSFileHandlingPanelOKButton)
+	if ([aSP runModal] == NSModalResponseOK)
 	{
         [self showBusy:@selector(performExportMacStumbler:)
 			   withArg:[[aSP URL] path]];
@@ -303,7 +303,7 @@
     [aSP setCanSelectHiddenExtension:YES];
     [aSP setTreatsFilePackagesAsDirectories:NO];
     
-	if ([aSP runModal]==NSFileHandlingPanelOKButton)
+	if ([aSP runModal]==NSModalResponseOK)
 	{
         [self showBusy:@selector(performExportPDF:)
 			   withArg:[[aSP URL] path]];
@@ -338,7 +338,7 @@
     [aSP setCanSelectHiddenExtension:YES];
     [aSP setTreatsFilePackagesAsDirectories:NO];
     
-	if ([aSP runModal]==NSFileHandlingPanelOKButton)
+	if ([aSP runModal]==NSModalResponseOK)
 	{
         [self showBusy:@selector(performExportJPEG:)
 			   withArg:[[aSP URL] path]];
@@ -357,7 +357,7 @@
     NS_DURING
         img  = [[NSImage alloc] initWithData:[_mappingView pdfData]];
         data = [img TIFFRepresentationUsingCompression:NSTIFFCompressionNone factor:0.0];
-        data = [[NSBitmapImageRep imageRepWithData:data] representationUsingType:NSJPEGFileType
+        data = [[NSBitmapImageRep imageRepWithData:data] representationUsingType:NSBitmapImageFileTypeJPEG
                                                                       properties:[NSDictionary dictionary]];
             
         [data writeToFile:[filename stringByExpandingTildeInPath] atomically:NO];
@@ -385,11 +385,10 @@
     NSUInteger newChannel = 0;
     if (sender.tag == 14)
     {
-        NSAlert *alert = [NSAlert alertWithMessageText:@"Enter Channel number"
-                                         defaultButton:@"OK"
-                                       alternateButton:@"Cancel"
-                                           otherButton:nil
-                             informativeTextWithFormat:@""];
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"Enter Channel number";
+        [alert addButtonWithTitle:@"OK"];      // NSAlertFirstButtonReturn
+        [alert addButtonWithTitle:@"Cancel"];  // NSAlertSecondButtonReturn
         
         NSTextField *input = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
         NSNumberFormatter *intFormat = [[NSNumberFormatter alloc] init];
@@ -400,7 +399,7 @@
         
         [alert setAccessoryView:input];
         NSInteger button = [alert runModal];
-        if (button == NSAlertDefaultReturn)
+        if (button == NSAlertFirstButtonReturn)
         {
             newChannel = [input intValue];
         }
@@ -478,7 +477,7 @@
     }
     
     md = [[wd configuration] mutableCopy];
-    md[@"autoAdjustTimer"] = [NSNumber numberWithBool:(([sender state]==NSOffState) ? YES : NO)];
+    md[@"autoAdjustTimer"] = [NSNumber numberWithBool:(([sender state]==NSControlStateValueOff) ? YES : NO)];
  
     [wd setConfiguration: md];
     
@@ -519,14 +518,18 @@
     
     if (sender!=self)
 	{
-        NSBeginAlertSheet(
-            NSLocalizedString(@"Really want to delete?", "Network deletion dialog title"),
-            NSLocalizedString(@"Delete", "Network deletion dialog button"),
-            NSLocalizedString(@"Delete and Filter", "Network deletion dialog button"),
-            CANCEL, _window, self, NULL, @selector(reallyWantToDelete:returnCode:contextInfo:), (__bridge void *)(self),
-            NSLocalizedString(@"Network deletion dialog text", "LONG description of what this dialog does")
-            //@"Are you sure that you whish to delete the network? This action cannot be undone. You may also choose to add the network to the filter list in the preferences and prevent it from re-appearing."
-            );
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = NSLocalizedString(@"Really want to delete?", "Network deletion dialog title");
+        alert.informativeText = NSLocalizedString(@"Network deletion dialog text", "LONG description of what this dialog does");
+        [alert addButtonWithTitle:NSLocalizedString(@"Delete", "Network deletion dialog button")];            // NSAlertFirstButtonReturn
+        [alert addButtonWithTitle:NSLocalizedString(@"Delete and Filter", "Network deletion dialog button")]; // NSAlertSecondButtonReturn
+        [alert addButtonWithTitle:CANCEL];                                                                    // NSAlertThirdButtonReturn
+        //@"Are you sure that you whish to delete the network? This action cannot be undone. You may also choose to add the network to the filter list in the preferences and prevent it from re-appearing."
+        // reallyWantToDelete:returnCode:contextInfo: switches on the modern button-return codes.
+        __weak typeof(self) weakSelf = self;
+        [alert beginSheetModalForWindow:_window completionHandler:^(NSModalResponse returnCode) {
+            [weakSelf reallyWantToDelete:nil returnCode:returnCode contextInfo:(__bridge void *)(weakSelf)];
+        }];
         return;
     }
            
@@ -561,11 +564,11 @@
     
     switch (returnCode)
     {
-    case NSAlertDefaultReturn:
+    case NSAlertFirstButtonReturn:
         [self clearNetwork:self];
-    case NSAlertOtherReturn:
+    case NSAlertThirdButtonReturn:
         break;
-    case NSAlertAlternateReturn:
+    case NSAlertSecondButtonReturn:
     default:
         sets=[NSUserDefaults standardUserDefaults];
         temp = [NSMutableArray arrayWithArray:[sets objectForKey:@"FilterBSSIDList"]];
@@ -601,10 +604,10 @@
 		return;
     }
 	
-    if ([aInjPacketsMenu state] == NSOffState && [self startActiveAttack] && [scanner tryToInject:_curNet])
+    if ([aInjPacketsMenu state] == NSControlStateValueOff && [self startActiveAttack] && [scanner tryToInject:_curNet])
 	{
         _crackType = 5;
-        [aInjPacketsMenu setState:NSOnState];
+        [aInjPacketsMenu setState:NSControlStateValueOn];
     } else {
         [self stopActiveAttacks];
     }
@@ -615,9 +618,9 @@
 	NSUserDefaults *defs;
 	defs = [NSUserDefaults standardUserDefaults];
 	
-    if ([_deauthMenu state]==NSOffState && [self startActiveAttack] && [scanner deauthenticateNetwork:_curNet atInterval:[[defs objectForKey:@"pr_interval"] intValue]])
+    if ([_deauthMenu state]==NSControlStateValueOff && [self startActiveAttack] && [scanner deauthenticateNetwork:_curNet atInterval:[[defs objectForKey:@"pr_interval"] intValue]])
 	{
-        [_deauthMenu setState:NSOnState];
+        [_deauthMenu setState:NSControlStateValueOn];
         [_deauthMenu setTitle:[NSLocalizedString(@"Deauthenticating ", "menu item") stringByAppendingString:[_curNet BSSID]]];
     } else {
         [self stopActiveAttacks];
@@ -626,10 +629,10 @@
 
 - (IBAction)deautheticateAllNetworks:(id)sender
 {
-    if ([sender state]==NSOffState && [self startActiveAttack]) {
+    if ([sender state]==NSControlStateValueOff && [self startActiveAttack]) {
 		if (!_scanning) [self startScan];
 		[scanner setDeauthingAll:YES];
-        [sender setState:NSOnState];
+        [sender setState:NSControlStateValueOn];
     } else {
         [self stopActiveAttacks];
     }
@@ -637,9 +640,9 @@
 
 - (IBAction)authFloodNetwork:(id)sender
 {
-    if ([_authFloodMenu state]==NSOffState && [self startActiveAttack] && [scanner authFloodNetwork:_curNet])
+    if ([_authFloodMenu state]==NSControlStateValueOff && [self startActiveAttack] && [scanner authFloodNetwork:_curNet])
 	{
-        [_authFloodMenu setState:NSOnState];
+        [_authFloodMenu setState:NSControlStateValueOn];
         [_authFloodMenu setTitle:[NSLocalizedString(@"Flooding ", "menu item") stringByAppendingString:[_curNet BSSID]]];
     } else {
         [self stopActiveAttacks];
@@ -669,11 +672,11 @@
 	{
 		[self clearAreaMap];
 		[_showNetInMap setTitle:@"Show Net Area"];
-		[_showNetInMap setState: NSOffState];
+		[_showNetInMap setState: NSControlStateValueOff];
 	} else {
 		[_showNetInMap setTitle:[NSLocalizedString(@"Show Net Area of ", "menu item")
 								 stringByAppendingString:[_curNet BSSID]]];
-		[_showNetInMap setState: NSOnState];
+		[_showNetInMap setState: NSControlStateValueOn];
 	}
 		
 	[self showMap];
@@ -682,7 +685,7 @@
 
 - (IBAction)showCurNetArea:(id)sender
 {
-   if ([sender state] == NSOffState)
+   if ([sender state] == NSControlStateValueOff)
    {
         if (![[WaveHelper mapView] hasValidMap])
 		{
@@ -698,7 +701,7 @@
 				andEndSelector:@selector(showAreaDone:returnCode:contextInfo:)
 					 andDialog:@"Crack"];
         
-        if ([_showAllNetsInMap state] == NSOnState) [self showAllNetArea:_showAllNetsInMap];
+        if ([_showAllNetsInMap state] == NSControlStateValueOn) [self showAllNetArea:_showAllNetsInMap];
 
 		[_mappingView showAreaNet:_curNet];
    }
@@ -719,8 +722,8 @@
 	
 	if ([_importController canceled]) {
 		[self clearAreaMap];
-		[_showAllNetsInMap setState: NSOffState];
-	} else [_showAllNetsInMap setState: NSOnState];
+		[_showAllNetsInMap setState: NSControlStateValueOff];
+	} else [_showAllNetsInMap setState: NSControlStateValueOn];
 	
 	_importController = nil;
 
@@ -733,7 +736,7 @@
     NSMutableArray *a;
     NSUInteger i;
     
-    if ([sender state] == NSOffState)
+    if ([sender state] == NSControlStateValueOff)
 	{
         if (![[WaveHelper mapView] hasValidMap])
 		{
@@ -744,7 +747,7 @@
         
    		[self showBusyWithText:NSLocalizedString(@"Caching Map...", "Title of busy dialog") andEndSelector:@selector(showAreaAllDone:returnCode:contextInfo:) andDialog:@"Crack"];
      
-		if ([_showNetInMap state] == NSOnState) [self showCurNetArea:_showNetInMap];
+		if ([_showNetInMap state] == NSControlStateValueOn) [self showCurNetArea:_showNetInMap];
     
         a = [[NSMutableArray alloc] init];
         for ( i = 0 ; i < [_container count] ; ++i)
@@ -788,17 +791,17 @@
 
 - (IBAction)displayGPSInfo:(id)sender
 {
-	if ([_showGPSDetails state]==NSOffState)
+	if ([_showGPSDetails state]==NSControlStateValueOff)
 	{
 		_g = [[GPSInfoController alloc] initWithWindowNibName:@"GPSDialog"];
 		[_g setShowMenu:_showGPSDetails];
-		[_showGPSDetails setState:NSOnState];
+		[_showGPSDetails setState:NSControlStateValueOn];
 		[_g showWindow:sender];
 		[WaveHelper setGPSInfoController:_g];
 	}
 	else
 	{
-		[_showGPSDetails setState:NSOffState];
+		[_showGPSDetails setState:NSControlStateValueOff];
 		[_g close];
 		[WaveHelper setGPSInfoController:NULL];
 	}
@@ -806,12 +809,12 @@
 
 - (IBAction)goFullscreen:(id)sender
 {
-	if ([_fullscreen state]==NSOffState)
+	if ([_fullscreen state]==NSControlStateValueOff)
 	{
         if (!borderlessWindow)
         {
             borderlessWindow = [[NSWindow alloc] initWithContentRect:[[NSScreen mainScreen] frame]
-                                                           styleMask:(NSTexturedBackgroundWindowMask)
+                                                           styleMask:(NSWindowStyleMaskBorderless)
                                                              backing:NSBackingStoreBuffered defer:YES];
         }
     
@@ -831,7 +834,7 @@
 		[borderlessWindow setLevel:kCGNormalWindowLevel];
 		[[WaveHelper mainWindow] setIsVisible:NO];
 		[borderlessWindow makeFirstResponder:_mappingView];
-		[_fullscreen setState:NSOnState];
+		[_fullscreen setState:NSControlStateValueOn];
 	}
 	else
 	{
@@ -855,7 +858,7 @@
         borderlessWindow = nil;
         
 		[[WaveHelper mainWindow] makeKeyAndOrderFront:[WaveHelper mainWindow]];
-		[_fullscreen setState:NSOffState];
+		[_fullscreen setState:NSControlStateValueOff];
 	}
 }
 
@@ -933,20 +936,20 @@
 
 - (IBAction)gpsDebugToConsole:(id)sender
 {
-    if ([sender state] == NSOffState)
+    if ([sender state] == NSControlStateValueOff)
 	{
         [[WaveHelper gpsController] writeDebugOutput:YES];
-        [sender setState: NSOnState];
+        [sender setState: NSControlStateValueOn];
     } else {
         [[WaveHelper gpsController] writeDebugOutput:NO];
-        [sender setState: NSOffState];
+        [sender setState: NSControlStateValueOff];
     }
 }
 
 
 - (IBAction)debugBeaconFlood:(id)sender
 {
-    if ([sender state]==NSOffState)
+    if ([sender state]==NSControlStateValueOff)
 	{
         [self stopActiveAttacks];
         if (![scanner beaconFlood])
@@ -954,10 +957,10 @@
             DBNSLog(@"Could not start injectiong beacons like hell. Did you choose an injection driver?\n");
             return;
         }
-        [sender setState:NSOnState];
+        [sender setState:NSControlStateValueOn];
     } else {
         [self stopActiveAttacks];
-        [sender setState:NSOffState];
+        [sender setState:NSControlStateValueOff];
     }
 }
 

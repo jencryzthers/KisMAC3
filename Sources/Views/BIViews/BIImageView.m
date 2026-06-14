@@ -99,7 +99,7 @@
     r.size.height = _frame.size.height;
     CGContextDrawImage (myContext, r, _cgImg); 
 #else
-    [_img drawAtPoint:p fromRect:rect operation:NSCompositeSourceOver fraction:1.0];
+    [_img drawAtPoint:p fromRect:rect operation:NSCompositingOperationSourceOver fraction:1.0];
 #endif
 }
 

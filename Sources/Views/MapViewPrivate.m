@@ -141,7 +141,7 @@
         [self _setStatus:NSLocalizedString(@"The coordinates of waypoints are too close!", "map view status")]; 
     } else {
         [_statusView setVisible:NO];
-		[_netContainer setVisible: [_showNetworks state]==NSOnState];
+		[_netContainer setVisible: [_showNetworks state]==NSControlStateValueOn];
         if (_visible) [self setNeedsDisplay:YES];
     }
 }

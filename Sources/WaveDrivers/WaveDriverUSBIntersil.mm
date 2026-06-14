@@ -49,17 +49,13 @@ BOOL explicitlyLoadedUSBIntersil = NO;
 + (BOOL) loadBackend {
     
     if ([WaveHelper isServiceAvailable: (char*)"com_intersil_prism2USB"]) {
-        NSRunCriticalAlertPanel(
-                                NSLocalizedString(@"WARNING! Please unplug your USB device now.", "Warning dialog title"),
-                                NSLocalizedString(@"Due a bug in Intersils Prism USB driver you must unplug your device now temporarily, otherwise you will not be able to use it any more. KisMAC will prompt you again to put it back in after loading is completed.", "USB driver bug warning."),
-                                OK, nil, nil);
-        
+        [WaveHelper showCriticalAlertWithTitle:NSLocalizedString(@"WARNING! Please unplug your USB device now.", "Warning dialog title")
+                                       message:NSLocalizedString(@"Due a bug in Intersils Prism USB driver you must unplug your device now temporarily, otherwise you will not be able to use it any more. KisMAC will prompt you again to put it back in after loading is completed.", "USB driver bug warning.")];
+
 		if (![WaveHelper runScript:@"usbprism2_prep.sh"]) return NO;
-        
-        NSRunInformationalAlertPanel(
-                                     NSLocalizedString(@"Connect your device again!", "dialog title"),
-                                     NSLocalizedString(@"KisMAC completed the unload process. Please plug your device back in before you continue.", "USB driver bug warning."),
-                                     OK, nil, nil);
+
+        [WaveHelper showInformationalAlertWithTitle:NSLocalizedString(@"Connect your device again!", "dialog title")
+                                            message:NSLocalizedString(@"KisMAC completed the unload process. Please plug your device back in before you continue.", "USB driver bug warning.")];
 		explicitlyLoadedUSBIntersil = YES;
     } else  if ([WaveHelper isServiceAvailable: (char*)"AeroPad"]) {
 		if (![WaveHelper runScript:@"usbprism2_prep.sh"]) return NO;
@@ -102,7 +98,7 @@ BOOL explicitlyLoadedUSBIntersil = NO;
     if(_driver->_init() != kIOReturnSuccess)
         return NO;
     
-	_errors = 0;
+    _errors = 0;
     
     return YES;
 }

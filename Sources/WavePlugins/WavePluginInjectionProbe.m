@@ -308,7 +308,7 @@
     BOOL stop = [super stopTest];
     if (!stop)
         return NO;
-	[_driver stopSendingFrames];
+    [_driver stopSendingFrames];
     if (_timer) {
         [_timer invalidate];
     }
