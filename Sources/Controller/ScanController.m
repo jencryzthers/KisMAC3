@@ -54,6 +54,8 @@
 #import "../Capabilities/KMCryptoSelfTest.h"
 #import "../Capabilities/KMKismetSelfTest.h"
 #import "../Capabilities/KMCapability.h"
+#import "../Safety/KMCampaignManager.h"
+#import "../Safety/KMSafetySelfTest.h"
 #import "../WaveDrivers/WaveDriverAirport.h"
 #import "../WaveDrivers/WaveDriverAirportExtreme.h"
 #import "../WaveDrivers/WaveDriverKismet.h"
@@ -302,6 +304,14 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     [defaultCenter addObserver:self
                       selector:@selector(locationAuthorizationChanged:)
                           name:KisMACLocationAuthorizationChanged
+                        object:nil];
+    // S4.1: rebuild the capability engine whenever the active campaign scope
+    // changes (armed / disarmed / emergency stop) so the active/offensive gate
+    // updates live. The provider itself is queried fresh on every availability
+    // call, but rebuilding refreshes the cached scan-button affordance + logs.
+    [defaultCenter addObserver:self
+                      selector:@selector(activeScopeChanged:)
+                          name:KMActiveScopeChangedNotification
                         object:nil];
     // Build the engine once at startup, off the main thread, so the gate is
     // ready (and to prove the consult path at launch via DBNSLog).
@@ -784,7 +794,13 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // and after the first build it is cached.
     if (!_capabilityEngine)
     {
-        _capabilityEngine = [[KMCapabilityEngine alloc] initWithLiveProbe];
+        // S4.1: inject the REAL active-scope provider (backed by the authorized
+        // campaign) so active/offensive features are gated on an in-window
+        // campaign. Fail closed by default: no campaign -> no scope.
+        KMHardwareProbe *probe = [[KMHardwareProbe alloc] init];
+        [probe runProbe];
+        _capabilityEngine = [[KMCapabilityEngine alloc] initWithProbe:probe
+                                scopeProvider:[KMCampaignManager sharedManager].scopeProvider];
     }
     return _capabilityEngine;
 }
@@ -793,7 +809,14 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 {
     // Probe touches real hardware -> never on the main thread (would stall UI).
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        KMCapabilityEngine *engine = [[KMCapabilityEngine alloc] initWithLiveProbe];
+        // S4.1: build the engine with the REAL active-scope provider so the
+        // active/offensive gate reflects the authorized-campaign state (fail
+        // closed when there is none). The provider is held by the shared
+        // KMCampaignManager and stays live across rebuilds.
+        KMHardwareProbe *probe = [[KMHardwareProbe alloc] init];
+        [probe runProbe];
+        KMCapabilityEngine *engine = [[KMCapabilityEngine alloc] initWithProbe:probe
+                                scopeProvider:[KMCampaignManager sharedManager].scopeProvider];
         dispatch_async(dispatch_get_main_queue(), ^{
             self->_capabilityEngine = engine;
             KMCapability *scan = [engine availabilityForCapability:KMFeatureScan];
@@ -810,6 +833,12 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 - (void)locationAuthorizationChanged:(NSNotification *)note
 {
     DBNSLog(@"[S1.4] Location authorization changed -- rebuilding capability engine to refresh the scan gate.");
+    [self rebuildCapabilityEngine];
+}
+
+- (void)activeScopeChanged:(NSNotification *)note
+{
+    DBNSLog(@"[S4.1] Active campaign scope changed -- rebuilding capability engine to refresh the active/offensive gate.");
     [self rebuildCapabilityEngine];
 }
 
@@ -959,6 +988,21 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
     // no live radio, monitor mode, or channel switching. See KMKismetSelfTest.
     if ([[[NSProcessInfo processInfo] environment][@"KISMAC_KISMET_SELFTEST"] isEqualToString:@"1"]) {
         [KMKismetSelfTest runSelfTestLogging];
+    }
+
+    // S4.1 - Safety machinery self-test. Runs ONLY when
+    // KISMAC_SAFETY_SELFTEST=1 is set. Builds the REAL active-scope provider
+    // (KMActiveCampaignScopeProvider, backed by KMCampaignManager) into a real
+    // KMCapabilityEngine over MOCKED all-green hardware, and asserts: no
+    // campaign => fail closed (frameInjection/deauth/apMode activeLabScopeMissing);
+    // authorized in-window campaign => scope ON, gate flips to
+    // unsupportedMacBookHardware (per S1.3); emergency stop => fail closed +
+    // audit entry; expired window => not active; audit appended/readable;
+    // redaction transforms MAC/SSID/hostname when ON, untouched when OFF.
+    // PASSIVE: no radio / monitor / channel; uses a throwaway audit dir. See
+    // Sources/Safety/KMSafetySelfTest.
+    if ([[[NSProcessInfo processInfo] environment][@"KISMAC_SAFETY_SELFTEST"] isEqualToString:@"1"]) {
+        [KMSafetySelfTest runSelfTestLogging];
     }
 
     logPath = [@"~/Library/Logs/DiagnosticReports/" stringByExpandingTildeInPath];

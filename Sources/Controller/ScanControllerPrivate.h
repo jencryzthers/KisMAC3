@@ -36,6 +36,8 @@
 // Location authorization changes.
 - (void)rebuildCapabilityEngine;
 - (void)locationAuthorizationChanged:(NSNotification*)note;
+// S4.1: rebuild the engine when the active campaign scope changes.
+- (void)activeScopeChanged:(NSNotification*)note;
 
 - (void)updateChannelMenu;
 

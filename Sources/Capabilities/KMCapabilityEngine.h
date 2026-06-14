@@ -79,6 +79,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// Convenience: build from an already-run hardware probe.
 - (instancetype)initWithProbe:(KMHardwareProbe *)probe;
 
+/// Convenience: build from an already-run hardware probe with an INJECTED
+/// scope provider (S4.1 wires the real KMActiveCampaignScopeProvider here so
+/// active/offensive features are gated on an authorized in-window campaign).
+/// Pass nil to get the fail-closed default (no scope).
+- (instancetype)initWithProbe:(KMHardwareProbe *)probe
+                scopeProvider:(nullable id<KMActiveScopeProviding>)scopeProvider;
+
 /// Convenience: run a real probe synchronously and build from it.
 /// NOTE: touches real hardware -- never use this in unit tests.
 - (instancetype)initWithLiveProbe;

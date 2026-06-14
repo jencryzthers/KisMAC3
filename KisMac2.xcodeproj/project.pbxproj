@@ -32,6 +32,13 @@
 		CA9001010000000000000001 /* KMProtocolMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9001020000000000000001 /* KMProtocolMetadata.m */; };
 		CA9001040000000000000001 /* KMProtocolSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9001050000000000000001 /* KMProtocolSelfTest.m */; };
 		CA9002010000000000000001 /* KMCryptoSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9002020000000000000001 /* KMCryptoSelfTest.m */; };
+		CA9006010000000000000001 /* KMCampaignScope.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9004020000000000000001 /* KMCampaignScope.m */; };
+		CA9006020000000000000001 /* KMCampaign.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9004040000000000000001 /* KMCampaign.m */; };
+		CA9007010000000000000001 /* KMRedactionSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9005020000000000000001 /* KMRedactionSettings.m */; };
+		CA9007020000000000000001 /* KMPrivacySettings.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9005040000000000000001 /* KMPrivacySettings.m */; };
+		CA9007030000000000000001 /* KMAuditLog.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9005060000000000000001 /* KMAuditLog.m */; };
+		CA9007040000000000000001 /* KMCampaignManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9005080000000000000001 /* KMCampaignManager.m */; };
+		CA9007050000000000000001 /* KMSafetySelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9005100000000000000001 /* KMSafetySelfTest.m */; };
 		CA9003010000000000000001 /* KMKismetTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9003020000000000000001 /* KMKismetTransport.m */; };
 		CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */ = {isa = PBXBuildFile; fileRef = CA9003050000000000000001 /* KMKismetSelfTest.m */; };
 		CA9003070000000000000001 /* mock_kismet_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CA9003080000000000000001 /* mock_kismet_server.py */; };
@@ -229,6 +236,20 @@
 		CA9001060000000000000001 /* KMProtocolSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMProtocolSelfTest.h; sourceTree = "<group>"; };
 		CA9002020000000000000001 /* KMCryptoSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCryptoSelfTest.m; sourceTree = "<group>"; };
 		CA9002030000000000000001 /* KMCryptoSelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCryptoSelfTest.h; sourceTree = "<group>"; };
+		CA9004010000000000000001 /* KMCampaignScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCampaignScope.h; sourceTree = "<group>"; };
+		CA9004020000000000000001 /* KMCampaignScope.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCampaignScope.m; sourceTree = "<group>"; };
+		CA9004030000000000000001 /* KMCampaign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCampaign.h; sourceTree = "<group>"; };
+		CA9004040000000000000001 /* KMCampaign.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCampaign.m; sourceTree = "<group>"; };
+		CA9005010000000000000001 /* KMRedactionSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMRedactionSettings.h; sourceTree = "<group>"; };
+		CA9005020000000000000001 /* KMRedactionSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMRedactionSettings.m; sourceTree = "<group>"; };
+		CA9005030000000000000001 /* KMPrivacySettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMPrivacySettings.h; sourceTree = "<group>"; };
+		CA9005040000000000000001 /* KMPrivacySettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMPrivacySettings.m; sourceTree = "<group>"; };
+		CA9005050000000000000001 /* KMAuditLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMAuditLog.h; sourceTree = "<group>"; };
+		CA9005060000000000000001 /* KMAuditLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMAuditLog.m; sourceTree = "<group>"; };
+		CA9005070000000000000001 /* KMCampaignManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMCampaignManager.h; sourceTree = "<group>"; };
+		CA9005080000000000000001 /* KMCampaignManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMCampaignManager.m; sourceTree = "<group>"; };
+		CA9005090000000000000001 /* KMSafetySelfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMSafetySelfTest.h; sourceTree = "<group>"; };
+		CA9005100000000000000001 /* KMSafetySelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMSafetySelfTest.m; sourceTree = "<group>"; };
 		CA9003020000000000000001 /* KMKismetTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMKismetTransport.m; sourceTree = "<group>"; };
 		CA9003030000000000000001 /* KMKismetTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMKismetTransport.h; sourceTree = "<group>"; };
 		CA9003050000000000000001 /* KMKismetSelfTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMKismetSelfTest.m; sourceTree = "<group>"; };
@@ -564,6 +585,36 @@
 			path = "Sources/3rd Party";
 			sourceTree = "<group>";
 		};
+		CA9004000000000000000001 /* Campaigns */ = {
+			isa = PBXGroup;
+			children = (
+				CA9004010000000000000001 /* KMCampaignScope.h */,
+				CA9004020000000000000001 /* KMCampaignScope.m */,
+				CA9004030000000000000001 /* KMCampaign.h */,
+				CA9004040000000000000001 /* KMCampaign.m */,
+			);
+			name = Campaigns;
+			path = Sources/Campaigns;
+			sourceTree = "<group>";
+		};
+		CA9005000000000000000001 /* Safety */ = {
+			isa = PBXGroup;
+			children = (
+				CA9005010000000000000001 /* KMRedactionSettings.h */,
+				CA9005020000000000000001 /* KMRedactionSettings.m */,
+				CA9005030000000000000001 /* KMPrivacySettings.h */,
+				CA9005040000000000000001 /* KMPrivacySettings.m */,
+				CA9005050000000000000001 /* KMAuditLog.h */,
+				CA9005060000000000000001 /* KMAuditLog.m */,
+				CA9005070000000000000001 /* KMCampaignManager.h */,
+				CA9005080000000000000001 /* KMCampaignManager.m */,
+				CA9005090000000000000001 /* KMSafetySelfTest.h */,
+				CA9005100000000000000001 /* KMSafetySelfTest.m */,
+			);
+			name = Safety;
+			path = Sources/Safety;
+			sourceTree = "<group>";
+		};
 		CA9000060000000000000001 /* Capabilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -840,6 +891,8 @@
 			isa = PBXGroup;
 			children = (
 				CA9000060000000000000001 /* Capabilities */,
+				CA9004000000000000000001 /* Campaigns */,
+				CA9005000000000000000001 /* Safety */,
 				A57E64371607BC9700BE1BCA /* Crypto */,
 				69A9B3150F04D74B00D1E817 /* WavePlugins */,
 				003533A006A5DD8500AB4577 /* 3rd Party */,
@@ -1317,6 +1370,13 @@
 				CA9001010000000000000001 /* KMProtocolMetadata.m in Sources */,
 				CA9001040000000000000001 /* KMProtocolSelfTest.m in Sources */,
 				CA9002010000000000000001 /* KMCryptoSelfTest.m in Sources */,
+				CA9006010000000000000001 /* KMCampaignScope.m in Sources */,
+				CA9006020000000000000001 /* KMCampaign.m in Sources */,
+				CA9007010000000000000001 /* KMRedactionSettings.m in Sources */,
+				CA9007020000000000000001 /* KMPrivacySettings.m in Sources */,
+				CA9007030000000000000001 /* KMAuditLog.m in Sources */,
+				CA9007040000000000000001 /* KMCampaignManager.m in Sources */,
+				CA9007050000000000000001 /* KMSafetySelfTest.m in Sources */,
 				CA9003010000000000000001 /* KMKismetTransport.m in Sources */,
 				CA9003040000000000000001 /* KMKismetSelfTest.m in Sources */,
 				0035344706A5DD8500AB4577 /* WaveScanner.mm in Sources */,

@@ -93,6 +93,13 @@
                               parserRegistry:nil];
 }
 
+- (instancetype)initWithProbe:(KMHardwareProbe *)probe
+                scopeProvider:(id<KMActiveScopeProviding>)scopeProvider {
+    return [self initWithHardwareCapabilities:probe.capabilities
+                                scopeProvider:scopeProvider
+                              parserRegistry:nil];
+}
+
 - (instancetype)initWithLiveProbe {
     KMHardwareProbe *probe = [[KMHardwareProbe alloc] init];
     [probe runProbe];
