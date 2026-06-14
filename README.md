@@ -1,7 +1,18 @@
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat)](https://www.apple.com/macos/)
+[![Status](https://img.shields.io/badge/status-work%20in%20progress-orange.svg?style=flat)](#-work-in-progress--not-a-working-release)
 [![License](https://img.shields.io/badge/license-GPL%202.0-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
 # KisMAC3
+
+> ## 🚧 Work in progress — NOT a working release
+>
+> **KisMAC3 is an active modernization, not finished software. Do not expect a usable
+> wireless-auditing app yet.** It builds, launches, and the offline/analysis plumbing
+> works, but major pieces are incomplete: the new **Golden Gate** UI runs on **demo data
+> only** (not wired to real scanning), there is **no signed/notarized release**, and live
+> Wi-Fi capture / active features are gated/unimplemented. See **[Status](#status)** and
+> **[Roadmap / next steps](#roadmap--next-steps)** below. Use it for development and
+> evaluation only.
 
 **KisMAC3** is a modern-macOS revival of the classic **KisMAC** / **KisMAC2** wireless
 stumbling and security-auditing tool. KisMAC2 stopped being maintained around 2016 and
@@ -105,6 +116,30 @@ networks) — it is **not yet wired to the real scan / capability engine.** So t
 **Next step** (not done yet): wire Golden Gate to the real data layer already built (capability
 engine + scan + pcap import) and retire the legacy window, so the new UI becomes the actual,
 functional application. Until then, treat Golden Gate as a UI preview.
+
+## Roadmap / next steps
+
+**None of the items below are done** — this is the work that stands between the current
+state and a real, shippable KisMAC3. Roughly in priority order:
+
+1. **Wire the Golden Gate UI to real data** — replace the demo seed with the live capability
+   engine + scan results + pcap import, make the toolbar Scan actually drive capture, then
+   retire the legacy window so the new UI *is* the functional app. (Biggest item; until this
+   lands, Golden Gate is a visual preview only.)
+2. **Signed + notarized release** — the build/sign/notarize/DMG/CI pipeline is scaffolded
+   (`scripts/`, `docs/release.md`) but has never run: it needs a **Developer ID certificate**.
+   Without it there is no distributable/Gatekeeper-passing app.
+3. **Live Wi-Fi capture & active features** — monitor mode, channel hopping, handshake
+   capture, deauth, injection, AP/evil-twin are **gated/unimplemented**: built-in Wi-Fi is
+   BPF-permission-gated and can't transmit; these need a hardware probe confirmation and an
+   external USB adapter, and stay scope-gated + audited. Lab execution is not built.
+4. **Real permission grants & Intel validation** — Location / Bluetooth / Local-Network only
+   yield real data under a **signed build** (TCC); everything is validated on Apple Silicon
+   only — **Intel-Mac validation is pending**.
+5. **UI fidelity pass** — the SwiftUI rewrite was built without on-device visual iteration;
+   it needs a real pixel/layout review (resize behavior, glass, animations).
+6. **Deprecation finish-up** — remaining legacy debt (NSDrawer → split view, OpenGL/BIGL
+   graphs → Metal, Carbon Speech) and the residual build warnings.
 
 ## Documentation
 
