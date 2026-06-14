@@ -52,6 +52,8 @@ typedef NS_ENUM(NSInteger, __availableTabs)
 @class GrowlController;
 @class GPSInfoController;
 @class DownloadMapController;
+@class KMCapabilityEngine;
+@class WaveDriver;
 
 //This is the main class. it basically provides an interface between the base and the gui
 @interface ScanController : NSObject
@@ -150,7 +152,29 @@ typedef NS_ENUM(NSInteger, __availableTabs)
 	GPSInfoController* _g;
 	NSWindow *borderlessWindow;
     DownloadMapController* dmc;
+
+    // S1.4: shared capability engine. The scan controller asks the engine for
+    // feature availability; it NEVER decides hardware/permission support itself.
+    KMCapabilityEngine  *_capabilityEngine;
 }
+
+#pragma mark - S1.4 capability engine (single source of truth for feature gating)
+
+/// The shared capability engine, built lazily from a live hardware probe on a
+/// background queue and cached. Rebuilt when Location authorization changes.
+/// The scan-start path and toolbar/menu validation consult this -- they must
+/// never hardcode hardware/permission checks.
+- (KMCapabilityEngine *)capabilityEngine;
+
+/// YES iff the engine reports the given feature key available. Convenience used
+/// by the scan gate and by toolbar/menu validation.
+- (BOOL)capabilityAvailable:(NSString *)featureKey;
+
+/// Maps the currently selected WiFi driver to the capability key that gates it.
+/// The built-in active Airport card -> scan; passive Airport Extreme -> monitor
+/// (needs-probe); USB injection adapters -> frame injection (unsupportedAdapter);
+/// Kismet -> remote capture. Returns KMFeatureScan as the safe default.
+- (NSString *)capabilityKeyForActiveDriver;
 
 - (IBAction)updateNetworkTable:(id)sender complete:(BOOL)complete;
 

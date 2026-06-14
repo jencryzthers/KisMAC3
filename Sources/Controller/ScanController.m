@@ -49,6 +49,14 @@
 #import "GrowlController.h"
 #import "../Capabilities/KMHardwareProbe.h"
 #import "../Capabilities/KMCapabilityEngine.h"
+#import "../Capabilities/KMCapability.h"
+#import "../WaveDrivers/WaveDriverAirport.h"
+#import "../WaveDrivers/WaveDriverAirportExtreme.h"
+#import "../WaveDrivers/WaveDriverKismet.h"
+#import "../WaveDrivers/WaveDriverKismetDrone.h"
+// NOTE: WaveDriverUSB.h pulls in C++ (USBJack) and cannot be imported into a
+// plain .m. We detect USB injection drivers at runtime via NSClassFromString +
+// -isKindOfClass: instead, so no C++ header is required here.
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
 #import "WavePluginMidi.h"
@@ -285,7 +293,16 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
                       selector:@selector(updatePrefs:)
                           name:KisMACUserDefaultsChanged
                         object:nil];
-    
+    // S1.4: rebuild the capability engine whenever Location authorization
+    // changes (added in S1.2) so the scan gate updates after a grant/deny.
+    [defaultCenter addObserver:self
+                      selector:@selector(locationAuthorizationChanged:)
+                          name:KisMACLocationAuthorizationChanged
+                        object:nil];
+    // Build the engine once at startup, off the main thread, so the gate is
+    // ready (and to prove the consult path at launch via DBNSLog).
+    [self rebuildCapabilityEngine];
+
     DBNSLog(@"KisMAC startup done. Version %@. Build from %@. Homedir is %s. NSAppKitVersionNumber: %f",
             [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"],
             [NSString stringWithFormat:@"%s %s", __DATE__, __TIME__],
@@ -754,11 +771,86 @@ static io_connect_t  root_port;    // a reference to the Root Power Domain IOSer
 }
 
 #pragma mark -
+#pragma mark S1.4 Capability engine accessor + gating
+
+- (KMCapabilityEngine *)capabilityEngine
+{
+    // Lazy fallback: if a query arrives before the async build finished, build
+    // synchronously once. The probe is non-disruptive (S1.1) so this is safe,
+    // and after the first build it is cached.
+    if (!_capabilityEngine)
+    {
+        _capabilityEngine = [[KMCapabilityEngine alloc] initWithLiveProbe];
+    }
+    return _capabilityEngine;
+}
+
+- (void)rebuildCapabilityEngine
+{
+    // Probe touches real hardware -> never on the main thread (would stall UI).
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        KMCapabilityEngine *engine = [[KMCapabilityEngine alloc] initWithLiveProbe];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self->_capabilityEngine = engine;
+            KMCapability *scan = [engine availabilityForCapability:KMFeatureScan];
+            DBNSLog(@"[S1.4] Capability engine ready. scan=%@ reason=%@ -- %@",
+                    KMStringFromCapabilityAvailability(scan.availability),
+                    KMStringFromCapabilityReason(scan.reason),
+                    scan.explanation);
+            // Refresh the affordance enabled state now that the gate is known.
+            [self->_scanButton setEnabled:scan.isAvailable];
+        });
+    });
+}
+
+- (void)locationAuthorizationChanged:(NSNotification *)note
+{
+    DBNSLog(@"[S1.4] Location authorization changed -- rebuilding capability engine to refresh the scan gate.");
+    [self rebuildCapabilityEngine];
+}
+
+- (BOOL)capabilityAvailable:(NSString *)featureKey
+{
+    return [[self capabilityEngine] isAvailable:featureKey];
+}
+
+- (NSString *)capabilityKeyForActiveDriver
+{
+    // Map the active driver class to the capability key that honestly gates it.
+    // S5.x owns the full PrefsDriver UI overhaul; here we do the minimal honest
+    // gating so a needs-probe / unsupported-adapter driver is never usable as if
+    // it were supported.
+    WaveDriver *wd = _whichDriver ? [WaveHelper driverWithName:_whichDriver] : nil;
+
+    if ([wd isKindOfClass:[WaveDriverAirportExtreme class]])
+    {
+        // Passive Airport Extreme == monitor-like capture. On built-in hardware
+        // this is unknownRequiresActiveProbe (S1.1) -> engine reports it not
+        // available, so it cannot be used as if supported.
+        return KMFeatureMonitorMode;
+    }
+    Class usbDriverClass = NSClassFromString(@"WaveDriverUSB");
+    if (usbDriverClass && [wd isKindOfClass:usbDriverClass])
+    {
+        // External USB injection adapters -> unsupportedAdapter (none present).
+        return KMFeatureFrameInjection;
+    }
+    if ([wd isKindOfClass:[WaveDriverKismet class]] ||
+        [wd isKindOfClass:[WaveDriverKismetDrone class]])
+    {
+        return KMFeatureKismetRemoteCapture;
+    }
+
+    // WaveDriverAirport (built-in active CoreWLAN scan) and the safe default.
+    return KMFeatureScan;
+}
+
+#pragma mark -
 
 -(void) dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
+
     [_importController stopAnimation];
 }
 

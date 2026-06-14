@@ -34,6 +34,7 @@
 #import "KisMACNotifications.h"
 #import "WaveNet.h"
 #import "MapView.h"
+#import "../Capabilities/KMCapability.h"
 
 @interface BridgeController ()
 
@@ -126,6 +127,42 @@
 - (IBAction)toggleScan:(id)sender
 {
     [self.scanController toggleScan];
+}
+
+#pragma mark - S1.4 toolbar/menu gating
+
+// The Scan toolbar item and menu item both target this controller via
+// toggleScan:, so AppKit calls these validators here. We ask the capability
+// engine (single source of truth) so the user sees the affordance DISABLED when
+// scanning is unavailable, rather than click-then-fail. Stopping an in-progress
+// scan must always stay enabled.
+- (BOOL)scanAffordanceEnabled
+{
+    if ([self.scanController isScanning])
+    {
+        return YES; // always allow Stop.
+    }
+    NSString *driverFeature = [self.scanController capabilityKeyForActiveDriver];
+    return [self.scanController capabilityAvailable:KMFeatureScan] &&
+           [self.scanController capabilityAvailable:driverFeature];
+}
+
+- (BOOL)validateToolbarItem:(NSToolbarItem *)item
+{
+    if ([item action] == @selector(toggleScan:))
+    {
+        return [self scanAffordanceEnabled];
+    }
+    return YES;
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item
+{
+    if ([item action] == @selector(toggleScan:))
+    {
+        return [self scanAffordanceEnabled];
+    }
+    return YES;
 }
 
 #pragma mark -

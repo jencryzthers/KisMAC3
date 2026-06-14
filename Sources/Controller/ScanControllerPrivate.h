@@ -32,6 +32,11 @@
 
 - (void)updatePrefs:(NSNotification*)note;
 
+// S1.4: (re)build the shared capability engine off the main thread; refresh on
+// Location authorization changes.
+- (void)rebuildCapabilityEngine;
+- (void)locationAuthorizationChanged:(NSNotification*)note;
+
 - (void)updateChannelMenu;
 
 - (void)menuSetEnabled:(BOOL)a menu:(NSMenu*)menu;

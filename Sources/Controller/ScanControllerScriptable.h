@@ -42,6 +42,7 @@
 - (BOOL)toggleScan;
 - (BOOL)startScan;
 - (BOOL)stopScan;
+- (BOOL)isScanning;   // S1.4: lets toolbar/menu validation keep Stop enabled.
 
 - (BOOL)isNew;
 - (BOOL)open:(NSString*)filename;

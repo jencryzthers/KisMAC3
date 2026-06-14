@@ -39,6 +39,8 @@
 #import "GrowlController.h"
 #import "ImportController.h"
 #import "WaveContainer.h"
+#import "../Capabilities/KMCapabilityEngine.h"
+#import "../Capabilities/KMCapability.h"
 
 @implementation ScanController(ScriptableAdditions)
 
@@ -105,6 +107,11 @@
     return YES;
 }
 
+- (BOOL)isScanning
+{
+    return _scanning;
+}
+
 - (BOOL)toggleScan
 {
 	if(_scanning)
@@ -124,7 +131,48 @@
 - (BOOL)startScan
 {
     BOOL result = NO;
-    
+
+    // ---- S1.4 capability gate -------------------------------------------------
+    // The scan controller asks the engine; it NEVER decides hardware/permission
+    // support itself (architecture invariant). Gate BOTH the scan feature itself
+    // AND the selected driver's mapped capability, so a needs-probe / unsupported
+    // adapter (passive Airport Extreme, USB injectors) cannot scan as if supported.
+    NSString *driverFeature = [self capabilityKeyForActiveDriver];
+    KMCapability *scanCap   = [[self capabilityEngine] availabilityForCapability:KMFeatureScan];
+    KMCapability *driverCap = [[self capabilityEngine] availabilityForCapability:driverFeature];
+
+    KMCapability *blocking = nil;
+    if (!scanCap.isAvailable)        blocking = scanCap;
+    else if (!driverCap.isAvailable) blocking = driverCap;
+
+    if (blocking)
+    {
+        DBNSLog(@"[S1.4] Scan BLOCKED by capability engine. feature=%@ state=%@ reason=%@ -- %@",
+                blocking.key,
+                KMStringFromCapabilityAvailability(blocking.availability),
+                KMStringFromCapabilityReason(blocking.reason),
+                blocking.explanation);
+
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSAlertStyleWarning];
+        [alert setMessageText:NSLocalizedString(@"Scanning is not available", "S1.4 capability gate alert title")];
+
+        NSMutableString *info = [NSMutableString stringWithString:blocking.explanation ?: @""];
+        if (blocking.reason == KMCapabilityReasonPermissionMissing)
+        {
+            [info appendString:NSLocalizedString(@"\n\nGrant access in System Settings > Privacy & Security > Location Services, enable KisMac, then try again.",
+                                                 "S1.4 location remediation")];
+        }
+        [alert setInformativeText:info];
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", "Alert button OK")];
+        [alert runModal];
+
+        _scanning = NO;
+        [self updateChannelMenu];
+        return NO;
+    }
+    // ---- end S1.4 capability gate ---------------------------------------------
+
     if ([WaveHelper loadDrivers])
     {
         if ([[WaveHelper getWaveDrivers] count] == 0)
