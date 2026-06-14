@@ -17,3 +17,7 @@ profile
 .DS_Store
 
 Resources/Generic/vendor.db
+
+# Python (build-script bytecode cache)
+__pycache__/
+*.pyc
