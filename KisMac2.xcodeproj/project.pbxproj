@@ -229,6 +229,7 @@
 		CA9020180000000000000001 /* GGDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020080000000000000001 /* GGDetailsView.swift */; };
 		CA9020190000000000000001 /* GGGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9020090000000000000001 /* GGGraphView.swift */; };
 		CA90201A0000000000000001 /* GGMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA90200A0000000000000001 /* GGMapView.swift */; };
+		CA90201B0000000000000001 /* GGPreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA90200B0000000000000001 /* GGPreferencesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -266,6 +267,7 @@
 		CA9020080000000000000001 /* GGDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGDetailsView.swift; sourceTree = "<group>"; };
 		CA9020090000000000000001 /* GGGraphView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGGraphView.swift; sourceTree = "<group>"; };
 		CA90200A0000000000000001 /* GGMapView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGMapView.swift; sourceTree = "<group>"; };
+		CA90200B0000000000000001 /* GGPreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GGPreferencesView.swift; sourceTree = "<group>"; };
 		CA9000000000000000000001 /* KMHardwareCapability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareCapability.h; sourceTree = "<group>"; };
 		CA9000020000000000000001 /* KMHardwareCapability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KMHardwareCapability.m; sourceTree = "<group>"; };
 		CA9000010000000000000001 /* KMHardwareProbe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KMHardwareProbe.h; sourceTree = "<group>"; };
@@ -652,6 +654,7 @@
 				CA9020080000000000000001 /* GGDetailsView.swift */,
 				CA9020090000000000000001 /* GGGraphView.swift */,
 				CA90200A0000000000000001 /* GGMapView.swift */,
+				CA90200B0000000000000001 /* GGPreferencesView.swift */,
 			);
 			name = GoldenGate;
 			path = Sources/GoldenGate;
@@ -1703,6 +1706,7 @@
 				CA9020180000000000000001 /* GGDetailsView.swift in Sources */,
 				CA9020190000000000000001 /* GGGraphView.swift in Sources */,
 				CA90201A0000000000000001 /* GGMapView.swift in Sources */,
+				CA90201B0000000000000001 /* GGPreferencesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

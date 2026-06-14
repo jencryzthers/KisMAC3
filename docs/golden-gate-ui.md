@@ -65,11 +65,54 @@ Scan capsule, and a bottom status bar. Dark appearance only.
   graphWindow / isScanning / networks / gps), and the dark-glass aesthetic. The
   two stubs were removed from `GGStubViews.swift`.
 
-**Pending:**
+**Stage 4 — Preferences (8 tabs): DONE.**
 
-- Stage 4 — Preferences (General · Scanning · Filter · Driver · GPS · Sounds · Traffic).
+- `GGPreferencesView` — a glass floating panel presented as an overlay over the
+  main content (dim backdrop + `.prefs-win` glass card with a `prefIn`-style
+  scale/offset/opacity entrance). A title bar (traffic lights — the red dot
+  closes — + a centered "KisMAC Preferences") sits above a single-row 8-tab
+  toolbar (`.ptab` icon-over-label, active = accent fill), then a scrollable body
+  switching content per selected tab. Closing clears `state.showPreferences`
+  (red traffic light, or the backdrop tap wired in `GGRootView`).
+- **All 8 tabs** implemented faithfully to `prefs.jsx`:
+  - **Scanning** — "Capture Engine" section label, a group-card of three
+    toggle-rows (active driver scanning / hop channels / keep everything, with
+    sub-descriptions), divider, then a Dwell-time select.
+  - **Filter** — the BSSID list (centered header, 190pt scroll area with zebra
+    rows + accent selection, or an empty-state), plus the actions row: a
+    `remove` button (disabled until a row is selected), a mono text input, and an
+    `add` button. Add validates the `xx:xx:xx:xx:xx:xx` MAC regex and dedupes
+    (upper-cased); remove drops the selected row.
+  - **Sounds** — a 2-col field grid (WEP on/off sounds, play-every stepper +
+    sound select, speak-SSIDs voice), divider, and a `GGCheck` with a long
+    description.
+  - **Driver** — capture-device select, channels mono text input, and an
+    injection toggle-row group-card.
+  - **GPS** — 3-field grid (device / baud / trace color), divider, reconnect
+    toggle-row.
+  - **Map** — map-source + default-zoom selects, divider, show-waypoints /
+    color-by-signal toggle-rows.
+  - **Traffic** — measure + time-window selects, divider, stack-series toggle-row.
+  - **General** — "General Options" section label, a padded group-card with two
+    `GGCheck`s (don't ask to save / terminate on main-window close).
+- **Reusable controls** built in the same file: `GGSwitch` (42×25 track + 20pt
+  knob, accent when on, spring animation), `GGCheck` (22pt rounded checkbox +
+  title + optional small desc), `GGSelect` (Menu popup with the accent
+  up/down chevron), a stepper box (numeric-filtered `TextField`), `GGField`
+  (label-over-control), `GGGroupCard`, `GGToggleRow`, `GGSectionLabel`,
+  `GGPrefDivider`. All reuse `GGTheme` tokens + fonts.
+- **Prototype caveat:** field values live in a local `GGPrefsState`
+  (`ObservableObject` of `@Published` values) and are **not** persisted to
+  `NSUserDefaults` — this matches the design prototype's `useState` behavior.
+- The Stage-1 Preferences stub was removed from `GGStubViews.swift` (that file is
+  now an empty placeholder kept only to preserve target membership).
 
-Preferences remains a stub; the shell is otherwise fully wired.
+The full Golden Gate UI — all five content views (Networks / Details / Graph /
+Map) **plus** the 8-tab Preferences window — is now implemented.
+
+> Pixel fidelity is unverified: the build is validated headlessly (compiles /
+> links / launches / opens / switches tabs without crashing); exact rendering
+> against the web mock was not visually compared.
 
 ## Files (`Sources/GoldenGate/`)
 
@@ -83,7 +126,8 @@ Preferences remains a stub; the shell is otherwise fully wired.
 | `GGDetailsView.swift` | Details split: inspector (header + property groups + comment box) and clients panel (table or empty-state); `GGCommentEditor` NSTextView wrapper + UTC `fullTime` formatter. |
 | `GGGraphView.swift` | Live rolling multi-series `Canvas` chart: grid/baseline/mono axis labels, per-network color line + area + leading dot, wrapping legend (`GGFlowLayout`); `[Int:[Double]]` rolling buffer advanced by a scanning-gated `Timer`, trimmed to the window. |
 | `GGMapView.swift` | Radar map `ZStack`: radial bg, grid, landmass blobs, lat/lng-projected signal-colored markers (pulsing ring + conic sweep while scanning), GPS dot, glass HUD/zoom/legend; tap marker → Details. |
-| `GGStubViews.swift` | Stub Preferences content (Networks/Details moved out Stage 2; Graph/Map moved out Stage 3). |
+| `GGPreferencesView.swift` | Preferences overlay window: titlebar + 8-tab toolbar + scrollable per-tab body (Scanning/Filter/Sounds/Driver/GPS/Map/Traffic/General); reusable `GGSwitch`/`GGCheck`/`GGSelect`/`GGField`/`GGGroupCard`/`GGToggleRow`/`GGSectionLabel`/`GGPrefDivider`; local `GGPrefsState` (prototype values, not persisted). |
+| `GGStubViews.swift` | Now an empty placeholder (all content views moved out: Networks/Details Stage 2, Graph/Map Stage 3, Preferences Stage 4); kept only to preserve target membership. |
 | `GGWindowController.swift` | `@objc(KGGoldenGateWindowController)` AppKit hosting controller. |
 
 ## How to open
